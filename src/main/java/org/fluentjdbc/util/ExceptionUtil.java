@@ -1,5 +1,8 @@
 package org.fluentjdbc.util;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class ExceptionUtil {
 
     public static RuntimeException softenCheckedException(Exception e) {

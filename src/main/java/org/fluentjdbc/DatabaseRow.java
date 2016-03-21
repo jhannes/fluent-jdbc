@@ -1,7 +1,5 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
-
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -14,19 +12,15 @@ public class DatabaseRow {
     private final Map<String, Integer> columnIndexes = new HashMap<>();
     private String tableName;
 
-    DatabaseRow(ResultSet rs, String tableName) {
+    DatabaseRow(ResultSet rs, String tableName) throws SQLException {
         this.rs = rs;
         this.tableName = tableName;
 
-        try {
-            ResultSetMetaData metaData = rs.getMetaData();
-            for (int i=1; i<=metaData.getColumnCount(); i++) {
-                if (metaData.getTableName(i).equalsIgnoreCase(tableName)) {
-                    columnIndexes.put(metaData.getColumnName(i).toUpperCase(), i);
-                }
+        ResultSetMetaData metaData = rs.getMetaData();
+        for (int i=1; i<=metaData.getColumnCount(); i++) {
+            if (metaData.getTableName(i).equalsIgnoreCase(tableName)) {
+                columnIndexes.put(metaData.getColumnName(i).toUpperCase(), i);
             }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
         }
     }
 

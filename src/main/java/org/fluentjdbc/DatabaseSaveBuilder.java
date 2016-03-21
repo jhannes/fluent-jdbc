@@ -10,6 +10,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class DatabaseSaveBuilder extends DatabaseStatement {
 
     private List<String> columns = new ArrayList<>();
@@ -17,19 +21,19 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
     private String idField;
     private Long id;
 
-    public DatabaseSaveBuilder(String tableName, String idField, Long id) {
+    public DatabaseSaveBuilder(String tableName, String idField, @Nullable Long id) {
         this.tableName = tableName;
         this.idField = idField;
         this.id = id;
     }
 
-    public DatabaseSaveBuilder uniqueKey(String fieldName, Object fieldValue) {
+    public DatabaseSaveBuilder uniqueKey(String fieldName, @Nullable Object fieldValue) {
         columns.add(fieldName);
         parameters.add(fieldValue);
         return this;
     }
 
-    public DatabaseSaveBuilder setField(String fieldName, Object fieldValue) {
+    public DatabaseSaveBuilder setField(String fieldName, @Nullable Object fieldValue) {
         columns.add(fieldName);
         parameters.add(fieldValue);
         return this;

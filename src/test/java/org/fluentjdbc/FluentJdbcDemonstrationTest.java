@@ -25,7 +25,6 @@ public class FluentJdbcDemonstrationTest {
 
         if (jdbcUrl.startsWith("jdbc:h2:")) {
             JdbcDataSource dataSource = new JdbcDataSource();
-            //dataSource.setUrl("jdbc:h2:file:" + new File("target/" + getClass().getName()).getAbsolutePath());
             dataSource.setUrl(jdbcUrl);
 
             connection = dataSource.getConnection();
@@ -40,8 +39,6 @@ public class FluentJdbcDemonstrationTest {
                 stmt.executeUpdate("create table demo_table (id integer primary key autoincrement, code integer not null, name varchar not null)");
             }
         }
-
-
     }
 
     @After

@@ -8,6 +8,10 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class DatabaseStatement {
     protected static Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
 
@@ -21,7 +25,7 @@ public class DatabaseStatement {
         return index;
     }
 
-    protected void bindParameter(PreparedStatement stmt, int index, Object parameter) throws SQLException {
+    protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         stmt.setObject(index, parameter);
     }
 

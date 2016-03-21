@@ -7,6 +7,10 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class DatabaseTableWithTimestamps extends DatabaseStatement implements DatabaseTable {
 
     private String tableName;
@@ -16,12 +20,12 @@ public class DatabaseTableWithTimestamps extends DatabaseStatement implements Da
     }
 
     @Override
-    public DatabaseSaveBuilder newSaveBuilder(String idField, Long id) {
+    public DatabaseSaveBuilder newSaveBuilder(String idField, @Nullable Long id) {
         return new DatabaseSaveBuilder(tableName, idField, id);
     }
 
     @Override
-    public DatabaseQueryBuilder where(String fieldName, Object value) {
+    public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {
         return new DatabaseQueryBuilder(tableName).where(fieldName, value);
     }
 

@@ -10,6 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
+@ParametersAreNonnullByDefault
 public class DatabaseResult implements AutoCloseable {
 
     private ResultSet resultSet;
@@ -29,7 +33,10 @@ public class DatabaseResult implements AutoCloseable {
     }
 
     public DatabaseRow table(String tableName) throws SQLException {
-        return tableRows.computeIfAbsent(tableName, key -> new DatabaseRow(resultSet, key));
+        if (!tableRows.containsKey(tableName)) {
+            tableRows.put(tableName, new DatabaseRow(resultSet, tableName));
+        }
+        return tableRows.get(tableName);
     }
 
     public <T> List<T> list(String tableName, RowMapper<T> mapper) throws SQLException {
@@ -40,6 +47,7 @@ public class DatabaseResult implements AutoCloseable {
         return result;
     }
 
+    @Nullable
     public <T> T single(String tableName, RowMapper<T> mapper) throws SQLException {
         if (!next()) {
             return null;
