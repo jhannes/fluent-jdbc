@@ -26,7 +26,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
             try (ResultSet rs = stmt.executeQuery()) {
                 List<T> result = new ArrayList<>();
                 while (rs.next()) {
-                    result.add(mapper.mapRow(rs));
+                    result.add(mapper.mapRow(new Row(rs, tableName)));
                 }
                 return result;
             }
@@ -43,7 +43,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
                 if (!rs.next()) {
                     return null;
                 }
-                T result = mapper.mapRow(rs);
+                T result = mapper.mapRow(new Row(rs, tableName));
                 if (rs.next()) {
                     throw new RuntimeException("More than one row returned from " + createSelectStatement());
                 }
@@ -64,11 +64,14 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     public DatabaseQueryBuilder where(String fieldName, Object value) {
-        conditions.add(fieldName + " = ?");
-        parameters.add(value);
-        return this;
+        String expression = fieldName + " = ?";
+        return whereExpression(expression, value);
     }
 
-
+    public DatabaseQueryBuilder whereExpression(String expression, Object parameter) {
+        conditions.add(expression);
+        parameters.add(parameter);
+        return this;
+    }
 
 }

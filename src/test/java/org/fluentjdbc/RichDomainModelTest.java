@@ -29,7 +29,7 @@ public class RichDomainModelTest {
     public void openConnection() throws SQLException {
         JdbcDataSource dataSource = new JdbcDataSource();
         //dataSource.setUrl("jdbc:h2:file:" + new File("target/" + getClass().getName()).getAbsolutePath());
-        dataSource.setUrl("jdbc:h2:mem:" + getClass().getName());
+        dataSource.setUrl(System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:" + getClass().getName()));
 
         connection = dataSource.getConnection();
 
