@@ -4,9 +4,7 @@ import org.fluentjdbc.util.ExceptionUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DatabaseTableWithTimestamps extends DatabaseStatement implements DatabaseTable {
@@ -36,12 +34,8 @@ public class DatabaseTableWithTimestamps extends DatabaseStatement implements Da
     public <T> List<T> listObjects(Connection connection, RowMapper<T> mapper) {
         logger.debug("select * from " + tableName);
         try(PreparedStatement stmt = connection.prepareStatement("select * from " + tableName)) {
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<T> result = new ArrayList<>();
-                while (rs.next()) {
-                    result.add(mapper.mapRow(new Row(rs, tableName)));
-                }
-                return result;
+            try (DatabaseResult result = new DatabaseResult(stmt)) {
+                return result.list(tableName, mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);

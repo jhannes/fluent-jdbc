@@ -1,7 +1,7 @@
 package org.fluentjdbc.demo;
 
 import org.fluentjdbc.DatabaseTableWithTimestamps;
-import org.fluentjdbc.Row;
+import org.fluentjdbc.DatabaseRow;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -24,7 +24,7 @@ public class TagType {
     public static DatabaseTableWithTimestamps tagTypesTable = new DatabaseTableWithTimestamps("tag_types");
 
 
-    public static TagType mapFromRow(Row row) throws SQLException {
+    public static TagType mapFromRow(DatabaseRow row) throws SQLException {
         TagType tagType = new TagType(row.getString("name"));
         tagType.setId(row.getLong("id"));
         return tagType;

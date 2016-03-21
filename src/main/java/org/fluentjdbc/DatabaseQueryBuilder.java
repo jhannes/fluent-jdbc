@@ -5,7 +5,6 @@ import org.fluentjdbc.util.ExceptionUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,12 +22,8 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         logger.debug(createSelectStatement());
         try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
             bindParameters(stmt);
-            try (ResultSet rs = stmt.executeQuery()) {
-                List<T> result = new ArrayList<>();
-                while (rs.next()) {
-                    result.add(mapper.mapRow(new Row(rs, tableName)));
-                }
-                return result;
+            try (DatabaseResult result = new DatabaseResult(stmt)) {
+                return result.list(tableName, mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
@@ -39,15 +34,8 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         logger.debug(createSelectStatement());
         try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
             bindParameters(stmt);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    return null;
-                }
-                T result = mapper.mapRow(new Row(rs, tableName));
-                if (rs.next()) {
-                    throw new RuntimeException("More than one row returned from " + createSelectStatement());
-                }
-                return result;
+            try (DatabaseResult result = new DatabaseResult(stmt)) {
+                return result.single(tableName, mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
@@ -57,7 +45,6 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     public String singleString(Connection connection, String fieldName) {
         return singleObject(connection, row -> row.getString(fieldName));
     }
-
 
     private String createSelectStatement() {
         return "select * from " + tableName + " where " + String.join(" AND ", conditions);

@@ -8,7 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 public class FluentJdbcDemonstrationTest {
 
@@ -19,12 +21,27 @@ public class FluentJdbcDemonstrationTest {
 
     @Before
     public void openConnection() throws SQLException {
-        JdbcDataSource dataSource = new JdbcDataSource();
-        dataSource.setUrl("jdbc:h2:mem:" + getClass().getName());
+        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:" + getClass().getName());
 
-        connection = dataSource.getConnection();
+        if (jdbcUrl.startsWith("jdbc:h2:")) {
+            JdbcDataSource dataSource = new JdbcDataSource();
+            //dataSource.setUrl("jdbc:h2:file:" + new File("target/" + getClass().getName()).getAbsolutePath());
+            dataSource.setUrl(jdbcUrl);
 
-        connection.createStatement().executeUpdate("create table demo_table (id integer primary key auto_increment, code integer not null, name varchar not null)");
+            connection = dataSource.getConnection();
+            try(Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate("drop table if exists demo_table");
+                stmt.executeUpdate("create table demo_table (id integer primary key auto_increment, code integer not null, name varchar not null)");
+            }
+        } else {
+            connection = DriverManager.getConnection(jdbcUrl);
+            try(Statement stmt = connection.createStatement()) {
+                stmt.executeUpdate("drop table if exists demo_table");
+                stmt.executeUpdate("create table demo_table (id integer primary key autoincrement, code integer not null, name varchar not null)");
+            }
+        }
+
+
     }
 
     @After

@@ -7,7 +7,7 @@ import java.util.List;
 public interface DatabaseTable {
 
     public interface RowMapper<T> {
-        T mapRow(Row row) throws SQLException;
+        T mapRow(DatabaseRow row) throws SQLException;
     }
 
     DatabaseSaveBuilder newSaveBuilder(String idColumn, Long idValue);

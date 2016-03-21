@@ -1,7 +1,7 @@
 package org.fluentjdbc.demo;
 
 import org.fluentjdbc.DatabaseTableWithTimestamps;
-import org.fluentjdbc.Row;
+import org.fluentjdbc.DatabaseRow;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -26,7 +26,7 @@ public class Entry {
 
     public static DatabaseTableWithTimestamps entriesTable = new DatabaseTableWithTimestamps("entries");
 
-    public static Entry mapFromRow(Row row) throws SQLException {
+    public static Entry mapFromRow(DatabaseRow row) throws SQLException {
         Entry entry = new Entry(row.getString("name"));
         entry.setId(row.getLong("id"));
         return entry;

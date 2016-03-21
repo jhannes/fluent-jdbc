@@ -1,7 +1,7 @@
 package org.fluentjdbc.demo;
 
 import org.fluentjdbc.DatabaseTableWithTimestamps;
-import org.fluentjdbc.Row;
+import org.fluentjdbc.DatabaseRow;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -33,7 +33,7 @@ public class Tag {
         this(name, tagType.getId());
     }
 
-    public static Tag mapFromRow(Row row) throws SQLException {
+    public static Tag mapFromRow(DatabaseRow row) throws SQLException {
         Tag tag = new Tag(row.getString("name"), row.getLong("type_id"));
         tag.setId(row.getLong("id"));
         return tag;
