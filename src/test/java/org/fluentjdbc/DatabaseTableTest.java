@@ -42,7 +42,7 @@ public class DatabaseTableTest {
 
     @Test
     public void shouldThrowOnMissingColumn() throws Exception {
-        long id = table.insert().setField("code", 1234).setField("name", "testing").generateKeyAndInsert(connection);
+        Object id = table.insert().setField("code", 1234).setField("name", "testing").execute(connection);
 
         assertThatThrownBy(() -> table.where("id", id).singleString(connection, "non_existing"))
             .isInstanceOf(IllegalArgumentException.class)
@@ -57,7 +57,7 @@ public class DatabaseTableTest {
             .isInstanceOf(SQLException.class);
         assertThatThrownBy(() -> missingTable.insert().setField("id", 12).execute(connection))
             .isInstanceOf(SQLException.class);
-        assertThatThrownBy(() -> missingTable.insert().setField("name", "abc").generateKeyAndInsert(connection))
+        assertThatThrownBy(() -> missingTable.insert().setField("name", "abc").execute(connection))
             .isInstanceOf(SQLException.class);
     }
 

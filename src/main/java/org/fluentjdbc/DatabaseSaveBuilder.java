@@ -44,7 +44,7 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
         if (idValue != null) {
             Boolean isSame = table.where(idField, this.idValue).singleObject(connection, row -> valuesAreUnchanged(row));
             if (isSame == null) {
-                return insertWithId(connection);
+                return insert(connection);
             } else if (!isSame) {
                 return update(connection);
             } else {
@@ -87,26 +87,16 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
         return true;
     }
 
-    private long insertWithId(Connection connection) {
-        createInsertStatement()
-            .setField(idField, idValue)
-            .execute(connection);
-        return idValue.longValue();
-    }
-
     private long insert(Connection connection) {
-        return createInsertStatement().generateKeyAndInsert(connection);
-    }
-
-    public DatabaseInsertBuilder createInsertStatement() {
-        return table.insert()
-                .setFields(fields, values)
-                .setFields(uniqueKeyFields, uniqueKeyValues);
+        DatabaseInsertBuilder insertStatement = table.insert()
+            .setPrimaryKey(idField, idValue)
+            .setFields(fields, values)
+            .setFields(uniqueKeyFields, uniqueKeyValues);
+        return ((Number)insertStatement.execute(connection)).longValue();
     }
 
     private long update(Connection connection) {
-        table
-                .where("id", idValue)
+        table.where("id", idValue)
                 .update()
                 .setFields(this.fields, this.values)
                 .setFields(uniqueKeyFields, uniqueKeyValues)
