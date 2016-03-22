@@ -71,11 +71,13 @@ public class FluentJdbcDemonstrationTest {
         String updatedName = "updated name";
         table
                 .newSaveBuilder("id", id)
+                .uniqueKey("code", 543)
                 .setField("name", updatedName)
                 .execute(connection);
 
         String retrievedName = table.where("id", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo(updatedName);
+        assertThat(table.where("id", id).singleLong(connection, "code")).isEqualTo(543L);
     }
 
     @Test

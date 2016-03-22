@@ -80,10 +80,6 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         return this;
     }
 
-    public void update(Connection connection, List<String> columns, List<Object> parameters) {
-        update().update(connection, columns, parameters);
-    }
-
     public DatabaseUpdateBuilder update() {
         return new DatabaseUpdateBuilder(table, this.conditions, this.parameters);
     }

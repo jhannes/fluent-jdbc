@@ -13,40 +13,38 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
     private List<String> uniqueKeyFields = new ArrayList<>();
     private List<Object> uniqueKeyValues = new ArrayList<>();
 
-    private List<String> columns = new ArrayList<>();
-    private List<Object> parameters = new ArrayList<>();
+    private List<String> fields = new ArrayList<>();
+    private List<Object> values = new ArrayList<>();
 
     private final DatabaseTable table;
     private String idField;
-    private Number id;
+    private Number idValue;
 
     DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable Number id) {
         this.table = table;
         this.idField = idField;
-        this.id = id;
+        this.idValue = id;
     }
 
     public DatabaseSaveBuilder uniqueKey(String fieldName, @Nullable Object fieldValue) {
         uniqueKeyFields.add(fieldName);
         uniqueKeyValues.add(fieldValue);
-        columns.add(fieldName);
-        parameters.add(fieldValue);
         return this;
     }
 
     public DatabaseSaveBuilder setField(String fieldName, @Nullable Object fieldValue) {
-        columns.add(fieldName);
-        parameters.add(fieldValue);
+        fields.add(fieldName);
+        values.add(fieldValue);
         return this;
     }
 
     public long execute(Connection connection) {
-        if (id == null && hasUniqueKey()) {
-            id = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleLong(connection, idField);
+        if (idValue == null && hasUniqueKey()) {
+            idValue = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleLong(connection, idField);
         }
 
-        if (id != null) {
-            Number id = table.where(idField, this.id).singleLong(connection, idField);
+        if (idValue != null) {
+            Number id = table.where(idField, this.idValue).singleLong(connection, idField);
             if (id != null) {
                 return update(connection);
             } else {
@@ -67,20 +65,26 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
 
     private long insertWithId(Connection connection) {
         table.insert()
-            .setField(idField, id)
-            .setFields(columns, parameters)
+            .setField(idField, idValue)
+            .setFields(fields, values)
+            .setFields(uniqueKeyFields, uniqueKeyValues)
             .execute(connection);
-        return id.longValue();
-    }
-
-    private long update(Connection connection) {
-        table.where("id", id).update(connection, this.columns, this.parameters);
-        return id.longValue();
+        return idValue.longValue();
     }
 
     private long insert(Connection connection) {
         return table.insert()
-                .setFields(columns, parameters)
+                .setFields(fields, values)
+                .setFields(uniqueKeyFields, uniqueKeyValues)
                 .generateKeyAndInsert(connection);
     }
+
+    private long update(Connection connection) {
+        table.where("id", idValue).update()
+                .setFields(this.fields, this.values)
+                .setFields(uniqueKeyFields, uniqueKeyValues)
+                .execute(connection);
+        return idValue.longValue();
+    }
+
 }
