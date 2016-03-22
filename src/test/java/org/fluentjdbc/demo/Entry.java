@@ -16,6 +16,8 @@ import lombok.ToString;
 @ToString
 public class Entry {
 
+    public static final String CREATE_TABLE = "create table entries (id integer primary key auto_increment, name varchar not null)";
+
     @Getter @Setter
     private Long id;
 
@@ -51,6 +53,10 @@ public class Entry {
 
     public static Entry retrieve(Connection connection, Long id) {
         return entriesTable.where("id", id).singleObject(connection, Entry::mapFromRow);
+    }
+
+    public static List<Entry> list(Connection connection) {
+        return entriesTable.listObjects(connection, Entry::mapFromRow);
     }
 
 }

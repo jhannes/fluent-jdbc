@@ -32,7 +32,6 @@ public class DatabaseRow {
         return rs.getLong(getColumnIndex(fieldName));
     }
 
-
     private Integer getColumnIndex(String fieldName) {
         if (!columnIndexes.containsKey(fieldName.toUpperCase())) {
             throw new IllegalArgumentException("Column {" + fieldName + "} is not present in {" + tableName + "}: " + columnIndexes.keySet());

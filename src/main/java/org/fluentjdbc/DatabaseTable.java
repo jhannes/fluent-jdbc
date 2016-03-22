@@ -14,12 +14,18 @@ public interface DatabaseTable {
         T mapRow(DatabaseRow row) throws SQLException;
     }
 
-    DatabaseSaveBuilder newSaveBuilder(String idColumn, @Nullable Long idValue);
+    String getTableName();
 
-    DatabaseQueryBuilder where(String fieldName, @Nullable Object value);
+    DatabaseSaveBuilder newSaveBuilder(String idColumn, @Nullable Number idValue);
 
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 
+    DatabaseQueryBuilder where(String fieldName, @Nullable Object value);
+
     DatabaseQueryBuilder whereExpression(String expression, Object parameter);
+
+    DatabaseQueryBuilder whereAll(List<String> uniqueKeyFields, List<Object> uniqueKeyValues);
+
+    DatabaseInsertBuilder insert();
 
 }

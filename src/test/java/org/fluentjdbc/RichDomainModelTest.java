@@ -54,7 +54,7 @@ public class RichDomainModelTest {
             } else {
                 stmt.executeUpdate("create table tag_types (id integer primary key auto_increment, name varchar not null)");
                 stmt.executeUpdate("create table tags (id integer primary key auto_increment, name varchar not null, type_id integer not null references tag_types(id))");
-                stmt.executeUpdate("create table entries (id integer primary key auto_increment, name varchar not null)");
+                stmt.executeUpdate(Entry.CREATE_TABLE);
                 stmt.executeUpdate("create table entry_taggings (id integer primary key auto_increment, entry_id integer not null references entries(id), tag_id integer not null references tags(id))");
             }
         }

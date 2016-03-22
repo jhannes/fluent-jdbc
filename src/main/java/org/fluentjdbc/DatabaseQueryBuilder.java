@@ -15,19 +15,20 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class DatabaseQueryBuilder extends DatabaseStatement {
 
-    private final String tableName;
     private List<String> conditions = new ArrayList<>();
+    private List<Object> parameters = new ArrayList<>();
+    private DatabaseTable table;
 
-    public DatabaseQueryBuilder(String tableName) {
-        this.tableName = tableName;
+    DatabaseQueryBuilder(DatabaseTable table) {
+        this.table = table;
     }
 
     public <T> List<T> list(Connection connection, RowMapper<T> mapper) {
         logger.debug(createSelectStatement());
         try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
-            bindParameters(stmt);
+            bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt)) {
-                return result.list(tableName, mapper);
+                return result.list(table.getTableName(), mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
@@ -38,9 +39,9 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     public <T> T singleObject(Connection connection, RowMapper<T> mapper) {
         logger.debug(createSelectStatement());
         try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
-            bindParameters(stmt);
+            bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt)) {
-                return result.single(tableName, mapper);
+                return result.single(table.getTableName(), mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
@@ -52,8 +53,13 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         return singleObject(connection, row -> row.getString(fieldName));
     }
 
+    @Nullable
+    public Number singleLong(Connection connection, String fieldName) {
+        return singleObject(connection, row -> row.getLong(fieldName));
+    }
+
     private String createSelectStatement() {
-        return "select * from " + tableName + " where " + String.join(" AND ", conditions);
+        return "select * from " + table.getTableName() + " where " + String.join(" AND ", conditions);
     }
 
     public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {
@@ -65,6 +71,21 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         conditions.add(expression);
         parameters.add(parameter);
         return this;
+    }
+
+    public DatabaseQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
+        for (int i = 0; i < fieldNames.size(); i++) {
+            where(fieldNames.get(i), values.get(i));
+        }
+        return this;
+    }
+
+    public void update(Connection connection, List<String> columns, List<Object> parameters) {
+        update().update(connection, columns, parameters);
+    }
+
+    public DatabaseUpdateBuilder update() {
+        return new DatabaseUpdateBuilder(table, this.conditions, this.parameters);
     }
 
 }

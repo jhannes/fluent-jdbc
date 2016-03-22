@@ -20,18 +20,23 @@ public class DatabaseTableWithTimestamps extends DatabaseStatement implements Da
     }
 
     @Override
-    public DatabaseSaveBuilder newSaveBuilder(String idField, @Nullable Long id) {
-        return new DatabaseSaveBuilder(tableName, idField, id);
+    public String getTableName() {
+        return tableName;
+    }
+
+    @Override
+    public DatabaseSaveBuilder newSaveBuilder(String idField, @Nullable Number id) {
+        return new DatabaseSaveBuilder(this, idField, id);
     }
 
     @Override
     public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {
-        return new DatabaseQueryBuilder(tableName).where(fieldName, value);
+        return new DatabaseQueryBuilder(this).where(fieldName, value);
     }
 
     @Override
     public DatabaseQueryBuilder whereExpression(String expression, Object parameter) {
-        return new DatabaseQueryBuilder(tableName).whereExpression(expression, parameter);
+        return new DatabaseQueryBuilder(this).whereExpression(expression, parameter);
     }
 
     @Override
@@ -44,6 +49,16 @@ public class DatabaseTableWithTimestamps extends DatabaseStatement implements Da
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }
+    }
+
+    @Override
+    public DatabaseQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
+        return new DatabaseQueryBuilder(this).whereAll(fieldNames, values);
+    }
+
+    @Override
+    public DatabaseInsertBuilder insert() {
+        return new DatabaseInsertBuilder(this);
     }
 
 

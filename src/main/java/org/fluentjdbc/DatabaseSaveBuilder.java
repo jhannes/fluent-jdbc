@@ -1,12 +1,6 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
-
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,18 +10,25 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class DatabaseSaveBuilder extends DatabaseStatement {
 
-    private List<String> columns = new ArrayList<>();
-    private final String tableName;
-    private String idField;
-    private Long id;
+    private List<String> uniqueKeyFields = new ArrayList<>();
+    private List<Object> uniqueKeyValues = new ArrayList<>();
 
-    public DatabaseSaveBuilder(String tableName, String idField, @Nullable Long id) {
-        this.tableName = tableName;
+    private List<String> columns = new ArrayList<>();
+    private List<Object> parameters = new ArrayList<>();
+
+    private final DatabaseTable table;
+    private String idField;
+    private Number id;
+
+    DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable Number id) {
+        this.table = table;
         this.idField = idField;
         this.id = id;
     }
 
     public DatabaseSaveBuilder uniqueKey(String fieldName, @Nullable Object fieldValue) {
+        uniqueKeyFields.add(fieldName);
+        uniqueKeyValues.add(fieldValue);
         columns.add(fieldName);
         parameters.add(fieldValue);
         return this;
@@ -40,69 +41,46 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
     }
 
     public long execute(Connection connection) {
-        if (id == null) {
-            return insert(connection);
-        } else {
-            return update(connection);
+        if (id == null && hasUniqueKey()) {
+            id = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleLong(connection, idField);
         }
+
+        if (id != null) {
+            Number id = table.where(idField, this.id).singleLong(connection, idField);
+            if (id != null) {
+                return update(connection);
+            } else {
+                return insertWithId(connection);
+            }
+        } else {
+            return insert(connection);
+        }
+    }
+
+    private boolean hasUniqueKey() {
+        if (uniqueKeyFields.isEmpty()) return false;
+        for (Object o : uniqueKeyValues) {
+            if (o == null) return false;
+        }
+        return true;
+    }
+
+    private long insertWithId(Connection connection) {
+        table.insert()
+            .setField(idField, id)
+            .setFields(columns, parameters)
+            .execute(connection);
+        return id.longValue();
     }
 
     private long update(Connection connection) {
-        logger.debug(createUpdateStatement());
-        try (PreparedStatement stmt = connection.prepareStatement(createUpdateStatement())) {
-            int index = bindParameters(stmt);
-            bindParameter(stmt, index++, id);
-
-            stmt.executeUpdate();
-            return id;
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        }
+        table.where("id", id).update(connection, this.columns, this.parameters);
+        return id.longValue();
     }
 
     private long insert(Connection connection) {
-        logger.debug(createInsertStatement());
-        try (PreparedStatement stmt = connection.prepareStatement(createInsertStatement(), Statement.RETURN_GENERATED_KEYS)) {
-            bindParameters(stmt);
-            stmt.executeUpdate();
-
-            return getGeneratedKey(stmt);
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        }
+        return table.insert()
+                .setFields(columns, parameters)
+                .generateKeyAndInsert(connection);
     }
-
-    private long getGeneratedKey(PreparedStatement stmt) throws SQLException {
-        try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-            if (!generatedKeys.next()) {
-                throw new RuntimeException("Uh oh");
-            }
-            return generatedKeys.getLong(1);
-        }
-    }
-
-    private String createUpdateStatement() {
-        return "update " + tableName + " set " + String.join(",", updates()) + " where " + idField + " = ?";
-    }
-
-    private List<String> updates() {
-        ArrayList<String> result = new ArrayList<>();
-        for (String column : columns) {
-            result.add(column + " = ?");
-        }
-        return result;
-    }
-
-    private String createInsertStatement() {
-        return "insert into " + tableName + " (" + String.join(",", columns) + ") values (" + String.join(",", repeat("?", columns.size())) + ")";
-    }
-
-    private List<String> repeat(String string, int size) {
-        ArrayList<String> result = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            result.add(string);
-        }
-        return result;
-    }
-
 }

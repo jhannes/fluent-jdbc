@@ -12,13 +12,15 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class DatabaseStatement {
+class DatabaseStatement {
     protected static Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
 
-    protected List<Object> parameters = new ArrayList<>();
+    protected int bindParameters(PreparedStatement stmt, List<Object> parameters) throws SQLException {
+        return bindParameters(stmt, parameters, 1);
+    }
 
-    protected int bindParameters(PreparedStatement stmt) throws SQLException {
-        int index = 1;
+    protected int bindParameters(PreparedStatement stmt, List<Object> parameters, int start) throws SQLException {
+        int index = start;
         for (Object parameter : parameters) {
             bindParameter(stmt, index++, parameter);
         }
@@ -29,4 +31,11 @@ public class DatabaseStatement {
         stmt.setObject(index, parameter);
     }
 
+    protected static List<String> repeat(String string, int size) {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < size; i++) {
+            result.add(string);
+        }
+        return result;
+    }
 }
