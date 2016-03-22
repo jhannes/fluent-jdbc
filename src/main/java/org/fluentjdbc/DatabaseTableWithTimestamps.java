@@ -1,10 +1,6 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
-
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -41,14 +37,7 @@ public class DatabaseTableWithTimestamps extends DatabaseStatement implements Da
 
     @Override
     public <T> List<T> listObjects(Connection connection, RowMapper<T> mapper) {
-        logger.debug("select * from " + tableName);
-        try(PreparedStatement stmt = connection.prepareStatement("select * from " + tableName)) {
-            try (DatabaseResult result = new DatabaseResult(stmt)) {
-                return result.list(tableName, mapper);
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        }
+        return new DatabaseQueryBuilder(this).list(connection, mapper);
     }
 
     @Override

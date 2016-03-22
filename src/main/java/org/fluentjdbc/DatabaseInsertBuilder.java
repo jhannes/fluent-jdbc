@@ -69,9 +69,7 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
 
     private long getGeneratedKey(PreparedStatement stmt) throws SQLException {
         try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
-            if (!generatedKeys.next()) {
-                throw new RuntimeException("Uh oh");
-            }
+            generatedKeys.next();
             return generatedKeys.getLong(1);
         }
     }

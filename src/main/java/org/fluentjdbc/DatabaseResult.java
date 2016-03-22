@@ -54,7 +54,7 @@ public class DatabaseResult implements AutoCloseable {
         }
         T result = mapper.mapRow(table(tableName));
         if (next()) {
-            throw new RuntimeException("More than one row returned");
+            throw new IllegalStateException("More than one row returned");
         }
         return result;
     }

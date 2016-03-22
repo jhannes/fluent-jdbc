@@ -59,7 +59,8 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     private String createSelectStatement() {
-        return "select * from " + table.getTableName() + " where " + String.join(" AND ", conditions);
+        return "select * from " + table.getTableName() +
+                (conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions));
     }
 
     public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {
