@@ -1,54 +1,27 @@
 package org.fluentjdbc;
 
-import java.sql.Connection;
-import java.util.List;
+import java.time.ZonedDateTime;
 
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class DatabaseTableWithTimestamps extends DatabaseStatement implements DatabaseTable {
-
-    private String tableName;
+public class DatabaseTableWithTimestamps extends DatabaseTableImpl implements DatabaseTable {
 
     public DatabaseTableWithTimestamps(String tableName) {
-        this.tableName = tableName;
-    }
-
-    @Override
-    public String getTableName() {
-        return tableName;
-    }
-
-    @Override
-    public DatabaseSaveBuilder newSaveBuilder(String idField, @Nullable Number id) {
-        return new DatabaseSaveBuilder(this, idField, id);
-    }
-
-    @Override
-    public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {
-        return new DatabaseQueryBuilder(this).where(fieldName, value);
-    }
-
-    @Override
-    public DatabaseQueryBuilder whereExpression(String expression, Object parameter) {
-        return new DatabaseQueryBuilder(this).whereExpression(expression, parameter);
-    }
-
-    @Override
-    public <T> List<T> listObjects(Connection connection, RowMapper<T> mapper) {
-        return new DatabaseQueryBuilder(this).list(connection, mapper);
-    }
-
-    @Override
-    public DatabaseQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
-        return new DatabaseQueryBuilder(this).whereAll(fieldNames, values);
+        super(tableName);
     }
 
     @Override
     public DatabaseInsertBuilder insert() {
-        return new DatabaseInsertBuilder(this);
+        ZonedDateTime now = ZonedDateTime.now();
+        return super.insert()
+            .setField("updated_at", now)
+            .setField("created_at", now);
     }
 
 
+    @Override
+    public DatabaseUpdateBuilder update() {
+        return super.update().setField("updated_at", ZonedDateTime.now());
+    }
 }

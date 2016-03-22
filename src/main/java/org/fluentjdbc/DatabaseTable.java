@@ -28,4 +28,6 @@ public interface DatabaseTable {
 
     DatabaseInsertBuilder insert();
 
+    DatabaseUpdateBuilder update();
+
 }

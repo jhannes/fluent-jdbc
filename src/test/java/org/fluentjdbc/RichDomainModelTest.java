@@ -6,7 +6,6 @@ import org.fluentjdbc.demo.Entry;
 import org.fluentjdbc.demo.EntryAggregate;
 import org.fluentjdbc.demo.Tag;
 import org.fluentjdbc.demo.TagType;
-import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -29,16 +28,7 @@ public class RichDomainModelTest {
     @Before
     public void openConnection() throws SQLException {
         String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:" + getClass().getName());
-
-        if (jdbcUrl.startsWith("jdbc:h2:")) {
-            JdbcDataSource dataSource = new JdbcDataSource();
-            //dataSource.setUrl("jdbc:h2:file:" + new File("target/" + getClass().getName()).getAbsolutePath());
-            dataSource.setUrl(jdbcUrl);
-
-            connection = dataSource.getConnection();
-        } else {
-            connection = DriverManager.getConnection(jdbcUrl);
-        }
+        connection = DriverManager.getConnection(jdbcUrl);
 
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists entry_taggings");
@@ -46,17 +36,19 @@ public class RichDomainModelTest {
             stmt.executeUpdate("drop table if exists tags");
             stmt.executeUpdate("drop table if exists tag_types");
 
-            if (jdbcUrl.startsWith("jdbc:sqlite:")) {
-                stmt.executeUpdate("create table tag_types (id integer primary key autoincrement, name varchar not null)");
-                stmt.executeUpdate("create table tags (id integer primary key autoincrement, name varchar not null, type_id integer not null references tag_types(id))");
-                stmt.executeUpdate("create table entries (id integer primary key autoincrement, name varchar not null)");
-                stmt.executeUpdate("create table entry_taggings (id integer primary key autoincrement, entry_id integer not null references entries(id), tag_id integer not null references tags(id))");
-            } else {
-                stmt.executeUpdate("create table tag_types (id integer primary key auto_increment, name varchar not null)");
-                stmt.executeUpdate("create table tags (id integer primary key auto_increment, name varchar not null, type_id integer not null references tag_types(id))");
-                stmt.executeUpdate(Entry.CREATE_TABLE);
-                stmt.executeUpdate("create table entry_taggings (id integer primary key auto_increment, entry_id integer not null references entries(id), tag_id integer not null references tags(id))");
-            }
+            stmt.executeUpdate(preprocessCreateTable(connection, TagType.CREATE_TABLE));
+            stmt.executeUpdate(preprocessCreateTable(connection, Tag.CREATE_TABLE));
+            stmt.executeUpdate(preprocessCreateTable(connection, Entry.CREATE_TABLE));
+            stmt.executeUpdate(preprocessCreateTable(connection, Entry.CREATE_TAGGING_TABLE));
+        }
+    }
+
+    private static String preprocessCreateTable(Connection connection, String createTableStatement) throws SQLException {
+        String productName = connection.getMetaData().getDatabaseProductName();
+        if (productName.equals("SQLite")) {
+            return createTableStatement.replaceAll("auto_increment", "autoincrement");
+        } else {
+            return createTableStatement;
         }
     }
 

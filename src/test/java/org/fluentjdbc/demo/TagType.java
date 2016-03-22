@@ -1,7 +1,8 @@
 package org.fluentjdbc.demo;
 
-import org.fluentjdbc.DatabaseTableWithTimestamps;
 import org.fluentjdbc.DatabaseRow;
+import org.fluentjdbc.DatabaseTable;
+import org.fluentjdbc.DatabaseTableImpl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -15,13 +16,15 @@ import lombok.ToString;
 @ToString
 public class TagType {
 
+    public static final String CREATE_TABLE = "create table tag_types (id integer primary key auto_increment, name varchar not null)";
+
     @Getter @Setter
     private Long id;
 
     @Getter
     private final String name;
 
-    public static DatabaseTableWithTimestamps tagTypesTable = new DatabaseTableWithTimestamps("tag_types");
+    public static DatabaseTable tagTypesTable = new DatabaseTableImpl("tag_types");
 
 
     public static TagType mapFromRow(DatabaseRow row) throws SQLException {

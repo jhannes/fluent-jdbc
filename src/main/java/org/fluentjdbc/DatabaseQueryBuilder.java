@@ -6,9 +6,9 @@ import org.fluentjdbc.util.ExceptionUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -58,6 +58,11 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         return singleObject(connection, row -> row.getLong(fieldName));
     }
 
+    @Nullable
+    public ZonedDateTime singleDateTime(Connection connection, String fieldName) {
+        return singleObject(connection, row -> row.getDateTime(fieldName));
+    }
+
     private String createSelectStatement() {
         return "select * from " + table.getTableName() +
                 (conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions));
@@ -82,7 +87,9 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     public DatabaseUpdateBuilder update() {
-        return new DatabaseUpdateBuilder(table, this.conditions, this.parameters);
+        return table.update().setWhereFields(conditions, parameters);
     }
+
+
 
 }

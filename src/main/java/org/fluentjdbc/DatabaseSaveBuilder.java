@@ -1,8 +1,10 @@
 package org.fluentjdbc;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -39,20 +41,42 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
     }
 
     public long execute(Connection connection) {
-        if (idValue == null && hasUniqueKey()) {
-            idValue = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleLong(connection, idField);
-        }
-
         if (idValue != null) {
-            Number id = table.where(idField, this.idValue).singleLong(connection, idField);
-            if (id != null) {
+            Boolean isSame = table.where(idField, this.idValue).singleObject(connection, row -> valuesAreUnchanged(row));
+            if (isSame == null) {
+                return insertWithId(connection);
+            } else if (!isSame) {
                 return update(connection);
             } else {
-                return insertWithId(connection);
+                return idValue.longValue();
+            }
+        } else if (hasUniqueKey()) {
+            Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
+                idValue = row.getLong(idField);
+                return valuesAreUnchanged(row);
+            });
+            if (isSame == null) {
+                return insert(connection);
+            } else if (!isSame) {
+                return update(connection);
+            } else {
+                return idValue.intValue();
             }
         } else {
             return insert(connection);
         }
+    }
+
+    private boolean valuesAreUnchanged(DatabaseRow row) throws SQLException {
+        for (int i = 0; i < fields.size(); i++) {
+            String field = fields.get(i);
+            if (!equal(values.get(i), row.getObject(field))) return false;
+        }
+        return true;
+    }
+
+    private boolean equal(Object o, Object db) {
+        return Objects.equals(o, db);
     }
 
     private boolean hasUniqueKey() {
@@ -64,23 +88,26 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
     }
 
     private long insertWithId(Connection connection) {
-        table.insert()
+        createInsertStatement()
             .setField(idField, idValue)
-            .setFields(fields, values)
-            .setFields(uniqueKeyFields, uniqueKeyValues)
             .execute(connection);
         return idValue.longValue();
     }
 
     private long insert(Connection connection) {
+        return createInsertStatement().generateKeyAndInsert(connection);
+    }
+
+    public DatabaseInsertBuilder createInsertStatement() {
         return table.insert()
                 .setFields(fields, values)
-                .setFields(uniqueKeyFields, uniqueKeyValues)
-                .generateKeyAndInsert(connection);
+                .setFields(uniqueKeyFields, uniqueKeyValues);
     }
 
     private long update(Connection connection) {
-        table.where("id", idValue).update()
+        table
+                .where("id", idValue)
+                .update()
                 .setFields(this.fields, this.values)
                 .setFields(uniqueKeyFields, uniqueKeyValues)
                 .execute(connection);

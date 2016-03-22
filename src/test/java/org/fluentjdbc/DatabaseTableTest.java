@@ -2,7 +2,6 @@ package org.fluentjdbc;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -13,31 +12,30 @@ import java.sql.Statement;
 
 public class DatabaseTableTest {
 
-    private DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
+    private DatabaseTable table = new DatabaseTableImpl("demo_table");
 
     private Connection connection;
 
-    private DatabaseTableWithTimestamps missingTable = new DatabaseTableWithTimestamps("non_existing");
+    private DatabaseTable missingTable = new DatabaseTableImpl("non_existing");
 
     @Before
     public void openConnection() throws SQLException {
         String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:" + getClass().getName());
+        connection = DriverManager.getConnection(jdbcUrl);
 
-        if (jdbcUrl.startsWith("jdbc:h2:")) {
-            JdbcDataSource dataSource = new JdbcDataSource();
-            dataSource.setUrl(jdbcUrl);
+        try(Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate("drop table if exists demo_table");
+            stmt.executeUpdate(preprocessCreateTable(connection,
+                    "create table demo_table (id integer primary key auto_increment, code integer not null, name varchar not null)"));
+        }
+    }
 
-            connection = dataSource.getConnection();
-            try(Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate("drop table if exists demo_table");
-                stmt.executeUpdate("create table demo_table (id integer primary key auto_increment, code integer not null, name varchar not null)");
-            }
+    private static String preprocessCreateTable(Connection connection, String createTableStatement) throws SQLException {
+        String productName = connection.getMetaData().getDatabaseProductName();
+        if (productName.equals("SQLite")) {
+            return createTableStatement.replaceAll("auto_increment", "autoincrement");
         } else {
-            connection = DriverManager.getConnection(jdbcUrl);
-            try(Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate("drop table if exists demo_table");
-                stmt.executeUpdate("create table demo_table (id integer primary key autoincrement, code integer not null, name varchar not null)");
-            }
+            return createTableStatement;
         }
     }
 

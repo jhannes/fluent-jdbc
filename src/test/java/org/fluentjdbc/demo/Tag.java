@@ -1,7 +1,8 @@
 package org.fluentjdbc.demo;
 
-import org.fluentjdbc.DatabaseTableWithTimestamps;
 import org.fluentjdbc.DatabaseRow;
+import org.fluentjdbc.DatabaseTable;
+import org.fluentjdbc.DatabaseTableImpl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,6 +19,8 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class Tag {
 
+    public static final String CREATE_TABLE = "create table tags (id integer primary key auto_increment, name varchar not null, type_id integer not null references tag_types(id))";
+
     @Getter @Setter
     private Long id;
 
@@ -27,7 +30,7 @@ public class Tag {
     @Getter
     private final long tagTypeId;
 
-    public static DatabaseTableWithTimestamps tagsTable = new DatabaseTableWithTimestamps("tags");
+    public static DatabaseTable tagsTable = new DatabaseTableImpl("tags");
 
     public Tag(String name, TagType tagType) {
         this(name, tagType.getId());

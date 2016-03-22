@@ -8,21 +8,26 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class DatabaseUpdateBuilder extends DatabaseStatement {
 
     private final DatabaseTable table;
-    private final List<String> conditions;
-    private final List<Object> conditionParameters;
+    private final List<String> whereConditions = new ArrayList<>();
+    private final List<Object> whereParameters = new ArrayList<>();
     private final List<String> updateFields = new ArrayList<>();
     private final List<Object> updateValues = new ArrayList<>();
 
-    public DatabaseUpdateBuilder(DatabaseTable table, List<String> conditions, List<Object> conditionParameters) {
+    public DatabaseUpdateBuilder(DatabaseTable table) {
         this.table = table;
-        this.conditions = conditions;
-        this.conditionParameters = conditionParameters;
+    }
+
+    public DatabaseUpdateBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
+        this.whereConditions.addAll(whereConditions);
+        this.whereParameters.addAll(whereParameters);
+        return this;
     }
 
     public void update(Connection connection, List<String> columns, List<Object> parameters) {
@@ -36,11 +41,17 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
         return this;
     }
 
+    public DatabaseUpdateBuilder setField(String field, @Nullable Object value) {
+        this.updateFields.add(field);
+        this.updateValues.add(value);
+        return this;
+    }
+
     public void execute(Connection connection) {
         logger.debug(createUpdateStatement());
         try (PreparedStatement stmt = connection.prepareStatement(createUpdateStatement())) {
             int index = bindParameters(stmt, updateValues);
-            bindParameters(stmt, conditionParameters, index);
+            bindParameters(stmt, whereParameters, index);
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -51,7 +62,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
     private String createUpdateStatement() {
         return "update " + table.getTableName()
             + " set " + String.join(",", updates(updateFields))
-            + " where " + String.join(" and ", conditions);
+            + " where " + String.join(" and ", whereConditions);
     }
 
     private static List<String> updates(List<String> columns) {
@@ -61,6 +72,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
         }
         return result;
     }
+
 
 
 }

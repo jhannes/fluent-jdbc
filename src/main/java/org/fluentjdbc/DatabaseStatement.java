@@ -5,6 +5,8 @@ import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +30,11 @@ class DatabaseStatement {
     }
 
     protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
-        stmt.setObject(index, parameter);
+        if (parameter instanceof ZonedDateTime) {
+            stmt.setTimestamp(index, new Timestamp(((ZonedDateTime)parameter).toInstant().toEpochMilli()));
+        } else {
+            stmt.setObject(index, parameter);
+        }
     }
 
     protected static List<String> repeat(String string, int size) {

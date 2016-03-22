@@ -2,7 +2,6 @@ package org.fluentjdbc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import org.fluentjdbc.demo.Entry;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -11,13 +10,17 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 public class SynchronizeDataTest {
 
+    private static final String CREATE_TABLE =
+            "create table demo_table (id integer primary key auto_increment, name varchar not null, updated_at datetime not null, created_at datetime not null)";
+
     private Connection clientConnection;
     private Connection serverConnection;
+
+    private DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
 
     @Before
     public void openConnection() throws SQLException {
@@ -26,7 +29,7 @@ public class SynchronizeDataTest {
         serverConnection = serverDataSource.getConnection();
 
         try(Statement stmt = serverConnection.createStatement()) {
-            stmt.executeUpdate(Entry.CREATE_TABLE);
+            stmt.executeUpdate(CREATE_TABLE);
         }
 
 
@@ -35,7 +38,7 @@ public class SynchronizeDataTest {
         clientConnection = clientDataSource.getConnection();
 
         try(Statement stmt = clientConnection.createStatement()) {
-            stmt.executeUpdate(Entry.CREATE_TABLE);
+            stmt.executeUpdate(CREATE_TABLE);
         }
     }
 
@@ -47,23 +50,20 @@ public class SynchronizeDataTest {
 
     @Test
     public void shouldDownloadChanges() throws Exception {
-        Entry entry = new Entry("some name");
-        entry.save(serverConnection, new ArrayList<>());
+        long id = table.newSaveBuilder("id", null).setField("name", "some name").execute(serverConnection);
 
-
-        assertThat(Entry.retrieve(clientConnection, entry.getId())).isNull();
+        assertThat(table.where("id", id).singleString(clientConnection, "name")).isNull();
 
         synchronize(serverConnection, clientConnection);
 
-        assertThat(Entry.retrieve(clientConnection, entry.getId()))
-            .isEqualToComparingFieldByField(entry);
+        assertThat(table.where("id", id).singleString(clientConnection, "name")).isEqualTo("some name");
     }
 
     private void synchronize(Connection serverConnection, Connection clientConnection) {
-        List<Entry> entries = Entry.list(serverConnection);
+        List<String> names = table.listObjects(serverConnection, row -> row.getString("name"));
 
-        for (Entry entry : entries) {
-            entry.save(clientConnection, new ArrayList<>());
+        for (String name : names) {
+            table.newSaveBuilder("id", null).setField("name", name).execute(clientConnection);
         }
     }
 

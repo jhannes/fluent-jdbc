@@ -1,7 +1,8 @@
 package org.fluentjdbc.demo;
 
-import org.fluentjdbc.DatabaseTableWithTimestamps;
 import org.fluentjdbc.DatabaseRow;
+import org.fluentjdbc.DatabaseTable;
+import org.fluentjdbc.DatabaseTableImpl;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -18,15 +19,17 @@ public class Entry {
 
     public static final String CREATE_TABLE = "create table entries (id integer primary key auto_increment, name varchar not null)";
 
+    public static final String CREATE_TAGGING_TABLE = "create table entry_taggings (id integer primary key auto_increment, entry_id integer not null references entries(id), tag_id integer not null references tags(id))";
+
     @Getter @Setter
     private Long id;
 
     @Getter
     private final String name;
 
-    public static DatabaseTableWithTimestamps entryTaggingsTable = new DatabaseTableWithTimestamps("entry_taggings");
+    public static DatabaseTable entryTaggingsTable = new DatabaseTableImpl("entry_taggings");
 
-    public static DatabaseTableWithTimestamps entriesTable = new DatabaseTableWithTimestamps("entries");
+    public static DatabaseTable entriesTable = new DatabaseTableImpl("entries");
 
     public static Entry mapFromRow(DatabaseRow row) throws SQLException {
         Entry entry = new Entry(row.getString("name"));
@@ -42,7 +45,7 @@ public class Entry {
 
         for (Tag tag : tags) {
             Entry.entryTaggingsTable
-                .newSaveBuilder("id", null)
+                .newSaveBuilder("id", (Long)null)
                 .setField("tag_id", tag.getId())
                 .setField("entry_id", getId())
                 .execute(connection);
