@@ -80,7 +80,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
 
     private String createSelectStatement() {
         return "select * from " + table.getTableName() +
-                (conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions));
+                (conditions.isEmpty() ? "" : " where " + join(" AND ", conditions));
     }
 
     public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {

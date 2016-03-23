@@ -58,9 +58,9 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
 
     private String createInsertStatement() {
         String query = "insert into " + table.getTableName() +
-                " (" + String.join(",", fieldNames)
+                " (" + join(",", fieldNames)
                 + ") values ("
-                + String.join(",", repeat("?", fieldNames.size())) + ")";
+                + join(",", repeat("?", fieldNames.size())) + ")";
         return query;
     }
 

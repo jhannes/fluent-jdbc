@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -43,5 +44,16 @@ class DatabaseStatement {
             result.add(string);
         }
         return result;
+    }
+
+    protected static String join(String delimiter, Collection<String> strings) {
+        StringBuilder result = new StringBuilder();
+        for (String s : strings) {
+            if (result.length() != 0) {
+                result.append(delimiter);
+            }
+            result.append(s);
+        }
+        return result.toString();
     }
 }

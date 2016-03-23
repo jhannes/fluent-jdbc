@@ -61,8 +61,8 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
 
     private String createUpdateStatement() {
         return "update " + table.getTableName()
-            + " set " + String.join(",", updates(updateFields))
-            + " where " + String.join(" and ", whereConditions);
+            + " set " + join(",", updates(updateFields))
+            + " where " + join(" and ", whereConditions);
     }
 
     private static List<String> updates(List<String> columns) {
