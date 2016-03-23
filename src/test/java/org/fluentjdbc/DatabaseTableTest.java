@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class DatabaseTableTest {
 
@@ -41,10 +42,40 @@ public class DatabaseTableTest {
         }
     }
 
+    @Test
+    public void shouldInsertWithoutAndWithoutKey() {
+        table.insert()
+            .setField("code", 1001)
+            .setField("name", "insertTest")
+            .execute(connection);
+
+        Object id = table.insert()
+            .setPrimaryKey("id", null)
+            .setField("code", 1002)
+            .setField("name", "insertTest")
+            .execute(connection);
+        assertThat(id).isNotNull();
+
+        Object id2 = table.insert()
+                .setPrimaryKey("id", 453534643)
+                .setField("code", 1003)
+                .setField("name", "insertTest")
+                .execute(connection);
+
+        assertThat(id2).isEqualTo(453534643);
+
+        assertThat(table.where("name", "insertTest").listLongs(connection, "code"))
+            .contains(1001L, 1002L, 1003L);
+    }
+
 
     @Test
     public void shouldThrowOnMissingColumn() throws Exception {
-        final Object id = table.insert().setField("code", 1234).setField("name", "testing").execute(connection);
+        final Object id = table.insert()
+                .setPrimaryKey("id", null)
+                .setField("code", 1234)
+                .setField("name", "testing")
+                .execute(connection);
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override

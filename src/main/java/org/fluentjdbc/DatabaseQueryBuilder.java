@@ -35,6 +35,16 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         }
     }
 
+    public List<Long> listLongs(Connection connection, final String fieldName) {
+        return list(connection, new RowMapper<Long>() {
+            @Override
+            public Long mapRow(DatabaseRow row) throws SQLException {
+                return row.getLong(fieldName);
+            }
+        });
+    }
+
+
     @Nullable
     public <T> T singleObject(Connection connection, RowMapper<T> mapper) {
         logger.debug(createSelectStatement());
@@ -104,6 +114,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     public DatabaseUpdateBuilder update() {
         return table.update().setWhereFields(conditions, parameters);
     }
+
 
 
 

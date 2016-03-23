@@ -56,7 +56,7 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
             } else if (idValue != null && isSame != null) { // TODO: Convince Eclipse null-checker that we don't need this
                 return idValue.longValue();
             } else {
-                return insert(connection);
+                return insertForLong(connection);
             }
         } else if (hasUniqueKey()) {
             Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
@@ -71,10 +71,10 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
             } else if (idValue != null) { // TODO: Convince Eclipse null-checker that we don't need this
                 return idValue.longValue();
             } else {
-                return insert(connection);
+                return insertForLong(connection);
             }
         } else {
-            return insert(connection);
+            return insertForLong(connection);
         }
     }
 
@@ -98,12 +98,16 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
         return true;
     }
 
-    private long insert(Connection connection) {
-        DatabaseInsertBuilder insertStatement = table.insert()
+    private long insertForLong(Connection connection) {
+        return ((Number)insert(connection)).longValue();
+    }
+
+    private Object insert(Connection connection) {
+        return table.insert()
             .setPrimaryKey(idField, idValue)
             .setFields(fields, values)
-            .setFields(uniqueKeyFields, uniqueKeyValues);
-        return ((Number)insertStatement.execute(connection)).longValue();
+            .setFields(uniqueKeyFields, uniqueKeyValues)
+            .execute(connection);
     }
 
     private long update(Connection connection, Number idValue) {
