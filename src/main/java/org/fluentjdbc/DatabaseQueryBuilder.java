@@ -28,7 +28,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
             bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt)) {
-                return result.list(table.getTableName(), mapper);
+                return result.list(mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
@@ -41,7 +41,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
             bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt)) {
-                return result.single(table.getTableName(), mapper);
+                return result.single(mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);

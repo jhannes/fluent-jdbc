@@ -32,6 +32,7 @@ public class DatabaseResult implements AutoCloseable {
         return resultSet.next();
     }
 
+    // TODO: This doesn't work for Android
     public DatabaseRow table(String tableName) throws SQLException {
         if (!tableRows.containsKey(tableName)) {
             tableRows.put(tableName, new DatabaseRow(resultSet, tableName));
@@ -39,20 +40,20 @@ public class DatabaseResult implements AutoCloseable {
         return tableRows.get(tableName);
     }
 
-    public <T> List<T> list(String tableName, RowMapper<T> mapper) throws SQLException {
+    public <T> List<T> list(RowMapper<T> mapper) throws SQLException {
         List<T> result = new ArrayList<>();
         while (next()) {
-            result.add(mapper.mapRow(table(tableName)));
+            result.add(mapper.mapRow(new DatabaseRow(resultSet)));
         }
         return result;
     }
 
     @Nullable
-    public <T> T single(String tableName, RowMapper<T> mapper) throws SQLException {
+    public <T> T single(RowMapper<T> mapper) throws SQLException {
         if (!next()) {
             return null;
         }
-        T result = mapper.mapRow(table(tableName));
+        T result = mapper.mapRow(new DatabaseRow(resultSet));
         if (next()) {
             throw new IllegalStateException("More than one row returned");
         }

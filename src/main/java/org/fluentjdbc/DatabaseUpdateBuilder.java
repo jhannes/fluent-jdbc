@@ -30,11 +30,6 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
         return this;
     }
 
-    public void update(Connection connection, List<String> columns, List<Object> parameters) {
-        setFields(columns, parameters);
-        execute(connection);
-    }
-
     public DatabaseUpdateBuilder setFields(List<String> fields, List<Object> values) {
         this.updateFields.addAll(fields);
         this.updateValues.addAll(values);
