@@ -8,6 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.annotation.Nullable;
+
 import lombok.Getter;
 import lombok.ToString;
 
@@ -28,7 +31,7 @@ public class EntryAggregate {
         EntryAggregate result = new EntryAggregate(Entry.retrieve(connection, id));
         result.getTags().addAll(Tag.tagsTable
             .whereExpression("id in (select tag_id from entry_taggings where entry_id = ?)", id)
-            .list(connection, Tag::mapFromRow));
+            .list(connection, Tag.createRowMapper()));
         return result;
     }
 
@@ -45,13 +48,24 @@ public class EntryAggregate {
                         entries.add(aggregate);
                     }
 
-                    aggregate.getTags().add(Tag.mapFromRow(result.table("tags")));
+
+                    aggregate.getTags().add(Tag.createRowMapper().mapRow(result.table("tags")));
                 }
                 return entries;
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }
+    }
+
+    @Nullable
+    public Tag getTagOfType(TagType tagType) {
+        for (Tag tag : getTags()) {
+            if (tag.getTagTypeId() == tagType.getId()) {
+                return tag;
+            }
+        }
+        return null;
     }
 
 }

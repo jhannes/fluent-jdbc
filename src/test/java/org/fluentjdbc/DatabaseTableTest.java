@@ -2,6 +2,8 @@ package org.fluentjdbc;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
+import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,22 +44,52 @@ public class DatabaseTableTest {
 
     @Test
     public void shouldThrowOnMissingColumn() throws Exception {
-        Object id = table.insert().setField("code", 1234).setField("name", "testing").execute(connection);
+        final Object id = table.insert().setField("code", 1234).setField("name", "testing").execute(connection);
 
-        assertThatThrownBy(() -> table.where("id", id).singleString(connection, "non_existing"))
+        assertThatThrownBy(new ThrowingCallable() {
+            @Override
+            public void call() throws Throwable {
+                table.where("id", id).singleString(connection, "non_existing");
+            }
+        })
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Column {non_existing} is not present");
     }
 
     @Test
     public void shouldThrowOnMissingTable() {
-        assertThatThrownBy(() -> missingTable.where("id", 12).singleLong(connection, "id"))
+        assertThatThrownBy(new ThrowingCallable() {
+            @Override
+            public void call() throws Throwable {
+                missingTable.where("id", 12).singleLong(connection, "id");
+            }
+        })
             .isInstanceOf(SQLException.class);
-        assertThatThrownBy(() -> missingTable.where("id", 12).list(connection, row -> row.getLong("id")))
+        assertThatThrownBy(new ThrowingCallable() {
+            @Override
+            public void call() throws Throwable {
+                missingTable.where("id", 12).list(connection, new RowMapper<Object>() {
+                    @Override
+                    public Object mapRow(DatabaseRow row) throws SQLException {
+                        return row.getLong("id");
+                    }
+                });
+            }
+        })
             .isInstanceOf(SQLException.class);
-        assertThatThrownBy(() -> missingTable.insert().setField("id", 12).execute(connection))
+        assertThatThrownBy(new ThrowingCallable() {
+            @Override
+            public void call() throws Throwable {
+                missingTable.insert().setField("id", 12).execute(connection);
+            }
+        })
             .isInstanceOf(SQLException.class);
-        assertThatThrownBy(() -> missingTable.insert().setField("name", "abc").execute(connection))
+        assertThatThrownBy(new ThrowingCallable() {
+            @Override
+            public void call() throws Throwable {
+                missingTable.insert().setField("name", "abc").execute(connection);
+            }
+        })
             .isInstanceOf(SQLException.class);
     }
 
@@ -66,7 +98,12 @@ public class DatabaseTableTest {
         table.insert().setField("code", 123).setField("name", "the same name").execute(connection);
         table.insert().setField("code", 456).setField("name", "the same name").execute(connection);
 
-        assertThatThrownBy(() -> table.where("name", "the same name").singleLong(connection, "code"))
+        assertThatThrownBy(new ThrowingCallable() {
+            @Override
+            public void call() throws Throwable {
+                table.where("name", "the same name").singleLong(connection, "code");
+            }
+        })
             .isInstanceOf(IllegalStateException.class);
 
     }

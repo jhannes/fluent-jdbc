@@ -66,7 +66,7 @@ public class RichDomainModelTest {
         TagType colorTagType = new TagType("color").save(connection);
 
         assertThat(TagType.list(connection))
-            .extracting(TagType::getName)
+            .extracting("name")
             .contains(sizeTagType.getName(), colorTagType.getName());
     }
 
@@ -83,11 +83,9 @@ public class RichDomainModelTest {
 
         EntryAggregate entryAggregate = EntryAggregate.retrieve(connection, entry.getId());
 
-        assertThat(entryAggregate.getTags()).extracting(t -> t.getName()).contains("astronomical", "orange");
-        assertThat(entryAggregate.getTags())
-            .filteredOn(t -> t.getName().equals("astronomical"))
-            .extracting(t -> t.getTagTypeId())
-            .containsExactly(sizeTagType.getId());
+        assertThat(entryAggregate.getTags()).extracting("name").contains("astronomical", "orange");
+        assertThat(entryAggregate.getTags()).extracting("tagTypeId")
+            .contains(sizeTagType.getId());
     }
 
 
@@ -117,7 +115,7 @@ public class RichDomainModelTest {
 
         assertThat(entriesGroupedByColorAndSize.get(astronomical).keySet()).containsOnly(orange, blue, red);
         assertThat(entriesGroupedByColorAndSize.get(small).get(blue))
-            .extracting(Entry::getName)
+            .extracting("name")
             .containsOnly("Blueberry", "Balloon");
     }
 
@@ -127,12 +125,17 @@ public class RichDomainModelTest {
         HashMap<Tag, Map<Tag, List<Entry>>> result = new HashMap<>();
 
         for (EntryAggregate entryAggregate : EntryAggregate.list(connection)) {
-            Tag primaryTag = entryAggregate.getTags().stream().filter(t -> t.getTagTypeId() == primaryTagType.getId()).findFirst().get();
-            Tag secondaryTag = entryAggregate.getTags().stream().filter(t -> t.getTagTypeId() == secondaryTagType.getId()).findFirst().get();
+            Tag primaryTag = entryAggregate.getTagOfType(primaryTagType);
+            Tag secondaryTag = entryAggregate.getTagOfType(secondaryTagType);
 
-            result.computeIfAbsent(primaryTag, tag -> new HashMap<>())
-                .computeIfAbsent(secondaryTag, key -> new ArrayList<>())
-                .add(entryAggregate.getEntry());
+            if (!result.containsKey(primaryTag)) {
+                result.put(primaryTag, new HashMap<Tag, List<Entry>>());
+            }
+            if (!result.get(primaryTag).containsKey(secondaryTag)) {
+                result.get(primaryTag).put(secondaryTag, new ArrayList<Entry>());
+            }
+
+            result.get(primaryTag).get(secondaryTag).add(entryAggregate.getEntry());
         }
 
         return result;

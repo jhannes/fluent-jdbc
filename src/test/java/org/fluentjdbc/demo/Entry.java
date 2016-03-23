@@ -2,6 +2,7 @@ package org.fluentjdbc.demo;
 
 import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseTable;
+import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.DatabaseTableImpl;
 
 import java.sql.Connection;
@@ -55,11 +56,20 @@ public class Entry {
     }
 
     public static Entry retrieve(Connection connection, Long id) {
-        return entriesTable.where("id", id).singleObject(connection, Entry::mapFromRow);
+        return entriesTable.where("id", id).singleObject(connection, createRowMapper());
     }
 
     public static List<Entry> list(Connection connection) {
-        return entriesTable.listObjects(connection, Entry::mapFromRow);
+        return entriesTable.listObjects(connection, createRowMapper());
+    }
+
+    private static RowMapper<Entry> createRowMapper() {
+        return new RowMapper<Entry>() {
+            @Override
+            public Entry mapRow(DatabaseRow row) throws SQLException {
+                return mapFromRow(row);
+            }
+        };
     }
 
 }

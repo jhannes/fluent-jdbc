@@ -1,5 +1,7 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.DatabaseTable.RowMapper;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -20,7 +22,8 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
 
     private final DatabaseTable table;
     private String idField;
-    private Number idValue;
+
+    @Nullable private Number idValue;
 
     DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable Number id) {
         this.table = table;
@@ -42,25 +45,33 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
 
     public long execute(Connection connection) {
         if (idValue != null) {
-            Boolean isSame = table.where(idField, this.idValue).singleObject(connection, row -> valuesAreUnchanged(row));
-            if (isSame == null) {
-                return insert(connection);
-            } else if (!isSame) {
-                return update(connection);
-            } else {
+            Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
+                @Override
+                public Boolean mapRow(DatabaseRow row) throws SQLException {
+                    return valuesAreUnchanged(row);
+                }
+            });
+            if (idValue != null && isSame != null && !isSame) {
+                return update(connection, idValue);
+            } else if (idValue != null && isSame != null) { // TODO: Convince Eclipse null-checker that we don't need this
                 return idValue.longValue();
+            } else {
+                return insert(connection);
             }
         } else if (hasUniqueKey()) {
-            Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
-                idValue = row.getLong(idField);
-                return valuesAreUnchanged(row);
+            Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
+                @Override
+                public Boolean mapRow(DatabaseRow row) throws SQLException {
+                    idValue = row.getLong(idField);
+                    return valuesAreUnchanged(row);
+                }
             });
-            if (isSame == null) {
-                return insert(connection);
-            } else if (!isSame) {
-                return update(connection);
+            if (idValue != null && isSame != null && !isSame) {
+                return update(connection, idValue);
+            } else if (idValue != null) { // TODO: Convince Eclipse null-checker that we don't need this
+                return idValue.longValue();
             } else {
-                return idValue.intValue();
+                return insert(connection);
             }
         } else {
             return insert(connection);
@@ -95,7 +106,7 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
         return ((Number)insertStatement.execute(connection)).longValue();
     }
 
-    private long update(Connection connection) {
+    private long update(Connection connection, Number idValue) {
         table.where("id", idValue)
                 .update()
                 .setFields(this.fields, this.values)

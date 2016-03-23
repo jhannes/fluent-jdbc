@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -60,7 +61,12 @@ public class SynchronizeDataTest {
     }
 
     private void synchronize(Connection serverConnection, Connection clientConnection) {
-        List<String> names = table.listObjects(serverConnection, row -> row.getString("name"));
+        List<String> names = table.listObjects(serverConnection, new RowMapper<String>() {
+            @Override
+            public String mapRow(DatabaseRow row) throws SQLException {
+                return row.getString("name");
+            }
+        });
 
         for (String name : names) {
             table.newSaveBuilder("id", null).setField("name", name).execute(clientConnection);

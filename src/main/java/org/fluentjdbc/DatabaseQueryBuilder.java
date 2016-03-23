@@ -49,18 +49,33 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     @Nullable
-    public String singleString(Connection connection, String fieldName) {
-        return singleObject(connection, row -> row.getString(fieldName));
+    public String singleString(Connection connection, final String fieldName) {
+        return singleObject(connection, new RowMapper<String>() {
+            @Override
+            public String mapRow(DatabaseRow row) throws SQLException {
+                return row.getString(fieldName);
+            }
+        });
     }
 
     @Nullable
-    public Number singleLong(Connection connection, String fieldName) {
-        return singleObject(connection, row -> row.getLong(fieldName));
+    public Number singleLong(Connection connection, final String fieldName) {
+        return singleObject(connection, new RowMapper<Number>() {
+            @Override
+            public Number mapRow(DatabaseRow row) throws SQLException {
+                return row.getLong(fieldName);
+            }
+        });
     }
 
     @Nullable
-    public ZonedDateTime singleDateTime(Connection connection, String fieldName) {
-        return singleObject(connection, row -> row.getDateTime(fieldName));
+    public ZonedDateTime singleDateTime(Connection connection, final String fieldName) {
+        return singleObject(connection, new RowMapper<ZonedDateTime>() {
+            @Override
+            public ZonedDateTime mapRow(DatabaseRow row) throws SQLException {
+                return row.getDateTime(fieldName);
+            }
+        });
     }
 
     private String createSelectStatement() {
