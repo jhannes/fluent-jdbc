@@ -1,12 +1,11 @@
 package org.fluentjdbc;
 
+import org.joda.time.DateTime;
+
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,9 +27,9 @@ public class DatabaseRow {
         }
     }
 
-    public ZonedDateTime getDateTime(String fieldName) throws SQLException {
+    public DateTime getDateTime(String fieldName) throws SQLException {
         Timestamp timestamp = rs.getTimestamp(getColumnIndex(fieldName));
-        return timestamp != null ? Instant.ofEpochMilli(timestamp.getTime()).atZone(ZoneId.systemDefault()) : null;
+        return timestamp != null ? new DateTime(timestamp.getTime()) : null;
     }
 
     public String getString(String fieldName) throws SQLException {

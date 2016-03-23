@@ -1,12 +1,12 @@
 package org.fluentjdbc;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,8 +31,8 @@ class DatabaseStatement {
     }
 
     protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
-        if (parameter instanceof ZonedDateTime) {
-            stmt.setTimestamp(index, new Timestamp(((ZonedDateTime)parameter).toInstant().toEpochMilli()));
+        if (parameter instanceof DateTime) {
+            stmt.setTimestamp(index, new Timestamp(((DateTime)parameter).getMillis()));
         } else {
             stmt.setObject(index, parameter);
         }

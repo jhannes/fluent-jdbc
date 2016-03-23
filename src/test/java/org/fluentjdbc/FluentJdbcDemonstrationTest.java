@@ -1,7 +1,6 @@
 package org.fluentjdbc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import org.joda.time.DateTime;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,8 +9,9 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.time.ZonedDateTime;
 import java.util.Random;
+
+import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class FluentJdbcDemonstrationTest {
 
@@ -110,7 +110,7 @@ public class FluentJdbcDemonstrationTest {
 
     @Test
     public void shouldCreateTimestamps() throws InterruptedException {
-        ZonedDateTime start = ZonedDateTime.now();
+        DateTime start = DateTime.now();
         Thread.sleep(10);
         long id = table
                 .newSaveBuilder("id", (Long)null)
@@ -120,9 +120,9 @@ public class FluentJdbcDemonstrationTest {
         Thread.sleep(10);
 
         assertThat(table.where("id", id).singleDateTime(connection, "created_at"))
-            .isAfter(start).isBefore(ZonedDateTime.now());
+            .isAfter(start).isBefore(DateTime.now());
         assertThat(table.where("id", id).singleDateTime(connection, "updated_at"))
-            .isAfter(start).isBefore(ZonedDateTime.now());
+            .isAfter(start).isBefore(DateTime.now());
     }
 
     @Test
@@ -132,8 +132,8 @@ public class FluentJdbcDemonstrationTest {
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
                 .execute(connection);
-        ZonedDateTime createdTime = table.where("id", id).singleDateTime(connection, "updated_at");
-        ZonedDateTime updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        DateTime createdTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        DateTime updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "another value").execute(connection);
@@ -150,7 +150,7 @@ public class FluentJdbcDemonstrationTest {
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")
                 .execute(connection);
-        ZonedDateTime updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        DateTime updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "original value").execute(connection);

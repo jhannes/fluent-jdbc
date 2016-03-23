@@ -2,11 +2,11 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.util.ExceptionUtil;
+import org.joda.time.DateTime;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -69,10 +69,10 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     @Nullable
-    public ZonedDateTime singleDateTime(Connection connection, final String fieldName) {
-        return singleObject(connection, new RowMapper<ZonedDateTime>() {
+    public DateTime singleDateTime(Connection connection, final String fieldName) {
+        return singleObject(connection, new RowMapper<DateTime>() {
             @Override
-            public ZonedDateTime mapRow(DatabaseRow row) throws SQLException {
+            public DateTime mapRow(DatabaseRow row) throws SQLException {
                 return row.getDateTime(fieldName);
             }
         });
