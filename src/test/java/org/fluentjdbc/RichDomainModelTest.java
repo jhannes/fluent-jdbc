@@ -25,11 +25,23 @@ public class RichDomainModelTest {
 
     public Connection connection;
 
+    public RichDomainModelTest() throws SQLException {
+        this(createConnection());
+    }
+
+    protected RichDomainModelTest(Connection connection) {
+        this.connection = connection;
+    }
+
+
+    private static Connection createConnection() throws SQLException {
+        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:RichDomainModelTest");
+        return DriverManager.getConnection(jdbcUrl);
+    }
+
+
     @Before
     public void openConnection() throws SQLException {
-        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:" + getClass().getName());
-        connection = DriverManager.getConnection(jdbcUrl);
-
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists entry_taggings");
             stmt.executeUpdate("drop table if exists entries");

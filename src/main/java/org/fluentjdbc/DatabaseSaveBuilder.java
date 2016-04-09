@@ -14,18 +14,18 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class DatabaseSaveBuilder extends DatabaseStatement {
 
-    private List<String> uniqueKeyFields = new ArrayList<>();
-    private List<Object> uniqueKeyValues = new ArrayList<>();
+    protected List<String> uniqueKeyFields = new ArrayList<>();
+    protected List<Object> uniqueKeyValues = new ArrayList<>();
 
-    private List<String> fields = new ArrayList<>();
-    private List<Object> values = new ArrayList<>();
+    protected List<String> fields = new ArrayList<>();
+    protected List<Object> values = new ArrayList<>();
 
-    private final DatabaseTable table;
-    private String idField;
+    protected final DatabaseTable table;
+    protected String idField;
 
-    @Nullable private Number idValue;
+    @Nullable protected Long idValue;
 
-    DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable Number id) {
+    DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable Long id) {
         this.table = table;
         this.idField = idField;
         this.idValue = id;
@@ -43,7 +43,8 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
         return this;
     }
 
-    public long execute(Connection connection) {
+    @SuppressWarnings("null")
+    public Long execute(Connection connection) {
         if (idValue != null) {
             Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
                 @Override
@@ -56,7 +57,7 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
             } else if (idValue != null && isSame != null) { // TODO: Convince Eclipse null-checker that we don't need this
                 return idValue.longValue();
             } else {
-                return insertForLong(connection);
+                return insert(connection);
             }
         } else if (hasUniqueKey()) {
             Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
@@ -71,10 +72,10 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
             } else if (idValue != null) { // TODO: Convince Eclipse null-checker that we don't need this
                 return idValue.longValue();
             } else {
-                return insertForLong(connection);
+                return insert(connection);
             }
         } else {
-            return insertForLong(connection);
+            return insert(connection);
         }
     }
 
@@ -98,11 +99,8 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
         return true;
     }
 
-    private long insertForLong(Connection connection) {
-        return ((Number)insert(connection)).longValue();
-    }
-
-    private Object insert(Connection connection) {
+    @Nullable
+    protected Long insert(Connection connection) {
         return table.insert()
             .setPrimaryKey(idField, idValue)
             .setFields(fields, values)

@@ -15,15 +15,26 @@ import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class FluentJdbcDemonstrationTest {
 
-
     private DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
 
     private Connection connection;
 
+    public FluentJdbcDemonstrationTest() throws SQLException {
+        this(createConnection());
+    }
+
+    protected FluentJdbcDemonstrationTest(Connection connection) {
+        this.connection = connection;
+    }
+
+    private static Connection createConnection() throws SQLException {
+        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:FluentJdbcDemoTest");
+        return DriverManager.getConnection(jdbcUrl);
+    }
+
+
     @Before
     public void openConnection() throws SQLException {
-        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:" + getClass().getName());
-        connection = DriverManager.getConnection(jdbcUrl);
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists demo_table");
             stmt.executeUpdate(preprocessCreateTable(connection,

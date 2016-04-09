@@ -14,9 +14,17 @@ public interface DatabaseTable {
         T mapRow(DatabaseRow row) throws SQLException;
     }
 
+
     String getTableName();
 
-    DatabaseSaveBuilder newSaveBuilder(String idColumn, @Nullable Number idValue);
+    DatabaseSaveBuilder newSaveBuilder(String idColumn, @Nullable Long idValue);
+
+    /**
+     * Use instead of {@link #newSaveBuilder} if the database driver does not
+     * support RETURN_GENERATED_KEYS
+     */
+    DatabaseSaveBuilder newSaveBuilderNoGeneratedKeys(String idColumn, @Nullable Long idValue);
+
 
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 
@@ -26,8 +34,8 @@ public interface DatabaseTable {
 
     DatabaseQueryBuilder whereAll(List<String> uniqueKeyFields, List<Object> uniqueKeyValues);
 
+
     DatabaseInsertBuilder insert();
 
     DatabaseUpdateBuilder update();
-
 }

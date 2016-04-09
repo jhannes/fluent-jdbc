@@ -57,10 +57,11 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
     }
 
     // TODO: This doesn't work for Android when idValue is null
-    public DatabaseInsertWithPkBuilder setPrimaryKey(String idField, @Nullable Object idValue) {
+    public <T> DatabaseInsertWithPkBuilder<T> setPrimaryKey(String idField, @Nullable T idValue) {
         if (idValue != null) {
             setField(idField, idValue);
         }
-        return new DatabaseInsertWithPkBuilder(this, idValue);
+        return new DatabaseInsertWithPkBuilder<>(this, idValue);
     }
+
 }

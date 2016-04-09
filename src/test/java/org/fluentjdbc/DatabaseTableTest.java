@@ -15,21 +15,32 @@ import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class DatabaseTableTest {
 
-    private DatabaseTable table = new DatabaseTableImpl("demo_table");
+    private DatabaseTable table = new DatabaseTableImpl("database_table_test_table");
 
     private Connection connection;
 
     private DatabaseTable missingTable = new DatabaseTableImpl("non_existing");
 
+    public DatabaseTableTest() throws SQLException {
+        this(createConnection());
+    }
+
+    protected DatabaseTableTest(Connection connection) {
+        this.connection = connection;
+    }
+
+    private static Connection createConnection() throws SQLException {
+        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:DatabaseTableTest");
+        return DriverManager.getConnection(jdbcUrl);
+    }
+
+
     @Before
     public void openConnection() throws SQLException {
-        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:" + getClass().getName());
-        connection = DriverManager.getConnection(jdbcUrl);
-
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table if exists demo_table");
+            stmt.executeUpdate("drop table if exists database_table_test_table");
             stmt.executeUpdate(preprocessCreateTable(connection,
-                    "create table demo_table (id integer primary key auto_increment, code integer not null, name varchar not null)"));
+                    "create table database_table_test_table (id integer primary key auto_increment, code integer not null, name varchar not null)"));
         }
     }
 
