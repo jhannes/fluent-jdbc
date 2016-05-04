@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.fluentjdbc.DatabaseTable.RowMapper;
+import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
@@ -22,21 +22,15 @@ public class DatabaseTableTest {
     private DatabaseTable missingTable = new DatabaseTableImpl("non_existing");
 
     public DatabaseTableTest() throws SQLException {
-        this(createConnection());
+        this(H2TestDatabase.createConnection());
     }
 
     protected DatabaseTableTest(Connection connection) {
         this.connection = connection;
     }
 
-    private static Connection createConnection() throws SQLException {
-        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:DatabaseTableTest");
-        return DriverManager.getConnection(jdbcUrl);
-    }
-
-
     @Before
-    public void openConnection() throws SQLException {
+    public void createTable() throws SQLException {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists database_table_test_table");
             stmt.executeUpdate(preprocessCreateTable(connection,
@@ -105,8 +99,8 @@ public class DatabaseTableTest {
             public void call() throws Throwable {
                 missingTable.where("id", 12).singleLong(connection, "id");
             }
-        })
-            .isInstanceOf(SQLException.class);
+        }).isInstanceOf(SQLException.class);
+
         assertThatThrownBy(new ThrowingCallable() {
             @Override
             public void call() throws Throwable {
@@ -117,22 +111,21 @@ public class DatabaseTableTest {
                     }
                 });
             }
-        })
-            .isInstanceOf(SQLException.class);
+        }).isInstanceOf(SQLException.class);
+
         assertThatThrownBy(new ThrowingCallable() {
             @Override
             public void call() throws Throwable {
                 missingTable.insert().setField("id", 12).execute(connection);
             }
-        })
-            .isInstanceOf(SQLException.class);
+        }).isInstanceOf(SQLException.class);
+
         assertThatThrownBy(new ThrowingCallable() {
             @Override
             public void call() throws Throwable {
                 missingTable.insert().setField("name", "abc").execute(connection);
             }
-        })
-            .isInstanceOf(SQLException.class);
+        }).isInstanceOf(SQLException.class);
     }
 
     @Test

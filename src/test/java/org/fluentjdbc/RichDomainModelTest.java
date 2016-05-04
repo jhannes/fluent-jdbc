@@ -6,11 +6,11 @@ import org.fluentjdbc.demo.Entry;
 import org.fluentjdbc.demo.EntryAggregate;
 import org.fluentjdbc.demo.Tag;
 import org.fluentjdbc.demo.TagType;
+import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -19,29 +19,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
-
 public class RichDomainModelTest {
 
     public Connection connection;
 
     public RichDomainModelTest() throws SQLException {
-        this(createConnection());
+        this(H2TestDatabase.createConnection());
     }
 
     protected RichDomainModelTest(Connection connection) {
         this.connection = connection;
     }
 
-
-    private static Connection createConnection() throws SQLException {
-        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:RichDomainModelTest");
-        return DriverManager.getConnection(jdbcUrl);
-    }
-
-
     @Before
-    public void openConnection() throws SQLException {
+    public void createTables() throws SQLException {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists entry_taggings");
             stmt.executeUpdate("drop table if exists entries");

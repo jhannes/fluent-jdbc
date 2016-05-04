@@ -6,12 +6,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Random;
 
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
+
+import org.fluentjdbc.h2.H2TestDatabase;
 
 public class FluentJdbcDemonstrationTest {
 
@@ -20,21 +21,15 @@ public class FluentJdbcDemonstrationTest {
     private Connection connection;
 
     public FluentJdbcDemonstrationTest() throws SQLException {
-        this(createConnection());
+        this(H2TestDatabase.createConnection());
     }
 
     protected FluentJdbcDemonstrationTest(Connection connection) {
         this.connection = connection;
     }
 
-    private static Connection createConnection() throws SQLException {
-        String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:FluentJdbcDemoTest");
-        return DriverManager.getConnection(jdbcUrl);
-    }
-
-
     @Before
-    public void openConnection() throws SQLException {
+    public void createTables() throws SQLException {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists demo_table");
             stmt.executeUpdate(preprocessCreateTable(connection,
