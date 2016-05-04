@@ -9,9 +9,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
 public class DatabaseSaveBuilderWithUUID extends DatabaseStatement {
 
     private List<String> uniqueKeyFields = new ArrayList<>();
@@ -19,18 +20,32 @@ public class DatabaseSaveBuilderWithUUID extends DatabaseStatement {
 
     private List<String> fields = new ArrayList<>();
     private List<Object> values = new ArrayList<>();
-    private UUID idValue;
     private DatabaseTableImpl table;
     private String idField;
 
-    public DatabaseSaveBuilderWithUUID(DatabaseTableImpl table, String idField, UUID idValue) {
+    @Nullable
+    private UUID idValue;
+
+    public DatabaseSaveBuilderWithUUID(DatabaseTableImpl table, String idField, @Nullable UUID idValue) {
         this.table = table;
         this.idField = idField;
         this.idValue = idValue;
     }
 
-    @Nonnull
+    public DatabaseSaveBuilderWithUUID uniqueKey(String fieldName, @Nullable Object fieldValue) {
+        uniqueKeyFields.add(fieldName);
+        uniqueKeyValues.add(fieldValue);
+        return this;
+    }
+
+    public DatabaseSaveBuilderWithUUID setField(String fieldName, @Nullable Object fieldValue) {
+        fields.add(fieldName);
+        values.add(fieldValue);
+        return this;
+    }
+
     public UUID execute(Connection connection) {
+        UUID idValue = this.idValue;
         if (idValue != null) {
             Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
                 @Override
@@ -48,47 +63,20 @@ public class DatabaseSaveBuilderWithUUID extends DatabaseStatement {
             Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
                 @Override
                 public Boolean mapRow(DatabaseRow row) throws SQLException {
-                    idValue = UUID.fromString(row.getString(idField));
+                    DatabaseSaveBuilderWithUUID.this.idValue = UUID.fromString(row.getString(idField));
                     return valuesAreUnchanged(row);
                 }
             });
-            if (idValue != null && isSame != null && !isSame) {
+            idValue = this.idValue;
+            if (idValue == null) {
+                idValue = insert(connection);
+            } else if (isSame != null && !isSame) {
                 update(connection, idValue);
-            } else if (idValue == null) {
-                insert(connection);
             }
             return idValue;
         } else {
             return insert(connection);
         }
-    }
-
-    private UUID update(Connection connection, UUID idValue) {
-        table.where("id", idValue).update()
-            .setFields(uniqueKeyFields, uniqueKeyValues)
-            .setFields(fields, values)
-            .execute(connection);
-        return idValue;
-    }
-
-    private boolean hasUniqueKey() {
-        if (uniqueKeyFields.isEmpty()) return false;
-        for (Object o : uniqueKeyValues) {
-            if (o == null) return false;
-        }
-        return true;
-    }
-
-    private UUID insert(Connection connection) {
-        if (idValue == null) {
-            idValue = UUID.randomUUID();
-        }
-        table.insert()
-                .setFields(fields, values)
-                .setField(idField, idValue)
-                .setFields(uniqueKeyFields, uniqueKeyValues)
-                .execute(connection);
-        return idValue;
     }
 
     private boolean valuesAreUnchanged(DatabaseRow row) throws SQLException {
@@ -103,15 +91,34 @@ public class DatabaseSaveBuilderWithUUID extends DatabaseStatement {
         return Objects.equals(o, db);
     }
 
-    public DatabaseSaveBuilderWithUUID uniqueKey(String fieldName, @Nullable Object fieldValue) {
-        uniqueKeyFields.add(fieldName);
-        uniqueKeyValues.add(fieldValue);
-        return this;
+    private boolean hasUniqueKey() {
+        if (uniqueKeyFields.isEmpty()) return false;
+        for (Object o : uniqueKeyValues) {
+            if (o == null) return false;
+        }
+        return true;
     }
 
-    public DatabaseSaveBuilderWithUUID setField(String fieldName, @Nullable Object fieldValue) {
-        fields.add(fieldName);
-        values.add(fieldValue);
-        return this;
+    private UUID insert(Connection connection) {
+        UUID idValue = this.idValue;
+        if (idValue == null) {
+            idValue = UUID.randomUUID();
+        }
+        table.insert()
+                .setFields(fields, values)
+                .setField(idField, idValue)
+                .setFields(uniqueKeyFields, uniqueKeyValues)
+                .execute(connection);
+        return idValue;
     }
+
+    private UUID update(Connection connection, UUID idValue) {
+        table.where("id", idValue)
+            .update()
+            .setFields(fields, values)
+            .setFields(uniqueKeyFields, uniqueKeyValues)
+            .execute(connection);
+        return idValue;
+    }
+
 }

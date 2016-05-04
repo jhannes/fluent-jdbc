@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class DatabaseSaveBuilder extends DatabaseStatement {
+public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
 
     protected List<String> uniqueKeyFields = new ArrayList<>();
     protected List<Object> uniqueKeyValues = new ArrayList<>();
@@ -23,28 +23,29 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
     protected final DatabaseTable table;
     protected String idField;
 
-    @Nullable protected Long idValue;
+    @Nullable protected T idValue;
 
-    DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable Long id) {
+    DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable T id) {
         this.table = table;
         this.idField = idField;
         this.idValue = id;
     }
 
-    public DatabaseSaveBuilder uniqueKey(String fieldName, @Nullable Object fieldValue) {
+    public DatabaseSaveBuilder<T> uniqueKey(String fieldName, @Nullable Object fieldValue) {
         uniqueKeyFields.add(fieldName);
         uniqueKeyValues.add(fieldValue);
         return this;
     }
 
-    public DatabaseSaveBuilder setField(String fieldName, @Nullable Object fieldValue) {
+    public DatabaseSaveBuilder<T> setField(String fieldName, @Nullable Object fieldValue) {
         fields.add(fieldName);
         values.add(fieldValue);
         return this;
     }
 
-    @SuppressWarnings("null")
-    public Long execute(Connection connection) {
+    @Nullable
+    public T execute(Connection connection) {
+        T idValue = this.idValue;
         if (idValue != null) {
             Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
                 @Override
@@ -52,28 +53,28 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
                     return valuesAreUnchanged(row);
                 }
             });
-            if (idValue != null && isSame != null && !isSame) {
-                return update(connection, idValue);
-            } else if (idValue != null && isSame != null) { // TODO: Convince Eclipse null-checker that we don't need this
-                return idValue.longValue();
-            } else {
-                return insert(connection);
+            if (isSame != null && !isSame) {
+                update(connection, idValue);
+            } else if (isSame == null) {
+                insert(connection);
             }
+            return idValue;
         } else if (hasUniqueKey()) {
             Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
+                @SuppressWarnings("unchecked")
                 @Override
                 public Boolean mapRow(DatabaseRow row) throws SQLException {
-                    idValue = row.getLong(idField);
+                    DatabaseSaveBuilder.this.idValue = (T) row.getObject(idField);
                     return valuesAreUnchanged(row);
                 }
             });
-            if (idValue != null && isSame != null && !isSame) {
-                return update(connection, idValue);
-            } else if (idValue != null) { // TODO: Convince Eclipse null-checker that we don't need this
-                return idValue.longValue();
-            } else {
-                return insert(connection);
+            idValue = this.idValue;
+            if (idValue == null) {
+                idValue = insert(connection);
+            } else if (isSame != null && !isSame) {
+                update(connection, idValue);
             }
+            return idValue;
         } else {
             return insert(connection);
         }
@@ -100,7 +101,7 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
     }
 
     @Nullable
-    protected Long insert(Connection connection) {
+    protected T insert(Connection connection) {
         return table.insert()
             .setPrimaryKey(idField, idValue)
             .setFields(fields, values)
@@ -108,13 +109,13 @@ public class DatabaseSaveBuilder extends DatabaseStatement {
             .execute(connection);
     }
 
-    private long update(Connection connection, Number idValue) {
+    private T update(Connection connection, T idValue) {
         table.where("id", idValue)
                 .update()
                 .setFields(this.fields, this.values)
                 .setFields(uniqueKeyFields, uniqueKeyValues)
                 .execute(connection);
-        return idValue.longValue();
+        return idValue;
     }
 
 }

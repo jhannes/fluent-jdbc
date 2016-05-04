@@ -18,13 +18,13 @@ public interface DatabaseTable {
 
     String getTableName();
 
-    DatabaseSaveBuilder newSaveBuilder(String idColumn, @Nullable Long idValue);
+    DatabaseSaveBuilder<Long> newSaveBuilder(String idColumn, @Nullable Long idValue);
 
     /**
      * Use instead of {@link #newSaveBuilder} if the database driver does not
      * support RETURN_GENERATED_KEYS
      */
-    DatabaseSaveBuilder newSaveBuilderNoGeneratedKeys(String idColumn, @Nullable Long idValue);
+    DatabaseSaveBuilder<Long> newSaveBuilderNoGeneratedKeys(String idColumn, @Nullable Long idValue);
 
     DatabaseSaveBuilderWithUUID newSaveBuilderWithUUID(String string, @Nullable UUID uuid);
 

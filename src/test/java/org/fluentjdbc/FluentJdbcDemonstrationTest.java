@@ -54,7 +54,7 @@ public class FluentJdbcDemonstrationTest {
     @Test
     public void shouldGenerateIdForNewRow() throws Exception {
         String savedName = "demo row";
-        long id = table
+        Long id = table
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
@@ -67,7 +67,7 @@ public class FluentJdbcDemonstrationTest {
     @Test
     public void shouldUpdateRowWithExistingId() {
         String savedName = "demo row";
-        long id = table
+        Long id = table
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
@@ -88,7 +88,7 @@ public class FluentJdbcDemonstrationTest {
     public void shouldInsertRowWithNonexistantKey() {
         String newRow = "Nonexistingent key";
         long pregeneratedId = 1000 + new Random().nextInt();
-        long id = table.newSaveBuilder("id", pregeneratedId)
+        Long id = table.newSaveBuilder("id", pregeneratedId)
                 .uniqueKey("code", 235235)
                 .setField("name", newRow)
                 .execute(connection);
@@ -100,7 +100,7 @@ public class FluentJdbcDemonstrationTest {
     @Test
     public void shouldUpdateRowWithDuplicateUniqueKey() {
         String savedName = "old value";
-        long id = table.newSaveBuilder("id", null)
+        Long id = table.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
                 .setField("name", savedName)
                 .execute(connection);
@@ -118,7 +118,7 @@ public class FluentJdbcDemonstrationTest {
     public void shouldCreateTimestamps() throws InterruptedException {
         DateTime start = DateTime.now();
         Thread.sleep(10);
-        long id = table
+        Long id = table
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
@@ -133,7 +133,7 @@ public class FluentJdbcDemonstrationTest {
 
     @Test
     public void shouldUpdateTimestamp() throws InterruptedException {
-        long id = table
+        Long id = table
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
@@ -151,7 +151,7 @@ public class FluentJdbcDemonstrationTest {
 
     @Test
     public void shouldNotUpdateUnchangedRows() throws InterruptedException {
-        long id = table
+        Long id = table
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")

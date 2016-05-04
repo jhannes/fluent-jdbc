@@ -20,12 +20,12 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseSaveBuilder newSaveBuilder(String idField, @Nullable Long id) {
-        return new DatabaseSaveBuilder(this, idField, id);
+    public DatabaseSaveBuilder<Long> newSaveBuilder(String idField, @Nullable Long id) {
+        return new DatabaseSaveBuilderWithLong(this, idField, id);
     }
 
     @Override
-    public DatabaseSaveBuilder newSaveBuilderNoGeneratedKeys(String idField, @Nullable Long id) {
+    public DatabaseSaveBuilder<Long> newSaveBuilderNoGeneratedKeys(String idField, @Nullable Long id) {
         return new DatabaseSaveBuilderWithoutGeneratedKeys(this, idField, id);
     }
 
