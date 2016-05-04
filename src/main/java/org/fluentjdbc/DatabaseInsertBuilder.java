@@ -1,10 +1,6 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
-
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,13 +35,7 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
     }
 
     public void execute(Connection connection) {
-        logger.debug(createInsertStatement());
-        try (PreparedStatement stmt = connection.prepareStatement(createInsertStatement())) {
-            bindParameters(stmt, parameters);
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        }
+        executeUpdate(createInsertStatement(), parameters, connection);
     }
 
     String createInsertStatement() {

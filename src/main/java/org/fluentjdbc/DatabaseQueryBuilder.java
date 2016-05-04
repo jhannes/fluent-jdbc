@@ -115,7 +115,4 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         return table.update().setWhereFields(conditions, parameters);
     }
 
-
-
-
 }

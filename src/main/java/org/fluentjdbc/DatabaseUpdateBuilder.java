@@ -1,10 +1,6 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
-
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,16 +39,10 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
     }
 
     public void execute(Connection connection) {
-        logger.debug(createUpdateStatement());
-        // TODO: Bind-prepare-time-log as one!
-        try (PreparedStatement stmt = connection.prepareStatement(createUpdateStatement())) {
-            int index = bindParameters(stmt, updateValues);
-            bindParameters(stmt, whereParameters, index);
-
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        }
+        List<Object> parameters = new ArrayList<>();
+        parameters.addAll(updateValues);
+        parameters.addAll(whereParameters);
+        executeUpdate(createUpdateStatement(), parameters, connection);
     }
 
     private String createUpdateStatement() {

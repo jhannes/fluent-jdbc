@@ -1,9 +1,11 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.util.ExceptionUtil;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -35,6 +37,19 @@ class DatabaseStatement {
             stmt.setTimestamp(index, new Timestamp(((DateTime)parameter).getMillis()));
         } else {
             stmt.setObject(index, parameter);
+        }
+    }
+
+    protected void executeUpdate(String query, List<Object> parameters, Connection connection) {
+        long startTime = System.currentTimeMillis();
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            bindParameters(stmt, parameters);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"",
+                    (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
