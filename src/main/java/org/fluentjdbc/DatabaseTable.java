@@ -3,6 +3,7 @@ package org.fluentjdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -25,6 +26,8 @@ public interface DatabaseTable {
      */
     DatabaseSaveBuilder newSaveBuilderNoGeneratedKeys(String idColumn, @Nullable Long idValue);
 
+    DatabaseSaveBuilderWithUUID newSaveBuilderWithUUID(String string, @Nullable UUID uuid);
+
 
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 
@@ -38,4 +41,5 @@ public interface DatabaseTable {
     DatabaseInsertBuilder insert();
 
     DatabaseUpdateBuilder update();
+
 }

@@ -44,6 +44,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
 
     public void execute(Connection connection) {
         logger.debug(createUpdateStatement());
+        // TODO: Bind-prepare-time-log as one!
         try (PreparedStatement stmt = connection.prepareStatement(createUpdateStatement())) {
             int index = bindParameters(stmt, updateValues);
             bindParameters(stmt, whereParameters, index);

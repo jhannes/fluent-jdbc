@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import java.sql.Connection;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 
@@ -26,6 +27,11 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     public DatabaseSaveBuilder newSaveBuilderNoGeneratedKeys(String idField, @Nullable Long id) {
         return new DatabaseSaveBuilderWithoutGeneratedKeys(this, idField, id);
+    }
+
+    @Override
+    public DatabaseSaveBuilderWithUUID newSaveBuilderWithUUID(String idField, @Nullable UUID id) {
+        return new DatabaseSaveBuilderWithUUID(this, idField, id);
     }
 
     @Override
