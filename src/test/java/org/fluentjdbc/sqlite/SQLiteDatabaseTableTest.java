@@ -1,10 +1,12 @@
-package org.fluentjdbc;
+package org.fluentjdbc.sqlite;
 
+import org.fluentjdbc.DatabaseTable;
+import org.fluentjdbc.DatabaseTableImpl;
+import org.fluentjdbc.FluentJdbcAsserts;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -71,7 +73,7 @@ public class SQLiteDatabaseTableTest {
 
     @Before
     public void openConnection() throws SQLException {
-        connection = DriverManager.getConnection("jdbc:sqlite:target/test-db-sqlite");
+        connection = SqliteTests.getConnection();
 
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists demo_table");
