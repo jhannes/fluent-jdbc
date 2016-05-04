@@ -4,7 +4,7 @@ import java.sql.Connection;
 
 import javax.annotation.Nullable;
 
-public class DatabaseSaveBuilderWithoutGeneratedKeys extends DatabaseSaveBuilderWithLong {
+public class DatabaseSaveBuilderWithoutGeneratedKeys extends DatabaseSaveBuilder<Long> {
 
     public DatabaseSaveBuilderWithoutGeneratedKeys(DatabaseTableImpl table, String idField, Long id) {
         super(table, idField, id);

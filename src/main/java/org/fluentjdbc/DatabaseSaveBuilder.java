@@ -61,10 +61,9 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
             return idValue;
         } else if (hasUniqueKey()) {
             Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
-                @SuppressWarnings("unchecked")
                 @Override
                 public Boolean mapRow(DatabaseRow row) throws SQLException {
-                    DatabaseSaveBuilder.this.idValue = (T) row.getObject(idField);
+                    DatabaseSaveBuilder.this.idValue = getId(row);
                     return valuesAreUnchanged(row);
                 }
             });
@@ -101,13 +100,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     }
 
     @Nullable
-    protected T insert(Connection connection) {
-        return table.insert()
-            .setPrimaryKey(idField, idValue)
-            .setFields(fields, values)
-            .setFields(uniqueKeyFields, uniqueKeyValues)
-            .execute(connection);
-    }
+    protected abstract T insert(Connection connection);
 
     private T update(Connection connection, T idValue) {
         table.where("id", idValue)
@@ -116,6 +109,11 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
                 .setFields(uniqueKeyFields, uniqueKeyValues)
                 .execute(connection);
         return idValue;
+    }
+
+    @SuppressWarnings("unchecked")
+    protected T getId(DatabaseRow row) throws SQLException {
+        return (T) row.getObject(idField);
     }
 
 }
