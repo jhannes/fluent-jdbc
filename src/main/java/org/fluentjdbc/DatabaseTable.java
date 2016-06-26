@@ -42,4 +42,6 @@ public interface DatabaseTable {
 
     DatabaseUpdateBuilder update();
 
+    <T> DatabaseBulkInsertBuilder<T> newBulkInserter(List<T> objects, String... fieldNames);
+
 }

@@ -44,6 +44,15 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         });
     }
 
+    public List<String> listStrings(Connection connection, final String fieldName) {
+        return list(connection, new RowMapper<String>() {
+            @Override
+            public String mapRow(DatabaseRow row) throws SQLException {
+                return row.getString(fieldName);
+            }
+        });
+    }
+
 
     @Nullable
     public <T> T singleObject(Connection connection, RowMapper<T> mapper) {
@@ -114,5 +123,6 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     public DatabaseUpdateBuilder update() {
         return table.update().setWhereFields(conditions, parameters);
     }
+
 
 }

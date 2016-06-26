@@ -60,6 +60,13 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
+    public <T> DatabaseBulkInsertBuilder<T> newBulkInserter(List<T> objects, String... fieldNames) {
+        DatabaseBulkInsertBuilder<T> builder = new DatabaseBulkInsertBuilder<T>(this, objects);
+        builder.addFieldNames(fieldNames);
+        return builder;
+    }
+
+    @Override
     public DatabaseUpdateBuilder update() {
         return new DatabaseUpdateBuilder(this);
     }

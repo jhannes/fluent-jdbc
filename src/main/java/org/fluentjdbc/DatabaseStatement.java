@@ -32,7 +32,7 @@ class DatabaseStatement {
         return index;
     }
 
-    protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
+    protected static void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof DateTime) {
             stmt.setTimestamp(index, new Timestamp(((DateTime)parameter).getMillis()));
         } else {
