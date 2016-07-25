@@ -18,7 +18,7 @@ import lombok.ToString;
 @ToString
 public class Entry {
 
-    public static final String CREATE_TABLE = "create table entries (id ${INTEGER_PK}, name varchar not null)";
+    public static final String CREATE_TABLE = "create table entries (id ${INTEGER_PK}, name varchar(50) not null)";
 
     public static final String CREATE_TAGGING_TABLE = "create table entry_taggings (id ${INTEGER_PK}, entry_id integer not null references entries(id), tag_id integer not null references tags(id))";
 

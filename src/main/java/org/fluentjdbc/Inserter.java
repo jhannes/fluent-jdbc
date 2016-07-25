@@ -4,7 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
 
-public class Inserter {
+public class Inserter extends DatabaseStatement {
 
     private final PreparedStatement statement;
     private final List<String> fields;
@@ -19,7 +19,7 @@ public class Inserter {
         if (position < 0) {
             throw new IllegalArgumentException("Unknown field " + fieldName);
         }
-        DatabaseStatement.bindParameter(statement, position+1, value);
+        bindParameter(statement, position+1, value);
     }
 
 }

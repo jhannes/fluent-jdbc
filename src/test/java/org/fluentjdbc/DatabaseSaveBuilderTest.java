@@ -36,10 +36,10 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
     @Before
     public void openConnection() throws SQLException {
+        dropTableIfExists(connection, "uuid_table");
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table if exists uuid_table");
             stmt.executeUpdate(
-                    preprocessCreateTable("create table uuid_table (id uuid primary key, code integer not null, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
+                    preprocessCreateTable("create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 

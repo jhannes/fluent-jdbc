@@ -1,2 +1,3 @@
 -Dtest.db.jdbc_url=jdbc:h2:mem:infinitest
 -Dtest.db.postgres.username=fluentjdbc_infinitest
+-Dtest.db.sqlserver.username=fluentjdbc_infinitest

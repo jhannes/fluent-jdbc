@@ -19,7 +19,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
     private DatabaseTable table = new DatabaseTableImpl("database_table_test_table");
 
-    private Connection connection;
+    protected final Connection connection;
 
     private DatabaseTable missingTable = new DatabaseTableImpl("non_existing");
 
@@ -34,14 +34,14 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
     @Before
     public void createTable() throws SQLException {
+        dropTableIfExists(connection, "database_table_test_table");
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table if exists database_table_test_table");
-            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null)"));
         }
     }
 
     @Test
-    public void shouldInsertWithoutAndWithoutKey() {
+    public void shouldInsertWithoutKey() {
         table.insert()
             .setField("code", 1001)
             .setField("name", "insertTest")
@@ -54,16 +54,20 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
             .execute(connection);
         assertThat(id).isNotNull();
 
-        Object id2 = table.insert()
+        assertThat(table.where("name", "insertTest").listLongs(connection, "code"))
+            .contains(1001L, 1002L);
+    }
+
+
+    @Test
+    public void shouldInsertWithExplicitKey() throws SQLException {
+        Object id = table.insert()
                 .setPrimaryKey("id", 453534643)
                 .setField("code", 1003)
                 .setField("name", "insertTest")
                 .execute(connection);
 
-        assertThat(id2).isEqualTo(453534643);
-
-        assertThat(table.where("name", "insertTest").listLongs(connection, "code"))
-            .contains(1001L, 1002L, 1003L);
+        assertThat(id).isEqualTo(453534643);
     }
 
 

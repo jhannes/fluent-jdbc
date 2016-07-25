@@ -10,6 +10,7 @@ public class SqliteTests {
 
     static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
+        REPLACEMENTS.put("UUID", "uuid");
         REPLACEMENTS.put("INTEGER_PK", "integer primary key autoincrement");
         REPLACEMENTS.put("DATETIME", "datetime");
     }

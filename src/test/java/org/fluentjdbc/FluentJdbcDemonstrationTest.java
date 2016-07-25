@@ -19,7 +19,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
     private DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
 
-    private Connection connection;
+    protected Connection connection;
 
     public FluentJdbcDemonstrationTest() throws SQLException {
         this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
@@ -32,9 +32,9 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
     @Before
     public void createTables() throws SQLException {
+        dropTableIfExists(connection, "demo_table");
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table if exists demo_table");
-            stmt.executeUpdate(preprocessCreateTable("create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 
@@ -77,7 +77,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldInsertRowWithNonexistantKey() {
+    public void shouldInsertRowWithNonexistantKey() throws SQLException {
         String newRow = "Nonexistingent key";
         long pregeneratedId = 1000 + new Random().nextInt();
         Long id = table.newSaveBuilder("id", pregeneratedId)

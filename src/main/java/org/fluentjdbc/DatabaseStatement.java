@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -32,12 +33,18 @@ class DatabaseStatement {
         return index;
     }
 
-    protected static void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
+    protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof DateTime) {
             stmt.setTimestamp(index, new Timestamp(((DateTime)parameter).getMillis()));
+        } else if (parameter instanceof UUID && isSqlServer(stmt.getConnection())) {
+            stmt.setObject(index, parameter.toString());
         } else {
             stmt.setObject(index, parameter);
         }
+    }
+
+    private boolean isSqlServer(Connection connection) {
+        return connection.getClass().getName().startsWith("net.sourceforge.jtds.jdbc");
     }
 
     protected void executeUpdate(String query, List<Object> parameters, Connection connection) {

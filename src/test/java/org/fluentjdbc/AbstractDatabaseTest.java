@@ -1,6 +1,8 @@
 package org.fluentjdbc;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -14,9 +16,17 @@ public class AbstractDatabaseTest {
 
     protected String preprocessCreateTable(String createTableStatement) throws SQLException {
         return createTableStatement
+                .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
                 .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
                 .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
                 ;
+    }
+
+    protected void dropTableIfExists(Connection connection, String tableName) throws SQLException {
+        try(Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate("drop table " + tableName);
+        } catch(SQLException e) {
+        }
     }
 
 }

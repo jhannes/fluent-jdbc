@@ -23,7 +23,10 @@ public class DatabaseRow {
 
         ResultSetMetaData metaData = rs.getMetaData();
         for (int i=1; i<=metaData.getColumnCount(); i++) {
-            // TODO: This doesn't work on Android
+            // TODO: This doesn't work on Android or SQL server
+            if (metaData.getTableName(i).isEmpty()) {
+                throw new IllegalStateException("getTableName not supported");
+            }
             if (metaData.getTableName(i).equalsIgnoreCase(tableName)) {
                 columnIndexes.put(metaData.getColumnName(i).toUpperCase(), i);
             }

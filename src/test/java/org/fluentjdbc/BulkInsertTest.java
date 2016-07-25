@@ -31,9 +31,9 @@ public class BulkInsertTest extends AbstractDatabaseTest {
 
     @Before
     public void createTables() throws SQLException {
+        dropTableIfExists(connection, demoTable.getTableName());
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table if exists " + demoTable.getTableName());
-            stmt.executeUpdate(preprocessCreateTable("create table bulk_insert_table (id ${INTEGER_PK}, type varchar not null, code integer not null, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table bulk_insert_table (id ${INTEGER_PK}, type varchar(50) not null, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 

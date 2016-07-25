@@ -80,8 +80,8 @@ public class SQLiteDatabaseTableTest extends AbstractDatabaseTest {
     public void openConnection() throws SQLException {
         connection = SqliteTests.getConnection();
 
+        dropTableIfExists(connection, "demo_table");
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table if exists demo_table");
             stmt.executeUpdate("create table demo_table (id integer primary key autoincrement, code integer not null, name varchar not null)");
         }
     }

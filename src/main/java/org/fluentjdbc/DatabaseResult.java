@@ -32,7 +32,7 @@ public class DatabaseResult implements AutoCloseable {
         return resultSet.next();
     }
 
-    // TODO: This doesn't work for Android
+    // TODO: This doesn't work on Android or SQL server
     public DatabaseRow table(String tableName) throws SQLException {
         if (!tableRows.containsKey(tableName)) {
             tableRows.put(tableName, new DatabaseRow(resultSet, tableName));
