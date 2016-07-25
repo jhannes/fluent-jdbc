@@ -37,15 +37,6 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
         }
     }
 
-    private static String preprocessCreateTable(Connection connection, String createTableStatement) throws SQLException {
-        String productName = connection.getMetaData().getDatabaseProductName();
-        if (productName.equals("SQLite")) {
-            return createTableStatement.replaceAll("auto_increment", "autoincrement");
-        } else {
-            return createTableStatement;
-        }
-    }
-
     @After
     public void closeConnection() throws SQLException {
         connection.close();

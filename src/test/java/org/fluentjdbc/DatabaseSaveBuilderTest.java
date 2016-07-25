@@ -36,7 +36,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists uuid_table");
             stmt.executeUpdate(
-                    "create table uuid_table (id uuid primary key, code integer not null, name varchar not null, updated_at datetime not null, created_at datetime not null)");
+                    preprocessCreateTable(connection, "create table uuid_table (id uuid primary key, code integer not null, name varchar not null, updated_at datetime not null, created_at datetime not null)"));
         }
     }
 

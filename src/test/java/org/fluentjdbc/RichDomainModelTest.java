@@ -46,15 +46,6 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
         }
     }
 
-    private static String preprocessCreateTable(Connection connection, String createTableStatement) throws SQLException {
-        String productName = connection.getMetaData().getDatabaseProductName();
-        if (productName.equals("SQLite")) {
-            return createTableStatement.replaceAll("auto_increment", "autoincrement");
-        } else {
-            return createTableStatement;
-        }
-    }
-
     @Test
     public void shouldRetrieveSimpleObject() {
         TagType tagType = new TagType("size").save(connection);
@@ -72,7 +63,6 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
             .extracting("name")
             .contains(sizeTagType.getName(), colorTagType.getName());
     }
-
 
     @Test
     public void shouldRetrieveJoinedObjects() {
@@ -122,6 +112,16 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
             .containsOnly("Blueberry", "Balloon");
     }
 
+    @Test
+    public void shouldBulkInsert() {
+        List<TagType> tagTypes = Arrays.asList(new TagType("a"), new TagType("b"), new TagType("c"));
+
+        TagType.saveAll(tagTypes, connection);
+
+        assertThat(TagType.list(connection))
+            .extracting("name")
+            .contains("a", "b", "c");
+    }
 
 
     private Map<Tag, Map<Tag, List<Entry>>> groupEntries(TagType primaryTagType, TagType secondaryTagType) {
