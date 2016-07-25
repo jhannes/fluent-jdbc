@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 
-public class SynchronizeDataTest {
+public class SynchronizeDataTest extends AbstractDatabaseTest {
 
     private static final String CREATE_TABLE =
             "create table demo_table (id integer primary key auto_increment, name varchar not null, updated_at datetime not null, created_at datetime not null)";

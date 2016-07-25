@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
-public class DatabaseTableTest {
+public class DatabaseTableTest extends AbstractDatabaseTest {
 
     private DatabaseTable table = new DatabaseTableImpl("database_table_test_table");
 

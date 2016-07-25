@@ -14,7 +14,7 @@ import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 import org.fluentjdbc.h2.H2TestDatabase;
 
-public class FluentJdbcDemonstrationTest {
+public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
     private DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
 

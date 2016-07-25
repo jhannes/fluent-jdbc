@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class BulkInsertTest {
+public class BulkInsertTest extends AbstractDatabaseTest {
 
     private Connection connection;
 
@@ -36,7 +36,7 @@ public class BulkInsertTest {
             stmt.executeUpdate("drop table if exists " + demoTable.getTableName());
 
             stmt.executeUpdate(preprocessCreateTable(connection, TagType.CREATE_TABLE));
-            stmt.executeUpdate("create table bulk_insert_table (id integer primary key auto_increment, type varchar not null, code integer not null, name varchar not null, updated_at datetime not null, created_at datetime not null)");
+            stmt.executeUpdate(preprocessCreateTable(connection, "create table bulk_insert_table (id integer primary key auto_increment, type varchar not null, code integer not null, name varchar not null, updated_at datetime not null, created_at datetime not null)"));
         }
     }
 

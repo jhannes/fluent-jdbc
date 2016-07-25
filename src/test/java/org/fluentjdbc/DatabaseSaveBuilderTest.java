@@ -12,7 +12,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.UUID;
 
-public class DatabaseSaveBuilderTest {
+public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
     private DatabaseTable table = new DatabaseTableWithTimestamps("uuid_table");
 

@@ -30,6 +30,12 @@ public class SqliteTests {
         }
     }
 
+    public static class BulkInsertTest extends org.fluentjdbc.BulkInsertTest {
+        public BulkInsertTest() throws SQLException {
+            super(getConnection());
+        }
+    }
+
 
     static Connection getConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:sqlite:target/test-db-sqlite");

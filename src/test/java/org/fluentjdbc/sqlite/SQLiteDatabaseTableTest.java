@@ -1,5 +1,6 @@
 package org.fluentjdbc.sqlite;
 
+import org.fluentjdbc.AbstractDatabaseTest;
 import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTableImpl;
 import org.fluentjdbc.FluentJdbcAsserts;
@@ -12,7 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLiteDatabaseTableTest {
+public class SQLiteDatabaseTableTest extends AbstractDatabaseTest {
 
     private DatabaseTable table = new DatabaseTableImpl("demo_table");
 
