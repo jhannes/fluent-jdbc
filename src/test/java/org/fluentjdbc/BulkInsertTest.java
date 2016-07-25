@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class BulkInsertTest extends AbstractDatabaseTest {
 
@@ -20,10 +21,11 @@ public class BulkInsertTest extends AbstractDatabaseTest {
 
 
     public BulkInsertTest() throws SQLException {
-        this(H2TestDatabase.createConnection());
+        this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
     }
 
-    protected BulkInsertTest(Connection connection) {
+    protected BulkInsertTest(Connection connection, Map<String, String> replacements) {
+        super(replacements);
         this.connection = connection;
     }
 
@@ -31,7 +33,7 @@ public class BulkInsertTest extends AbstractDatabaseTest {
     public void createTables() throws SQLException {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists " + demoTable.getTableName());
-            stmt.executeUpdate(preprocessCreateTable(connection, "create table bulk_insert_table (id integer primary key auto_increment, type varchar not null, code integer not null, name varchar not null, updated_at datetime not null, created_at datetime not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table bulk_insert_table (id ${INTEGER_PK}, type varchar not null, code integer not null, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 

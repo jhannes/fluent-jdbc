@@ -1,21 +1,22 @@
 package org.fluentjdbc;
 
-import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class AbstractDatabaseTest {
 
-    protected static String preprocessCreateTable(Connection connection, String createTableStatement) throws SQLException {
-        String productName = connection.getMetaData().getDatabaseProductName();
-        if (productName.equals("SQLite")) {
-            return createTableStatement.replaceAll("auto_increment", "autoincrement");
-        } else if (productName.equals("PostgreSQL")) {
-            return createTableStatement
-                    .replaceAll("integer primary key auto_increment", "serial primary key")
-                    .replaceAll("datetime", "timestamp");
-        } else {
-            return createTableStatement;
-        }
+    private final Map<String, String> replacements;
+
+    public AbstractDatabaseTest(Map<String,String> replacements) {
+        this.replacements = replacements;
+    }
+
+    protected String preprocessCreateTable(String createTableStatement) throws SQLException {
+        return createTableStatement
+                .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
+                .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
+                ;
     }
 
 }

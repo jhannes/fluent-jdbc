@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
+import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -10,6 +11,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.UUID;
 
 public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
@@ -19,10 +21,11 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     private Connection connection;
 
     public DatabaseSaveBuilderTest() throws SQLException {
-        this(createConnection());
+        this(createConnection(), H2TestDatabase.REPLACEMENTS);
     }
 
-    protected DatabaseSaveBuilderTest(Connection connection) {
+    protected DatabaseSaveBuilderTest(Connection connection, Map<String, String> replacements) {
+        super(replacements);
         this.connection = connection;
     }
 
@@ -36,7 +39,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists uuid_table");
             stmt.executeUpdate(
-                    preprocessCreateTable(connection, "create table uuid_table (id uuid primary key, code integer not null, name varchar not null, updated_at datetime not null, created_at datetime not null)"));
+                    preprocessCreateTable("create table uuid_table (id uuid primary key, code integer not null, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 

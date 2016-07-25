@@ -3,6 +3,7 @@ package org.fluentjdbc;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
+import org.fluentjdbc.h2.H2TestDatabase;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
@@ -15,8 +16,12 @@ import java.util.List;
 
 public class SynchronizeDataTest extends AbstractDatabaseTest {
 
+    public SynchronizeDataTest() {
+        super(H2TestDatabase.REPLACEMENTS);
+    }
+
     private static final String CREATE_TABLE =
-            "create table demo_table (id integer primary key auto_increment, name varchar not null, updated_at datetime not null, created_at datetime not null)";
+            "create table demo_table (id ${INTEGER_PK}, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
 
     private Connection clientConnection;
     private Connection serverConnection;
@@ -30,7 +35,7 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
         serverConnection = serverDataSource.getConnection();
 
         try(Statement stmt = serverConnection.createStatement()) {
-            stmt.executeUpdate(CREATE_TABLE);
+            stmt.executeUpdate(preprocessCreateTable(CREATE_TABLE));
         }
 
 
@@ -39,7 +44,7 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
         clientConnection = clientDataSource.getConnection();
 
         try(Statement stmt = clientConnection.createStatement()) {
-            stmt.executeUpdate(CREATE_TABLE);
+            stmt.executeUpdate(preprocessCreateTable(CREATE_TABLE));
         }
     }
 

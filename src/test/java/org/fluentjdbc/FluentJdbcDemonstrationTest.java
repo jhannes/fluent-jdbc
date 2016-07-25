@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.Random;
 
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
@@ -21,10 +22,11 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     private Connection connection;
 
     public FluentJdbcDemonstrationTest() throws SQLException {
-        this(H2TestDatabase.createConnection());
+        this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
     }
 
-    protected FluentJdbcDemonstrationTest(Connection connection) {
+    protected FluentJdbcDemonstrationTest(Connection connection, Map<String, String> replacements) {
+        super(replacements);
         this.connection = connection;
     }
 
@@ -32,8 +34,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     public void createTables() throws SQLException {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists demo_table");
-            stmt.executeUpdate(preprocessCreateTable(connection,
-                    "create table demo_table (id integer primary key auto_increment, code integer not null, name varchar not null, updated_at datetime not null, created_at datetime not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 

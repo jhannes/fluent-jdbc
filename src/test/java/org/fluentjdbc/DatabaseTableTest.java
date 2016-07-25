@@ -11,6 +11,8 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
+
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class DatabaseTableTest extends AbstractDatabaseTest {
@@ -22,10 +24,11 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     private DatabaseTable missingTable = new DatabaseTableImpl("non_existing");
 
     public DatabaseTableTest() throws SQLException {
-        this(H2TestDatabase.createConnection());
+        this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
     }
 
-    protected DatabaseTableTest(Connection connection) {
+    protected DatabaseTableTest(Connection connection, Map<String, String> replacements) {
+        super(replacements);
         this.connection = connection;
     }
 
@@ -33,8 +36,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     public void createTable() throws SQLException {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table if exists database_table_test_table");
-            stmt.executeUpdate(preprocessCreateTable(connection,
-                    "create table database_table_test_table (id integer primary key auto_increment, code integer not null, name varchar not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar not null)"));
         }
     }
 

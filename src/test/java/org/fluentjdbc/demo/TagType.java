@@ -19,7 +19,7 @@ import lombok.ToString;
 @ToString
 public class TagType {
 
-    public static final String CREATE_TABLE = "create table tag_types (id integer primary key auto_increment, name varchar not null)";
+    public static final String CREATE_TABLE = "create table tag_types (id ${INTEGER_PK}, name varchar not null)";
 
     @Getter @Setter
     private Long id;

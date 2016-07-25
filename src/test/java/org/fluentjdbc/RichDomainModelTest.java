@@ -24,10 +24,11 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
     public Connection connection;
 
     public RichDomainModelTest() throws SQLException {
-        this(H2TestDatabase.createConnection());
+        this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
     }
 
-    protected RichDomainModelTest(Connection connection) {
+    protected RichDomainModelTest(Connection connection, Map<String, String> replacements) {
+        super(replacements);
         this.connection = connection;
     }
 
@@ -39,10 +40,10 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
             stmt.executeUpdate("drop table if exists tags");
             stmt.executeUpdate("drop table if exists tag_types");
 
-            stmt.executeUpdate(preprocessCreateTable(connection, TagType.CREATE_TABLE));
-            stmt.executeUpdate(preprocessCreateTable(connection, Tag.CREATE_TABLE));
-            stmt.executeUpdate(preprocessCreateTable(connection, Entry.CREATE_TABLE));
-            stmt.executeUpdate(preprocessCreateTable(connection, Entry.CREATE_TAGGING_TABLE));
+            stmt.executeUpdate(preprocessCreateTable(TagType.CREATE_TABLE));
+            stmt.executeUpdate(preprocessCreateTable(Tag.CREATE_TABLE));
+            stmt.executeUpdate(preprocessCreateTable(Entry.CREATE_TABLE));
+            stmt.executeUpdate(preprocessCreateTable(Entry.CREATE_TAGGING_TABLE));
         }
     }
 

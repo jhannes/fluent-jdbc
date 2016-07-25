@@ -20,7 +20,7 @@ import lombok.ToString;
 @EqualsAndHashCode
 public class Tag {
 
-    public static final String CREATE_TABLE = "create table tags (id integer primary key auto_increment, name varchar not null, type_id integer not null references tag_types(id))";
+    public static final String CREATE_TABLE = "create table tags (id ${INTEGER_PK}, name varchar not null, type_id integer not null references tag_types(id))";
 
     @Getter @Setter
     private Long id;

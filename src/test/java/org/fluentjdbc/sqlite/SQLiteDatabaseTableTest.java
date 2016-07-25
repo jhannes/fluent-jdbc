@@ -15,6 +15,10 @@ import java.sql.Statement;
 
 public class SQLiteDatabaseTableTest extends AbstractDatabaseTest {
 
+    public SQLiteDatabaseTableTest() {
+        super(SqliteTests.REPLACEMENTS);
+    }
+
     private DatabaseTable table = new DatabaseTableImpl("demo_table");
 
     private Connection connection;
