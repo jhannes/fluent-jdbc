@@ -50,7 +50,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
             Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
                 @Override
                 public Boolean mapRow(DatabaseRow row) throws SQLException {
-                    return valuesAreUnchanged(row);
+                    return shouldSkipRow(row);
                 }
             });
             if (isSame != null && !isSame) {
@@ -64,7 +64,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
                 @Override
                 public Boolean mapRow(DatabaseRow row) throws SQLException {
                     DatabaseSaveBuilder.this.idValue = getId(row);
-                    return valuesAreUnchanged(row);
+                    return shouldSkipRow(row);
                 }
             });
             idValue = this.idValue;
@@ -79,7 +79,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         }
     }
 
-    private boolean valuesAreUnchanged(DatabaseRow row) throws SQLException {
+    private boolean shouldSkipRow(DatabaseRow row) throws SQLException {
         for (int i = 0; i < fields.size(); i++) {
             String field = fields.get(i);
             if (!equal(values.get(i), row.getObject(field))) return false;

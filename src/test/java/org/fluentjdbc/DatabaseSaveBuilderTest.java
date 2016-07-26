@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
+import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.After;
 import org.junit.Before;
@@ -79,6 +80,14 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
         String retrievedName = table.where("id", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo("updated value");
+
+        assertThat(table.where("id", id).list(connection, new RowMapper<UUID>() {
+
+            @Override
+            public UUID mapRow(DatabaseRow row) throws SQLException {
+                return row.getUUID("id");
+            }
+        })).containsOnly(id);
     }
 
     @Test

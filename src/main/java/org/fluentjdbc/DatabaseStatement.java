@@ -49,6 +49,7 @@ class DatabaseStatement {
 
     protected void executeUpdate(String query, List<Object> parameters, Connection connection) {
         long startTime = System.currentTimeMillis();
+        logger.trace(query);
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
             stmt.executeUpdate();

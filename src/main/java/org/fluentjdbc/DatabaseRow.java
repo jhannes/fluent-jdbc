@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 public class DatabaseRow {
 
@@ -64,11 +65,17 @@ public class DatabaseRow {
         return rs.getObject(getColumnIndex(fieldName));
     }
 
+    public UUID getUUID(String fieldName) throws SQLException {
+        String result = getString(fieldName);
+        return result != null ? UUID.fromString(result) : null;
+    }
+
     private Integer getColumnIndex(String fieldName) {
         if (!columnIndexes.containsKey(fieldName.toUpperCase())) {
             throw new IllegalArgumentException("Column {" + fieldName + "} is not present in " + columnIndexes.keySet());
         }
         return columnIndexes.get(fieldName.toUpperCase());
     }
+
 
 }

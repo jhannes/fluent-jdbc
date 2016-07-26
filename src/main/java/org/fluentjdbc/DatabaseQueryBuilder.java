@@ -24,14 +24,19 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     public <T> List<T> list(Connection connection, RowMapper<T> mapper) {
-        logger.debug(createSelectStatement());
-        try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
+        long startTime = System.currentTimeMillis();
+        String query = createSelectStatement();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt)) {
                 return result.list(mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"",
+                    (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
@@ -56,14 +61,19 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
 
     @Nullable
     public <T> T singleObject(Connection connection, RowMapper<T> mapper) {
-        logger.debug(createSelectStatement());
-        try(PreparedStatement stmt = connection.prepareStatement(createSelectStatement())) {
+        long startTime = System.currentTimeMillis();
+        String query = createSelectStatement();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt)) {
                 return result.single(mapper);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"",
+                    (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
