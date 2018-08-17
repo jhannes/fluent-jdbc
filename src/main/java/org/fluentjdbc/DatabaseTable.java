@@ -31,11 +31,15 @@ public interface DatabaseTable {
 
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 
-    DatabaseQueryBuilder where(String fieldName, @Nullable Object value);
+    DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value);
 
-    DatabaseQueryBuilder whereExpression(String expression, Object parameter);
+    DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value);
 
-    DatabaseQueryBuilder whereAll(List<String> uniqueKeyFields, List<Object> uniqueKeyValues);
+    DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters);
+
+    DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter);
+
+    DatabaseSimpleQueryBuilder whereAll(List<String> uniqueKeyFields, List<Object> uniqueKeyValues);
 
 
     DatabaseInsertBuilder insert();
@@ -43,5 +47,7 @@ public interface DatabaseTable {
     DatabaseUpdateBuilder update();
 
     <T> DatabaseBulkInsertBuilder<T> newBulkInserter(List<T> objects, String... fieldNames);
+
+
 
 }

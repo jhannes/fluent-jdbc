@@ -31,6 +31,7 @@ public class EntryAggregate {
         EntryAggregate result = new EntryAggregate(Entry.retrieve(connection, id));
         result.getTags().addAll(Tag.tagsTable
             .whereExpression("id in (select tag_id from entry_taggings where entry_id = ?)", id)
+            .orderBy("name")
             .list(connection, Tag.createRowMapper()));
         return result;
     }

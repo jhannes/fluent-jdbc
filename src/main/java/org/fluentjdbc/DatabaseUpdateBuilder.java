@@ -20,7 +20,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
         this.table = table;
     }
 
-    public DatabaseUpdateBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
+    DatabaseUpdateBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
         this.whereConditions.addAll(whereConditions);
         this.whereParameters.addAll(whereParameters);
         return this;
@@ -48,7 +48,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
     private String createUpdateStatement() {
         return "update " + table.getTableName()
             + " set " + join(",", updates(updateFields))
-            + " where " + join(" and ", whereConditions);
+            + (whereParameters.isEmpty() ? "" : " where " + join(" and ", whereConditions));
     }
 
     private static List<String> updates(List<String> columns) {

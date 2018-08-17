@@ -11,6 +11,7 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Map;
 
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
@@ -54,8 +55,31 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
             .execute(connection);
         assertThat(id).isNotNull();
 
-        assertThat(table.where("name", "insertTest").listLongs(connection, "code"))
-            .contains(1001L, 1002L);
+        assertThat(table.where("name", "insertTest").orderBy("code").listLongs(connection, "code"))
+            .containsExactly(1001L, 1002L);
+    }
+
+    @Test
+    public void shouldListOnWhereIn() {
+        Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
+        Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "world").execute(connection);
+        Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "darkness").execute(connection);
+
+        assertThat(table.whereIn("name", Arrays.asList("hello", "world")).unordered().listStrings(connection, "id"))
+            .containsOnly(id1.toString(), id2.toString())
+            .doesNotContain(id3.toString());
+    }
+
+    @Test
+    public void shouldListOnOptional() {
+        Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "yes").execute(connection);
+        Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "yes").execute(connection);
+        Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute(connection);
+
+        assertThat(table.whereOptional("name", "yes").unordered().listStrings(connection, "id"))
+            .contains(id1.toString(), id2.toString()).doesNotContain(id3.toString());
+        assertThat(table.whereOptional("name", null).unordered().listStrings(connection, "id"))
+            .contains(id1.toString(), id2.toString(), id3.toString());
     }
 
 
@@ -101,7 +125,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         assertThatThrownBy(new ThrowingCallable() {
             @Override
             public void call() throws Throwable {
-                missingTable.where("id", 12).list(connection, new RowMapper<Object>() {
+                missingTable.where("id", 12).unordered().list(connection, new RowMapper<Object>() {
                     @Override
                     public Object mapRow(DatabaseRow row) throws SQLException {
                         return row.getLong("id");
@@ -135,8 +159,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
             public void call() throws Throwable {
                 table.where("name", "the same name").singleLong(connection, "code");
             }
-        })
-            .isInstanceOf(IllegalStateException.class);
+        }).isInstanceOf(IllegalStateException.class);
 
     }
 

@@ -35,12 +35,22 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {
+    public DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value) {
         return new DatabaseQueryBuilder(this).where(fieldName, value);
     }
 
     @Override
-    public DatabaseQueryBuilder whereExpression(String expression, Object parameter) {
+    public DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
+        return new DatabaseQueryBuilder(this).whereOptional(fieldName, value);
+    }
+
+    @Override
+    public DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters) {
+        return new DatabaseQueryBuilder(this).whereIn(fieldName, parameters);
+    }
+
+    @Override
+    public DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter) {
         return new DatabaseQueryBuilder(this).whereExpression(expression, parameter);
     }
 
@@ -50,7 +60,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
+public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
         return new DatabaseQueryBuilder(this).whereAll(fieldNames, values);
     }
 

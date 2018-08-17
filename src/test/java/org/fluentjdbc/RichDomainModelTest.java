@@ -76,7 +76,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
         EntryAggregate entryAggregate = EntryAggregate.retrieve(connection, entry.getId());
 
-        assertThat(entryAggregate.getTags()).extracting("name").contains("astronomical", "orange");
+        assertThat(entryAggregate.getTags()).extracting("name").containsExactly("astronomical", "orange");
         assertThat(entryAggregate.getTags()).extracting("tagTypeId")
             .contains(sizeTagType.getId());
     }

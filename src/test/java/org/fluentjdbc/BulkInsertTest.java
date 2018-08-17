@@ -54,7 +54,7 @@ public class BulkInsertTest extends AbstractDatabaseTest {
             })
             .execute(connection);
 
-        assertThat(demoTable.where("type", "a").listStrings(connection, "name")).contains("first name", "second name");
+        assertThat(demoTable.where("type", "a").unordered().listStrings(connection, "name")).contains("first name", "second name");
     }
 
 

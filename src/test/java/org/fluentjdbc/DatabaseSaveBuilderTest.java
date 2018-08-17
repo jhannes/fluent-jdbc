@@ -81,7 +81,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         String retrievedName = table.where("id", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo("updated value");
 
-        assertThat(table.where("id", id).list(connection, new RowMapper<UUID>() {
+        assertThat(table.where("id", id).orderBy("name").list(connection, new RowMapper<UUID>() {
 
             @Override
             public UUID mapRow(DatabaseRow row) throws SQLException {

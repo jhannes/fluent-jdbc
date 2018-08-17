@@ -47,7 +47,7 @@ public class Tag {
     }
 
     public static List<Tag> listByTypes(Connection connection, TagType tagType) {
-        return tagsTable.where("type_id", tagType.getId()).list(connection, createRowMapper());
+        return tagsTable.where("type_id", tagType.getId()).unordered().list(connection, createRowMapper());
     }
 
     static RowMapper<Tag> createRowMapper() {

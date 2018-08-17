@@ -13,16 +13,18 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class DatabaseQueryBuilder extends DatabaseStatement {
+public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
 
     private List<String> conditions = new ArrayList<>();
     private List<Object> parameters = new ArrayList<>();
+    private List<String> orderByClauses = new ArrayList<>();
     private DatabaseTable table;
 
     DatabaseQueryBuilder(DatabaseTable table) {
         this.table = table;
     }
 
+    @Override
     public <T> List<T> list(Connection connection, RowMapper<T> mapper) {
         long startTime = System.currentTimeMillis();
         String query = createSelectStatement();
@@ -40,6 +42,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         }
     }
 
+    @Override
     public List<Long> listLongs(Connection connection, final String fieldName) {
         return list(connection, new RowMapper<Long>() {
             @Override
@@ -49,6 +52,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         });
     }
 
+    @Override
     public List<String> listStrings(Connection connection, final String fieldName) {
         return list(connection, new RowMapper<String>() {
             @Override
@@ -60,6 +64,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
 
 
     @Nullable
+    @Override
     public <T> T singleObject(Connection connection, RowMapper<T> mapper) {
         long startTime = System.currentTimeMillis();
         String query = createSelectStatement();
@@ -77,6 +82,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
         }
     }
 
+    @Override
     @Nullable
     public String singleString(Connection connection, final String fieldName) {
         return singleObject(connection, new RowMapper<String>() {
@@ -88,6 +94,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     @Nullable
+    @Override
     public Number singleLong(Connection connection, final String fieldName) {
         return singleObject(connection, new RowMapper<Number>() {
             @Override
@@ -98,6 +105,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     @Nullable
+    @Override
     public DateTime singleDateTime(Connection connection, final String fieldName) {
         return singleObject(connection, new RowMapper<DateTime>() {
             @Override
@@ -108,31 +116,56 @@ public class DatabaseQueryBuilder extends DatabaseStatement {
     }
 
     private String createSelectStatement() {
-        return "select * from " + table.getTableName() +
-                (conditions.isEmpty() ? "" : " where " + join(" AND ", conditions));
+        return "select * from " + table.getTableName()
+                + (conditions.isEmpty() ? "" : " where " + join(" AND ", conditions))
+                + (orderByClauses.isEmpty() ? "" : " order by " + join(", ", orderByClauses));
     }
 
-    public DatabaseQueryBuilder where(String fieldName, @Nullable Object value) {
+    @Override
+    public DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value) {
         String expression = fieldName + " = ?";
         return whereExpression(expression, value);
     }
 
-    public DatabaseQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
+    @Override
+    public DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
+        if (value == null) return this;
+        return where(fieldName, value);
+    }
+
+    public DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters) {
+        conditions.add(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
+        this.parameters.addAll(parameters);
+        return this;
+    }
+
+    public DatabaseSimpleQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
         conditions.add(expression);
         parameters.add(parameter);
         return this;
     }
 
-    public DatabaseQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
+    public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
         for (int i = 0; i < fieldNames.size(); i++) {
             where(fieldNames.get(i), values.get(i));
         }
         return this;
     }
 
+    @Override
     public DatabaseUpdateBuilder update() {
         return table.update().setWhereFields(conditions, parameters);
     }
 
+    @Override
+    public DatabaseListableQueryBuilder orderBy(String orderByClause) {
+        orderByClauses.add(orderByClause);
+        return this;
+    }
+
+    @Override
+    public DatabaseListableQueryBuilder unordered() {
+        return this;
+    }
 
 }
