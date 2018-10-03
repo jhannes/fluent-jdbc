@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
@@ -41,12 +42,20 @@ public class TagType {
         return this;
     }
 
+    public static void saveAll(List<TagType> tagTypes, Connection connection) {
+        TagType.tagTypesTable.bulkInsert(tagTypes)
+            .setField("name", t -> t.getName())
+            .generatePrimaryKeys((t, id) -> t.setId(id))
+            .execute(connection);
+    }
+
     public static List<TagType> list(Connection connection) {
         return tagTypesTable.listObjects(connection, createRowMapper());
     }
 
-    public static TagType retrieve(Connection connection, Long id) {
-        return tagTypesTable.where("id", id).singleObject(connection, createRowMapper());
+    public static TagType retrieve(Connection connection, @NonNull Long id) {
+        return tagTypesTable.where("id", id)
+                .singleObject(connection, createRowMapper());
     }
 
     private static RowMapper<TagType> createRowMapper() {
@@ -61,12 +70,5 @@ public class TagType {
             }
         };
     }
-
-    public static void saveAll(List<TagType> tagTypes, Connection connection) {
-        TagType.tagTypesTable.bulkInsert(tagTypes)
-            .setField("name", t -> t.getName())
-            .execute(connection);
-    }
-
 
 }

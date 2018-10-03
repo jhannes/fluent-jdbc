@@ -1,10 +1,14 @@
 package org.fluentjdbc.sqlite;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.junit.Test;
 
 public class SqliteTests {
 
@@ -24,6 +28,14 @@ public class SqliteTests {
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
         public RichDomainModelTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
+        }
+
+        @Override
+        @Test
+        public void shouldBulkInsert() {
+            // Sqlite currently only returns the generated key for the first in a batch
+            assertThatThrownBy(() -> super.shouldBulkInsert())
+                .isInstanceOf(IllegalStateException.class);
         }
     }
 

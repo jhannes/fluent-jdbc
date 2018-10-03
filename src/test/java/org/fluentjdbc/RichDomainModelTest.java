@@ -126,6 +126,11 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
         TagType.saveAll(tagTypes, connection);
 
+        for (TagType tagType : tagTypes) {
+            assertThat(TagType.retrieve(connection, tagType.getId()))
+                .isEqualToComparingFieldByField(tagType);
+        }
+
         assertThat(TagType.list(connection))
             .extracting("name")
             .contains("a", "b", "c");

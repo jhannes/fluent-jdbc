@@ -10,7 +10,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SqlServerTests {
+public class JtdsSqlServerTests {
 
     private static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
@@ -33,12 +33,14 @@ public class SqlServerTests {
         @Override
         @Ignore
         public void shouldGroupEntriesByTagTypes() {
+            //super.shouldGroupEntriesByTagTypes();
             // Ignore - relies on ResultTypeMetadata.getTableName, which is not supported
         }
 
         @Override
         @Ignore
         public void shouldBulkInsert() {
+            //super.shouldBulkInsert();
             // Ignore - relies on the combination of addBatch and RETURN_GENERATED_KEYS
             // Which is not supported by jTDS
         }
@@ -92,7 +94,7 @@ public class SqlServerTests {
         String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
         String password = System.getProperty("test.db.sqlserver.password", username);
         String url = System.getProperty("test.db.sqlserver.url",
-                "jdbc:sqlserver://localhost:1433;databaseName=" + username);
+                "jdbc:jtds:sqlserver://localhost:1433;databaseName=" + username);
 
         try {
             return DriverManager.getConnection(url, username, password);

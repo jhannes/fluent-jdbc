@@ -45,7 +45,6 @@ public final class HsqldbTests {
         }
     }
 
-
     static Connection getConnection() throws SQLException {
         return DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", null);
     }

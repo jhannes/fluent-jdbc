@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 
@@ -43,6 +44,10 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
             throw ExceptionUtil.softenCheckedException(e);
         }
 
+    }
+
+    public DatabaseBuildInsertBuilderWithPk<T> generatePrimaryKeys(BiConsumer<T, Long> consumer) {
+        return new DatabaseBuildInsertBuilderWithPk<T>(objects, table, fields, consumer);
     }
 
 }
