@@ -2,10 +2,12 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -36,6 +38,8 @@ class DatabaseStatement {
     protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof DateTime) {
             stmt.setTimestamp(index, new Timestamp(((DateTime)parameter).getMillis()));
+        } else if (parameter instanceof LocalDate) {
+            stmt.setDate(index, new Date(((LocalDate)parameter).toDate().getTime()));
         } else if (parameter instanceof UUID && isSqlServer(stmt.getConnection())) {
             stmt.setObject(index, parameter.toString());
         } else {

@@ -7,6 +7,7 @@ import org.fluentjdbc.demo.EntryAggregate;
 import org.fluentjdbc.demo.Tag;
 import org.fluentjdbc.demo.TagType;
 import org.fluentjdbc.h2.H2TestDatabase;
+import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,6 +19,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class RichDomainModelTest extends AbstractDatabaseTest {
 
@@ -48,15 +50,21 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldRetrieveSimpleObject() {
-        TagType tagType = new TagType("size").save(connection);
+        TagType tagType = sampleTagType().save(connection);
 
         assertThat(TagType.retrieve(connection, tagType.getId()))
             .isEqualToComparingFieldByField(tagType);
     }
 
+    private TagType sampleTagType() {
+        TagType tagType = new TagType("size");
+        tagType.setValidUntil(LocalDate.now().plusDays(new Random().nextInt(365)));
+        return tagType;
+    }
+
     @Test
     public void shouldReturnList() {
-        TagType sizeTagType = new TagType("size").save(connection);
+        TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
 
         assertThat(TagType.list(connection))
@@ -66,7 +74,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldRetrieveJoinedObjects() {
-        TagType sizeTagType = new TagType("size").save(connection);
+        TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
 
         Tag astronomicalTag = new Tag("astronomical", sizeTagType).save(this.connection);
@@ -84,7 +92,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldGroupEntriesByTagTypes() {
-        TagType sizeTagType = new TagType("size").save(connection);
+        TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
 
         Tag astronomical = new Tag("astronomical", sizeTagType).save(this.connection);

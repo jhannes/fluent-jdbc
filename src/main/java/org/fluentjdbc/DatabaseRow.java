@@ -1,9 +1,11 @@
 package org.fluentjdbc;
 
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -75,6 +77,11 @@ public class DatabaseRow {
             throw new IllegalArgumentException("Column {" + fieldName + "} is not present in " + columnIndexes.keySet());
         }
         return columnIndexes.get(fieldName.toUpperCase());
+    }
+
+    public LocalDate getLocalDate(String fieldName) throws SQLException {
+        Date date = rs.getDate(fieldName);
+        return date != null ? LocalDate.fromDateFields(date) : null;
     }
 
 
