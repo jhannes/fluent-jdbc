@@ -65,6 +65,13 @@ class DatabaseStatement {
         }
     }
 
+    String createInsertSql(String tableName, Collection<String> fieldNames) {
+        return "insert into " + tableName +
+                " (" + join(",", fieldNames)
+                + ") values ("
+                + join(",", repeat("?", fieldNames.size())) + ")";
+    }
+
     protected static List<String> repeat(String string, int size) {
         List<String> result = new ArrayList<>();
         for (int i = 0; i < size; i++) {

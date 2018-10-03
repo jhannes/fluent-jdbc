@@ -43,18 +43,15 @@ public class BulkInsertTest extends AbstractDatabaseTest {
         objects.add(new Object[] { "first name", 1 });
         objects.add(new Object[] { "second name", 2 });
 
-        demoTable.newBulkInserter(objects, "type", "code", "name")
-            .insert(new InsertMapper<Object[]>() {
-                @Override
-                public void mapRow(Inserter inserter, Object[] o) throws SQLException {
-                    inserter.setField("type", "a");
-                    inserter.setField("name", o[0]);
-                    inserter.setField("code", o[1]);
-                }
-            })
+        demoTable.bulkInsert(objects)
+            .setField("type", o -> "a")
+            .setField("name", o -> o[0])
+            .setField("code", o -> o[1])
             .execute(connection);
 
-        assertThat(demoTable.where("type", "a").unordered().listStrings(connection, "name")).contains("first name", "second name");
+
+        assertThat(demoTable.where("type", "a").unordered().listStrings(connection, "name"))
+            .contains("first name", "second name");
     }
 
 

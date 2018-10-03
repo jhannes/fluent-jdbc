@@ -39,11 +39,7 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
     }
 
     String createInsertStatement() {
-        String query = "insert into " + table.getTableName() +
-                " (" + join(",", fieldNames)
-                + ") values ("
-                + join(",", repeat("?", fieldNames.size())) + ")";
-        return query;
+        return createInsertSql(table.getTableName(), fieldNames);
     }
 
     // TODO: This doesn't work for Android when idValue is null

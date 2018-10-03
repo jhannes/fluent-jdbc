@@ -1,52 +1,39 @@
 package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
-import org.joda.time.DateTime;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 
 public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
 
-    private List<T> objects = new ArrayList<>();
-    private InsertMapper<T> insertMapper;
-    private List<String> fieldNames = new ArrayList<>();
     private DatabaseTable table;
-
-    public DatabaseBulkInsertBuilder(DatabaseTable table) {
-        this.table = table;
-    }
+    private List<T> objects;
+    private Map<String, Function<T, Object>> fields = new LinkedHashMap<>();
 
     public DatabaseBulkInsertBuilder(DatabaseTable table, List<T> objects) {
-        this(table);
-        this.objects.addAll(objects);
+        this.table = table;
+        this.objects = objects;
     }
 
-    public void addFieldNames(String... newFieldNames) {
-        this.fieldNames.addAll(Arrays.asList(newFieldNames));
+    public DatabaseBulkInsertBuilder<T> setField(String fieldName, Function<T, Object> transformer) {
+        fields.put(fieldName, transformer);
+        return this;
     }
 
     public void execute(Connection connection) {
-        String insertStatement = "insert into " + table.getTableName() +
-                    " (" + join(",", fieldNames)
-                    + ") values ("
-                    + join(",", repeat("?", fieldNames.size())) + ")";
-
-
-        DateTime now = DateTime.now();
+        String insertStatement = createInsertSql(table.getTableName(), fields.keySet());
         try (PreparedStatement statement = connection.prepareStatement(insertStatement)) {
             for (T object : objects) {
-                Inserter inserter = new Inserter(statement, fieldNames);
-                insertMapper.mapRow(inserter, object);
-
-                // HACK: There must be a better way of doing this!
-                if (table instanceof DatabaseTableWithTimestamps) {
-                    inserter.setField("updated_at", now);
-                    inserter.setField("created_at", now);
+                int columnIndex = 1;
+                for (Function<T, Object> f : fields.values()) {
+                    bindParameter(statement, columnIndex++, f.apply(object));
                 }
                 statement.addBatch();
             }
@@ -55,10 +42,7 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }
+
     }
 
-    public DatabaseBulkInsertBuilder<T> insert(InsertMapper<T> insertMapper) {
-        this.insertMapper = insertMapper;
-        return this;
-    }
 }

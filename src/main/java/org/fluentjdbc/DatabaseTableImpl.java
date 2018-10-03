@@ -60,7 +60,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
+    public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
         return new DatabaseQueryBuilder(this).whereAll(fieldNames, values);
     }
 
@@ -70,10 +70,8 @@ public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object>
     }
 
     @Override
-    public <T> DatabaseBulkInsertBuilder<T> newBulkInserter(List<T> objects, String... fieldNames) {
-        DatabaseBulkInsertBuilder<T> builder = new DatabaseBulkInsertBuilder<T>(this, objects);
-        builder.addFieldNames(fieldNames);
-        return builder;
+    public <T> DatabaseBulkInsertBuilder<T> bulkInsert(List<T> objects) {
+        return new DatabaseBulkInsertBuilder<T>(this, objects);
     }
 
     @Override

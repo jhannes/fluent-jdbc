@@ -5,8 +5,6 @@ import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.joda.time.LocalDate;
 import org.fluentjdbc.DatabaseTableImpl;
-import org.fluentjdbc.InsertMapper;
-import org.fluentjdbc.Inserter;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -65,13 +63,9 @@ public class TagType {
     }
 
     public static void saveAll(List<TagType> tagTypes, Connection connection) {
-        TagType.tagTypesTable.newBulkInserter(tagTypes, "name")
-        .insert(new InsertMapper<TagType>() {
-            @Override
-            public void mapRow(Inserter inserter, TagType tagType) throws SQLException {
-                inserter.setField("name", tagType.getName());
-            }
-        }).execute(connection);
+        TagType.tagTypesTable.bulkInsert(tagTypes)
+            .setField("name", t -> t.getName())
+            .execute(connection);
     }
 
 

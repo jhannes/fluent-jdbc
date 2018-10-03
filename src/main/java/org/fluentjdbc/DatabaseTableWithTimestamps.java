@@ -23,9 +23,10 @@ public class DatabaseTableWithTimestamps extends DatabaseTableImpl implements Da
 
 
     @Override
-    public <T> DatabaseBulkInsertBuilder<T> newBulkInserter(List<T> objects, String... fieldNames) {
-        DatabaseBulkInsertBuilder<T> builder = super.newBulkInserter(objects, fieldNames);
-        builder.addFieldNames("updated_at", "created_at");
+    public <T> DatabaseBulkInsertBuilder<T> bulkInsert(List<T> objects) {
+        DatabaseBulkInsertBuilder<T> builder = super.bulkInsert(objects);
+        builder.setField("updated_at", t -> DateTime.now());
+        builder.setField("created_at", t -> DateTime.now());
         return builder;
     }
 
