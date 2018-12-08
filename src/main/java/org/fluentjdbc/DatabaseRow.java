@@ -1,7 +1,5 @@
 package org.fluentjdbc;
 
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -50,9 +50,9 @@ public class DatabaseRow {
         }
     }
 
-    public DateTime getDateTime(String fieldName) throws SQLException {
+    public Instant getDateTime(String fieldName) throws SQLException {
         Timestamp timestamp = rs.getTimestamp(getColumnIndex(fieldName));
-        return timestamp != null ? new DateTime(timestamp.getTime()) : null;
+        return timestamp != null ? timestamp.toInstant() : null;
     }
 
     public String getString(String fieldName) throws SQLException {
@@ -81,7 +81,7 @@ public class DatabaseRow {
 
     public LocalDate getLocalDate(String fieldName) throws SQLException {
         Date date = rs.getDate(fieldName);
-        return date != null ? LocalDate.fromDateFields(date) : null;
+        return date != null ? date.toLocalDate() : null;
     }
 
 

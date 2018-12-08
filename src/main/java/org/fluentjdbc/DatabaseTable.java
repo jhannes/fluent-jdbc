@@ -11,10 +11,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public interface DatabaseTable {
 
+    @FunctionalInterface
     public interface RowMapper<T> {
         T mapRow(DatabaseRow row) throws SQLException;
     }
-
 
     String getTableName();
 
@@ -36,6 +36,8 @@ public interface DatabaseTable {
     DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value);
 
     DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters);
+
+    DatabaseSimpleQueryBuilder whereExpression(String expression);
 
     DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter);
 

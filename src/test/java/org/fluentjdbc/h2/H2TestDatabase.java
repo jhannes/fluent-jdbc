@@ -11,7 +11,7 @@ public class H2TestDatabase {
     public static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
         REPLACEMENTS.put("UUID", "uuid");
-        REPLACEMENTS.put("INTEGER_PK", "integer primary key auto_increment");
+        REPLACEMENTS.put("INTEGER_PK", "serial primary key");
         REPLACEMENTS.put("DATETIME", "datetime");
     }
 

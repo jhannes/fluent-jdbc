@@ -1,11 +1,11 @@
 package org.fluentjdbc;
 
 import java.sql.Connection;
+import java.time.Instant;
 
 import javax.annotation.Nullable;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
-import org.joda.time.DateTime;
 
 public interface DatabaseSimpleQueryBuilder {
 
@@ -13,7 +13,7 @@ public interface DatabaseSimpleQueryBuilder {
 
     <T> T singleObject(Connection connection, RowMapper<T> mapper);
 
-    DateTime singleDateTime(Connection connection, String fieldName);
+    Instant singleDateTime(Connection connection, String fieldName);
 
     DatabaseUpdateBuilder update();
 

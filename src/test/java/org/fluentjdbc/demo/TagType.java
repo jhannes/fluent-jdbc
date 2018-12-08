@@ -1,19 +1,19 @@
 package org.fluentjdbc.demo;
 
-import org.fluentjdbc.DatabaseRow;
-import org.fluentjdbc.DatabaseTable;
-import org.fluentjdbc.DatabaseTable.RowMapper;
-import org.joda.time.LocalDate;
-import org.fluentjdbc.DatabaseTableImpl;
-
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.fluentjdbc.DatabaseRow;
+import org.fluentjdbc.DatabaseTable;
+import org.fluentjdbc.DatabaseTable.RowMapper;
+import org.fluentjdbc.DatabaseTableImpl;
 
 @RequiredArgsConstructor
 @ToString

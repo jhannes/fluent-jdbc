@@ -50,6 +50,11 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
+    public DatabaseSimpleQueryBuilder whereExpression(String expression) {
+        return new DatabaseQueryBuilder(this).whereExpression(expression);
+    }
+
+    @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter) {
         return new DatabaseQueryBuilder(this).whereExpression(expression, parameter);
     }

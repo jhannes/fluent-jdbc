@@ -2,11 +2,11 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.util.ExceptionUtil;
-import org.joda.time.DateTime;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import javax.annotation.Nullable;
@@ -106,10 +106,10 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
 
     @Nullable
     @Override
-    public DateTime singleDateTime(Connection connection, final String fieldName) {
-        return singleObject(connection, new RowMapper<DateTime>() {
+    public Instant singleDateTime(Connection connection, final String fieldName) {
+        return singleObject(connection, new RowMapper<Instant>() {
             @Override
-            public DateTime mapRow(DatabaseRow row) throws SQLException {
+            public Instant mapRow(DatabaseRow row) throws SQLException {
                 return row.getDateTime(fieldName);
             }
         });
@@ -134,14 +134,19 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
     }
 
     public DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters) {
-        conditions.add(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
+        whereExpression(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
         this.parameters.addAll(parameters);
         return this;
     }
 
     public DatabaseSimpleQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
-        conditions.add(expression);
+        whereExpression(expression);
         parameters.add(parameter);
+        return this;
+    }
+
+    public DatabaseQueryBuilder whereExpression(String expression) {
+        conditions.add(expression);
         return this;
     }
 

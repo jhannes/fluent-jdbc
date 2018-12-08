@@ -7,13 +7,13 @@ import org.fluentjdbc.demo.EntryAggregate;
 import org.fluentjdbc.demo.Tag;
 import org.fluentjdbc.demo.TagType;
 import org.fluentjdbc.h2.H2TestDatabase;
-import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;

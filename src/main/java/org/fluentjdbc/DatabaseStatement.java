@@ -1,8 +1,6 @@
 package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,6 +9,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -36,10 +36,10 @@ class DatabaseStatement {
     }
 
     protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
-        if (parameter instanceof DateTime) {
-            stmt.setTimestamp(index, new Timestamp(((DateTime)parameter).getMillis()));
+        if (parameter instanceof Instant) {
+            stmt.setTimestamp(index, Timestamp.from((Instant)parameter));
         } else if (parameter instanceof LocalDate) {
-            stmt.setDate(index, new Date(((LocalDate)parameter).toDate().getTime()));
+            stmt.setDate(index, Date.valueOf((LocalDate)parameter));
         } else if (parameter instanceof UUID && isSqlServer(stmt.getConnection())) {
             stmt.setObject(index, parameter.toString());
         } else {

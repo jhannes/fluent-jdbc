@@ -1,19 +1,19 @@
 package org.fluentjdbc;
 
-import org.joda.time.DateTime;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Random;
 
-import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
-
 import org.fluentjdbc.h2.H2TestDatabase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
@@ -108,7 +108,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldCreateTimestamps() throws InterruptedException {
-        DateTime start = DateTime.now();
+        Instant start = Instant.now();
         Thread.sleep(10);
         Long id = table
                 .newSaveBuilder("id", (Long)null)
@@ -118,9 +118,9 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
         Thread.sleep(10);
 
         assertThat(table.where("id", id).singleDateTime(connection, "created_at"))
-            .isAfter(start).isBefore(DateTime.now());
+            .isAfter(start).isBefore(Instant.now());
         assertThat(table.where("id", id).singleDateTime(connection, "updated_at"))
-            .isAfter(start).isBefore(DateTime.now());
+            .isAfter(start).isBefore(Instant.now());
     }
 
     @Test
@@ -130,8 +130,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
                 .execute(connection);
-        DateTime createdTime = table.where("id", id).singleDateTime(connection, "updated_at");
-        DateTime updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        Instant createdTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        Instant updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "another value").execute(connection);
@@ -148,7 +148,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")
                 .execute(connection);
-        DateTime updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        Instant updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "original value").execute(connection);

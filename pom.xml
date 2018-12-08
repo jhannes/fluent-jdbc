@@ -33,17 +33,9 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>1.7.10</version>
+            <version>1.7.25</version>
             <scope>compile</scope>
         </dependency>
-
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-            <version>2.9.2</version>
-            <optional>true</optional>
-        </dependency>
-
 
         <dependency>
             <groupId>junit</groupId>
@@ -54,7 +46,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>2.3.0</version>
+            <version>3.11.1</version>
             <scope>test</scope>
         </dependency>
 
@@ -97,9 +89,9 @@
         
 
         <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.1.6</version>
+            <groupId>org.logevents</groupId>
+            <artifactId>logevents</artifactId>
+            <version>0.1.8</version>
             <scope>test</scope>
         </dependency>
 
