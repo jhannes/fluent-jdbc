@@ -37,7 +37,7 @@ public class Tag {
         this(name, tagType.getId());
     }
 
-    public Tag save(Connection connection) {
+    public Tag save(Connection connection) throws SQLException {
         this.id = Tag.tagsTable
                 .newSaveBuilder("id", getId())
                 .setField("type_id", getTagTypeId())

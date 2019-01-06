@@ -65,7 +65,7 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
         assertThat(table.where("id", id).singleString(clientConnection, "name")).isEqualTo("some name");
     }
 
-    private void synchronize(Connection serverConnection, Connection clientConnection) {
+    private void synchronize(Connection serverConnection, Connection clientConnection) throws SQLException {
         List<String> names = table.listObjects(serverConnection, new RowMapper<String>() {
             @Override
             public String mapRow(DatabaseRow row) throws SQLException {

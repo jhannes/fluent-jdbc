@@ -33,7 +33,7 @@ public class TagType {
     public static DatabaseTable tagTypesTable = new DatabaseTableImpl("tag_types");
 
 
-    public TagType save(Connection connection) {
+    public TagType save(Connection connection) throws SQLException {
         this.id = TagType.tagTypesTable
             .newSaveBuilder("id", getId())
             .setField("name", getName())

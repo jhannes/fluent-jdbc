@@ -17,6 +17,8 @@ public interface DatabaseSimpleQueryBuilder {
 
     DatabaseUpdateBuilder update();
 
+    void delete(Connection connection);
+
     Number singleLong(Connection connection, String fieldName);
 
     DatabaseListableQueryBuilder unordered();
@@ -26,5 +28,6 @@ public interface DatabaseSimpleQueryBuilder {
     DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value);
 
     DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value);
+
 
 }

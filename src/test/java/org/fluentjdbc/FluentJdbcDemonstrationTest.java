@@ -57,7 +57,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldUpdateRowWithExistingId() {
+    public void shouldUpdateRowWithExistingId() throws SQLException {
         String savedName = "demo row";
         Long id = table
                 .newSaveBuilder("id", (Long)null)
@@ -90,7 +90,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldUpdateRowWithDuplicateUniqueKey() {
+    public void shouldUpdateRowWithDuplicateUniqueKey() throws SQLException {
         String savedName = "old value";
         Long id = table.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
@@ -107,7 +107,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldCreateTimestamps() throws InterruptedException {
+    public void shouldCreateTimestamps() throws InterruptedException, SQLException {
         Instant start = Instant.now();
         Thread.sleep(10);
         Long id = table
@@ -124,7 +124,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldUpdateTimestamp() throws InterruptedException {
+    public void shouldUpdateTimestamp() throws InterruptedException, SQLException {
         Long id = table
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
@@ -142,7 +142,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldNotUpdateUnchangedRows() throws InterruptedException {
+    public void shouldNotUpdateUnchangedRows() throws InterruptedException, SQLException {
         Long id = table
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)

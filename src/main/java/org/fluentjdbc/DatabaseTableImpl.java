@@ -84,4 +84,8 @@ public class DatabaseTableImpl implements DatabaseTable {
         return new DatabaseUpdateBuilder(this);
     }
 
+    @Override
+    public DatabaseDeleteBuilder delete() {
+        return new DatabaseDeleteBuilder(this);
+    }
 }

@@ -13,9 +13,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-public class SQLiteDatabaseTableTest extends AbstractDatabaseTest {
+public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
 
-    public SQLiteDatabaseTableTest() {
+    public SqliteDatabaseTableTest() {
         super(SqliteTests.REPLACEMENTS);
     }
 

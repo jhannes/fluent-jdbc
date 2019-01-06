@@ -60,7 +60,8 @@ public class DatabaseRow {
     }
 
     public Long getLong(String fieldName) throws SQLException {
-        return rs.getLong(getColumnIndex(fieldName));
+        long result = rs.getLong(getColumnIndex(fieldName));
+        return rs.wasNull() ? null : result;
     }
 
     public Object getObject(String fieldName) throws SQLException {

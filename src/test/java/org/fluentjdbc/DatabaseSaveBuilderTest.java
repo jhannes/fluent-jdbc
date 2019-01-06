@@ -91,7 +91,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldUpdateRowOnKey() {
+    public void shouldUpdateRowOnKey() throws SQLException {
         UUID idOnInsert = table.newSaveBuilderWithUUID("id", null)
             .uniqueKey("code", 10001)
             .setField("name", "old name")

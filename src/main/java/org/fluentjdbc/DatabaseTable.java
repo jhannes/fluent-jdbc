@@ -50,4 +50,6 @@ public interface DatabaseTable {
 
     <T> DatabaseBulkInsertBuilder<T> bulkInsert(List<T> objects);
 
+    DatabaseDeleteBuilder delete();
+
 }

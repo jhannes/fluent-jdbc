@@ -38,7 +38,7 @@ public class Entry {
         return entry;
     }
 
-    public Entry save(Connection connection, List<Tag> tags) {
+    public Entry save(Connection connection, List<Tag> tags) throws SQLException {
         this.id = Entry.entriesTable
                 .newSaveBuilder("id", getId())
                 .setField("name", getName())

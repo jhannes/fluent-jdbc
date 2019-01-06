@@ -42,7 +42,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldInsertWithoutKey() {
+    public void shouldInsertWithoutKey() throws SQLException {
         table.insert()
             .setField("code", 1001)
             .setField("name", "insertTest")
@@ -60,7 +60,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldListOnWhereIn() {
+    public void shouldListOnWhereIn() throws SQLException {
         Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
         Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "world").execute(connection);
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "darkness").execute(connection);
@@ -71,7 +71,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldListOnOptional() {
+    public void shouldListOnOptional() throws SQLException {
         Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "yes").execute(connection);
         Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "yes").execute(connection);
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute(connection);
@@ -92,6 +92,15 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .execute(connection);
 
         assertThat(id).isEqualTo(453534643);
+    }
+
+    @Test
+    public void shouldDelete() throws SQLException {
+        Long id = (Long) table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
+
+        table.where("name", "hello").delete(connection);
+        assertThat(table.listObjects(connection, row -> row.getLong("id")))
+            .doesNotContain(id);
     }
 
 

@@ -18,17 +18,12 @@ public class DatabaseBulkInsertBuilderWithPk<T> extends DatabaseStatement {
     private BiConsumer<T, Long> primaryKeyCallback;
     private List<T> objects;
 
-    public DatabaseBulkInsertBuilderWithPk(DatabaseTable table,
-    Map<String, Function<T, Object>> fields,
-    BiConsumer<T, Long> primaryKeyCallback,
-    List<T> objects) {
-        this(objects, table, fields, primaryKeyCallback);
-    }
-
-    public DatabaseBulkInsertBuilderWithPk(List<T> objects,
+    public DatabaseBulkInsertBuilderWithPk(
+            List<T> objects,
             DatabaseTable table,
             Map<String, Function<T, Object>> fields,
-            BiConsumer<T, Long> primaryKeyCallback) {
+            BiConsumer<T, Long> primaryKeyCallback
+    ) {
         this.objects = objects;
         this.table = table;
         this.fields = fields;

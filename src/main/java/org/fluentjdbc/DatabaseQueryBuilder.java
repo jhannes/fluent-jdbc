@@ -163,6 +163,11 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
     }
 
     @Override
+    public void delete(Connection connection) {
+        table.delete().setWhereFields(conditions, parameters).execute(connection);
+    }
+
+    @Override
     public DatabaseListableQueryBuilder orderBy(String orderByClause) {
         orderByClauses.add(orderByClause);
         return this;

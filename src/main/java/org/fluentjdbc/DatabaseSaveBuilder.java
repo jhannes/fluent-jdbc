@@ -44,7 +44,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     }
 
     @Nullable
-    public T execute(Connection connection) {
+    public T execute(Connection connection) throws SQLException {
         T idValue = this.idValue;
         if (idValue != null) {
             Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
@@ -100,7 +100,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     }
 
     @Nullable
-    protected abstract T insert(Connection connection);
+    protected abstract T insert(Connection connection) throws SQLException;
 
     private T update(Connection connection, T idValue) {
         table.where("id", idValue)

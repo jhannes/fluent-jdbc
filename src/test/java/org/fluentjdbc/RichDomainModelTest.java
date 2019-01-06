@@ -49,7 +49,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldRetrieveSimpleObject() {
+    public void shouldRetrieveSimpleObject() throws SQLException {
         TagType tagType = sampleTagType().save(connection);
 
         assertThat(TagType.retrieve(connection, tagType.getId()))
@@ -63,7 +63,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldReturnList() {
+    public void shouldReturnList() throws SQLException {
         TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
 
@@ -73,7 +73,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldRetrieveJoinedObjects() {
+    public void shouldRetrieveJoinedObjects() throws SQLException {
         TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
 
@@ -91,7 +91,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
 
     @Test
-    public void shouldGroupEntriesByTagTypes() {
+    public void shouldGroupEntriesByTagTypes() throws SQLException {
         TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
 
