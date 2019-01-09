@@ -38,6 +38,14 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
         return this;
     }
 
+    public DatabaseUpdateBuilder setFieldIfPresent(String field, @Nullable Object value) {
+        if (value != null) {
+            setField(field, value);
+        }
+        return this;
+    }
+
+
     public void execute(Connection connection) {
         List<Object> parameters = new ArrayList<>();
         parameters.addAll(updateValues);
@@ -58,7 +66,5 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
         }
         return result;
     }
-
-
 
 }

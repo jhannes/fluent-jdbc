@@ -85,5 +85,10 @@ public class DatabaseRow {
         return date != null ? date.toLocalDate() : null;
     }
 
+    public <T extends Enum<T>> T getEnum(Class<T> enumClass, String fieldName) throws SQLException {
+        String value = getString(fieldName);
+        return value != null ? Enum.valueOf(enumClass, value) : null;
+    }
+
 
 }

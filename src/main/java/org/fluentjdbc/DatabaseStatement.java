@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,6 +42,8 @@ class DatabaseStatement {
         } else if (parameter instanceof LocalDate) {
             stmt.setDate(index, Date.valueOf((LocalDate)parameter));
         } else if (parameter instanceof UUID && isSqlServer(stmt.getConnection())) {
+            stmt.setObject(index, parameter.toString());
+        } else if (parameter instanceof Temporal) {
             stmt.setObject(index, parameter.toString());
         } else {
             stmt.setObject(index, parameter);
