@@ -12,9 +12,9 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
 
     private List<String> fieldNames = new ArrayList<>();
     private List<Object> parameters = new ArrayList<>();
-    private DatabaseTable table;
+    private String table;
 
-    public DatabaseInsertBuilder(DatabaseTable table) {
+    public DatabaseInsertBuilder(String table) {
         this.table = table;
     }
 
@@ -39,7 +39,7 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
     }
 
     String createInsertStatement() {
-        return createInsertSql(table.getTableName(), fieldNames);
+        return createInsertSql(table, fieldNames);
     }
 
     // TODO: This doesn't work for Android when idValue is null

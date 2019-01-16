@@ -6,13 +6,13 @@ import java.util.List;
 
 class DatabaseDeleteBuilder extends DatabaseStatement {
 
-    private DatabaseTable table;
+    private String tableName;
 
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Object> whereParameters = new ArrayList<>();
 
-    public DatabaseDeleteBuilder(DatabaseTable table) {
-        this.table = table;
+    public DatabaseDeleteBuilder(String tableName) {
+        this.tableName = tableName;
     }
 
     DatabaseDeleteBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
@@ -26,6 +26,6 @@ class DatabaseDeleteBuilder extends DatabaseStatement {
     }
 
     private String createDeleteStatement() {
-        return "delete from " + table.getTableName() + " where "  + join(" and ", whereConditions);
+        return "delete from " + tableName + " where "  + join(" and ", whereConditions);
     }
 }

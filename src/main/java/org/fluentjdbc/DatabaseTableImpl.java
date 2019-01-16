@@ -71,7 +71,7 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public DatabaseInsertBuilder insert() {
-        return new DatabaseInsertBuilder(this);
+        return new DatabaseInsertBuilder(getTableName());
     }
 
     @Override
@@ -86,6 +86,6 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public DatabaseDeleteBuilder delete() {
-        return new DatabaseDeleteBuilder(this);
+        return new DatabaseDeleteBuilder(getTableName());
     }
 }
