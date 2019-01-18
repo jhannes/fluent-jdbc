@@ -95,6 +95,20 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
+    public void shouldUpdate() throws SQLException {
+        Object id = table.insert()
+                .setPrimaryKey("id", null)
+                .setField("code", 1004)
+                .setField("name", "oldName")
+                .execute(connection);
+
+        table.where("id", id).update().setField("name", "New name").execute(connection);
+
+        assertThat(table.where("id", id).singleString(connection, "name"))
+            .isEqualTo("New name");
+    }
+
+    @Test
     public void shouldDelete() throws SQLException {
         Long id = (Long) table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
 

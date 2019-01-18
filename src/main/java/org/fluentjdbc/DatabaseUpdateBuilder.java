@@ -10,14 +10,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class DatabaseUpdateBuilder extends DatabaseStatement {
 
-    private final DatabaseTable table;
+    private final String tableName;
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Object> whereParameters = new ArrayList<>();
     private final List<String> updateFields = new ArrayList<>();
     private final List<Object> updateValues = new ArrayList<>();
 
-    public DatabaseUpdateBuilder(DatabaseTable table) {
-        this.table = table;
+    public DatabaseUpdateBuilder(String tableName) {
+        this.tableName = tableName;
     }
 
     DatabaseUpdateBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
@@ -54,7 +54,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
     }
 
     private String createUpdateStatement() {
-        return "update " + table.getTableName()
+        return "update " + tableName
             + " set " + join(",", updates(updateFields))
             + (whereParameters.isEmpty() ? "" : " where " + join(" and ", whereConditions));
     }

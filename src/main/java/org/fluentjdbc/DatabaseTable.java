@@ -26,7 +26,7 @@ public interface DatabaseTable {
      */
     DatabaseSaveBuilder<Long> newSaveBuilderNoGeneratedKeys(String idColumn, @Nullable Long idValue);
 
-    DatabaseSaveBuilderWithUUID newSaveBuilderWithUUID(String string, @Nullable UUID uuid);
+    DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String string, @Nullable UUID uuid);
 
 
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
