@@ -8,7 +8,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -22,6 +24,10 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
 
     DatabaseQueryBuilder(DatabaseTable table) {
         this.table = table;
+    }
+
+    public <T> Stream<T> stream(Connection connection, RowMapper<T> mapper) {
+        return list(connection, mapper).stream();
     }
 
     @Override
@@ -133,7 +139,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
         return where(fieldName, value);
     }
 
-    public DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters) {
+    public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
         whereExpression(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
         this.parameters.addAll(parameters);
         return this;

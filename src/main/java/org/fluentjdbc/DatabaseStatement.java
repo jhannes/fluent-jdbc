@@ -45,6 +45,10 @@ class DatabaseStatement {
             stmt.setObject(index, parameter.toString());
         } else if (parameter instanceof Temporal) {
             stmt.setObject(index, parameter.toString());
+        } else if (parameter instanceof CharSequence) {
+            stmt.setString(index, parameter.toString());
+        } else if (parameter instanceof Enum<?>) {
+            stmt.setString(index, parameter.toString());
         } else {
             stmt.setObject(index, parameter);
         }

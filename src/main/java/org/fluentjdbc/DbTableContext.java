@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import java.sql.Connection;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,7 +33,7 @@ public class DbTableContext {
         return table;
     }
 
-    public DbSelectContext whereIn(String fieldName, List<?> parameters) {
+    public DbSelectContext whereIn(String fieldName, Collection<?> parameters) {
         return new DbSelectContext(this).whereIn(fieldName, parameters);
     }
 
@@ -59,6 +60,10 @@ public class DbTableContext {
 
     public DbSaveBuilderContext<UUID> newSaveBuilderWithUUID(String field, UUID uuid) {
         return new DbSaveBuilderContext<>(this, table.newSaveBuilderWithUUID(field, uuid));
+    }
+
+    public <KEY,ENTITY> ENTITY cache(KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
+        return DbContext.cache(getTable().getTableName(), key, retriever);
     }
 
 }

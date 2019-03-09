@@ -2,7 +2,9 @@ package org.fluentjdbc;
 
 import java.sql.Connection;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 
@@ -31,7 +33,7 @@ public class DbSelectContext implements DbListableSelectContext {
         return this;
     }
 
-    public DbSelectContext whereIn(String fieldName, List<?> parameters) {
+    public DbSelectContext whereIn(String fieldName, Collection<?> parameters) {
         queryBuilder.whereIn(fieldName, parameters);
         return this;
     }
@@ -61,6 +63,10 @@ public class DbSelectContext implements DbListableSelectContext {
 
     public void executeDelete() {
         queryBuilder.delete(getConnection());
+    }
+
+    public <T> Stream<T> stream(RowMapper<T> mapper) {
+        return queryBuilder.stream(getConnection(), mapper);
     }
 
     @Override
