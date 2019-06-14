@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,6 +40,8 @@ class DatabaseStatement {
     protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof Instant) {
             stmt.setTimestamp(index, Timestamp.from((Instant)parameter));
+        } else if (parameter instanceof ZonedDateTime) {
+            stmt.setTimestamp(index, Timestamp.from(Instant.from((ZonedDateTime)parameter)));
         } else if (parameter instanceof LocalDate) {
             stmt.setDate(index, Date.valueOf((LocalDate)parameter));
         } else if (parameter instanceof UUID && isSqlServer(stmt.getConnection())) {

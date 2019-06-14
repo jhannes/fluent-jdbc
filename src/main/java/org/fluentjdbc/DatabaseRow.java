@@ -10,6 +10,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -50,9 +52,14 @@ public class DatabaseRow {
         }
     }
 
-    public Instant getDateTime(String fieldName) throws SQLException {
+    public Instant getInstant(String fieldName) throws SQLException {
         Timestamp timestamp = rs.getTimestamp(getColumnIndex(fieldName));
         return timestamp != null ? timestamp.toInstant() : null;
+    }
+
+    public ZonedDateTime getZonedDateTime(String fieldName) throws SQLException {
+        Instant instant = getInstant(fieldName);
+        return instant != null ? instant.atZone(ZoneId.systemDefault()) : null;
     }
 
     public String getString(String fieldName) throws SQLException {

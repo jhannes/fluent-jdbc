@@ -116,7 +116,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
         return singleObject(connection, new RowMapper<Instant>() {
             @Override
             public Instant mapRow(DatabaseRow row) throws SQLException {
-                return row.getDateTime(fieldName);
+                return row.getInstant(fieldName);
             }
         });
     }
