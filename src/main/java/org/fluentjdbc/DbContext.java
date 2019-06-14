@@ -1,8 +1,8 @@
 package org.fluentjdbc;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.HashMap;
-import javax.sql.DataSource;
 
 public class DbContext {
 
@@ -15,10 +15,14 @@ public class DbContext {
     }
 
     public DbContextConnection startConnection(DataSource dataSource) {
+        return startConnection(dataSource::getConnection);
+    }
+
+    public DbContextConnection startConnection(ConnectionSupplier connectionSupplier) {
         if (currentConnection.get() != null) {
             throw new IllegalStateException("Don't set twice in a thread!");
         }
-        currentConnection.set(new DbContextConnection(dataSource, this));
+        currentConnection.set(new DbContextConnection(connectionSupplier, this));
         currentCache.set(new HashMap<>());
         return currentConnection.get();
     }

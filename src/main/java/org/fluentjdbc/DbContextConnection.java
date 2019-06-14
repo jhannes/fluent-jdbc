@@ -1,20 +1,18 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.util.ExceptionUtil;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
-import org.fluentjdbc.util.ExceptionUtil;
-
 public class DbContextConnection implements AutoCloseable {
 
-    private DataSource dataSource;
+    private ConnectionSupplier connectionSupplier;
     private Connection connection;
     private DbContext context;
 
-    public DbContextConnection(DataSource dataSource, DbContext context) {
-        this.dataSource = dataSource;
+    public DbContextConnection(ConnectionSupplier connectionSupplier, DbContext context) {
+        this.connectionSupplier = connectionSupplier;
         this.context = context;
     }
 
@@ -33,7 +31,7 @@ public class DbContextConnection implements AutoCloseable {
     Connection getConnection() {
         if (connection == null) {
             try {
-                connection = dataSource.getConnection();
+                connection = connectionSupplier.getConnection();
             } catch (SQLException e) {
                 throw ExceptionUtil.softenCheckedException(e);
             }
