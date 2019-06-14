@@ -44,7 +44,7 @@ public class EntryAggregate {
                 List<EntryAggregate> entries = new ArrayList<>();
                 EntryAggregate aggregate = null;
                 while (result.next()) {
-                    if (aggregate == null || aggregate.getEntry().getId() != result.table("entries").getLong("id")) {
+                    if (aggregate == null || !aggregate.getEntry().getId().equals(result.table("entries").getLong("id"))) {
                         aggregate = new EntryAggregate(Entry.mapFromRow(result.table("entries")));
                         entries.add(aggregate);
                     }

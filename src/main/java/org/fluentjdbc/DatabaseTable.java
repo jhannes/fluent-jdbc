@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -12,7 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public interface DatabaseTable {
 
     @FunctionalInterface
-    public interface RowMapper<T> {
+    interface RowMapper<T> {
         T mapRow(DatabaseRow row) throws SQLException;
     }
 
@@ -26,7 +27,7 @@ public interface DatabaseTable {
      */
     DatabaseSaveBuilder<Long> newSaveBuilderNoGeneratedKeys(String idColumn, @Nullable Long idValue);
 
-    DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String string, @Nullable UUID uuid);
+    DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String fieldName, @Nullable UUID uuid);
 
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 

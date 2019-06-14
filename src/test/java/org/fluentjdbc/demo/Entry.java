@@ -47,7 +47,7 @@ public class Entry {
 
         for (Tag tag : tags) {
             Entry.entryTaggingsTable
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .setField("tag_id", tag.getId())
                 .setField("entry_id", getId())
                 .execute(connection);

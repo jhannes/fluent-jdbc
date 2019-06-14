@@ -38,7 +38,7 @@ public class DbInsertContext {
 
     public <T> DbInsertContextWithPk<T> setPrimaryKey(String idField, T idValue) {
         DatabaseInsertWithPkBuilder<T> setPrimaryKey = builder.setPrimaryKey(idField, idValue);
-        return new DbInsertContextWithPk<T>(setPrimaryKey);
+        return new DbInsertContextWithPk<>(setPrimaryKey);
     }
 
     public DbInsertContext setField(String fieldName, Object parameter) {

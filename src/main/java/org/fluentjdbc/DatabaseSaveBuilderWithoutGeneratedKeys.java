@@ -11,7 +11,8 @@ public class DatabaseSaveBuilderWithoutGeneratedKeys extends DatabaseSaveBuilder
     }
 
     @Override
-    protected @Nullable Long insert(Connection connection) {
+    @Nullable
+    protected Long insert(Connection connection) {
         DatabaseInsertBuilder builder = table.insert();
         if (idValue != null) {
             builder = builder.setField(idField, idValue);

@@ -52,12 +52,12 @@ public class JtdsSqlServerTests {
         }
 
         @Override
-        public void shouldInsertRowWithNonexistantKey() throws SQLException {
+        public void shouldInsertRowWithNonexistentKey() throws SQLException {
             try(Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("set identity_insert demo_table on");
             }
 
-            super.shouldInsertRowWithNonexistantKey();
+            super.shouldInsertRowWithNonexistentKey();
 
             try(Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("set identity_insert demo_table off");

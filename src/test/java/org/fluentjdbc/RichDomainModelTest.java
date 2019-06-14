@@ -145,10 +145,10 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
             Tag secondaryTag = entryAggregate.getTagOfType(secondaryTagType);
 
             if (!result.containsKey(primaryTag)) {
-                result.put(primaryTag, new HashMap<Tag, List<Entry>>());
+                result.put(primaryTag, new HashMap<>());
             }
             if (!result.get(primaryTag).containsKey(secondaryTag)) {
-                result.get(primaryTag).put(secondaryTag, new ArrayList<Entry>());
+                result.get(primaryTag).put(secondaryTag, new ArrayList<>());
             }
 
             result.get(primaryTag).get(secondaryTag).add(entryAggregate.getEntry());

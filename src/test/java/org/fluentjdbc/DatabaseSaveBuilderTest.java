@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -87,7 +88,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
         assertThat(table.where("id", id).orderBy("name").list(connection, new RowMapper<UUID>() {
             @Override
-            public UUID mapRow(DatabaseRow row) throws SQLException {
+            public UUID mapRow(@Nonnull DatabaseRow row) throws SQLException {
                 return row.getUUID("id");
             }
         })).containsOnly(id);

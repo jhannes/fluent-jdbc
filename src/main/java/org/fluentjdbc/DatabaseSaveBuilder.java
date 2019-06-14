@@ -90,17 +90,13 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     private boolean shouldSkipRow(DatabaseRow row) throws SQLException {
         for (int i = 0; i < fields.size(); i++) {
             String field = fields.get(i);
-            if (!equal(values.get(i), row.getObject(field))) return false;
+            if (!Objects.equals(values.get(i), row.getObject(field))) return false;
         }
         for (int i = 0; i < uniqueKeyFields.size(); i++) {
             String field = uniqueKeyFields.get(i);
-            if (!equal(uniqueKeyValues.get(i), row.getObject(field))) return false;
+            if (!Objects.equals(uniqueKeyValues.get(i), row.getObject(field))) return false;
         }
         return true;
-    }
-
-    private boolean equal(Object o, Object db) {
-        return Objects.equals(o, db);
     }
 
     private boolean hasUniqueKey() {

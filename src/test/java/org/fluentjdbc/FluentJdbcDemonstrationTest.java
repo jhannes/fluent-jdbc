@@ -1,7 +1,9 @@
 package org.fluentjdbc;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
+import org.fluentjdbc.h2.H2TestDatabase;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,10 +12,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Random;
 
-import org.fluentjdbc.h2.H2TestDatabase;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
@@ -47,7 +46,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     public void shouldGenerateIdForNewRow() throws Exception {
         String savedName = "demo row";
         Long id = table
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection)
@@ -61,7 +60,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     public void shouldUpdateRowWithExistingId() throws SQLException {
         String savedName = "demo row";
         Long id = table
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection)
@@ -79,8 +78,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldInsertRowWithNonexistantKey() throws SQLException {
-        String newRow = "Nonexistingent key";
+    public void shouldInsertRowWithNonexistentKey() throws SQLException {
+        String newRow = "Nonexistent key";
         long pregeneratedId = 1000 + new Random().nextInt();
         Long id = table.newSaveBuilder("id", pregeneratedId)
                 .uniqueKey("code", 235235)
@@ -115,7 +114,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
         Instant start = Instant.now();
         Thread.sleep(10);
         Long id = table
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
                 .execute(connection)
@@ -131,7 +130,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     @Test
     public void shouldUpdateTimestamp() throws InterruptedException, SQLException {
         Long id = table
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
                 .execute(connection)
@@ -150,7 +149,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     @Test
     public void shouldNotUpdateUnchangedRows() throws InterruptedException, SQLException {
         Long id = table
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")
                 .execute(connection)

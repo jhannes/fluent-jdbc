@@ -1,7 +1,10 @@
 package org.fluentjdbc;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
+import org.fluentjdbc.h2.H2TestDatabase;
+import org.h2.jdbcx.JdbcDataSource;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -11,11 +14,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import org.fluentjdbc.h2.H2TestDatabase;
-import org.h2.jdbcx.JdbcDataSource;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class FluentJdbcContextDemonstrationTest {
 
@@ -25,13 +24,13 @@ public class FluentJdbcContextDemonstrationTest {
     private DbContextConnection connection;
     private JdbcDataSource dataSource = new JdbcDataSource();
 
-    public FluentJdbcContextDemonstrationTest() throws SQLException {
+    public FluentJdbcContextDemonstrationTest() {
         dataSource.setUrl("jdbc:h2:mem:dbcontext;DB_CLOSE_DELAY=-1");
         this.dbContext = new DbContext();
         this.tableContext = dbContext.tableWithTimestamps("demo_table");
     }
 
-    protected String preprocessCreateTable(String createTableStatement) throws SQLException {
+    protected String preprocessCreateTable(String createTableStatement) {
         return createTableStatement
                 .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
                 .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
@@ -39,10 +38,10 @@ public class FluentJdbcContextDemonstrationTest {
                 ;
     }
 
-    protected void dropTableIfExists(Connection connection, String tableName) throws SQLException {
+    protected void dropTableIfExists(Connection connection, String tableName) {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException e) {
+        } catch(SQLException ignored) {
         }
     }
 
@@ -60,7 +59,7 @@ public class FluentJdbcContextDemonstrationTest {
     }
 
     @After
-    public void closeConnection() throws SQLException {
+    public void closeConnection() {
         connection.close();
     }
 
@@ -68,7 +67,7 @@ public class FluentJdbcContextDemonstrationTest {
     public void shouldGenerateIdForNewRow() {
         String savedName = "demo row";
         Long id = tableContext
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute()
@@ -82,7 +81,7 @@ public class FluentJdbcContextDemonstrationTest {
     public void shouldUpdateRowWithExistingId() {
         String savedName = "demo row";
         Long id = tableContext
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute()
@@ -100,8 +99,8 @@ public class FluentJdbcContextDemonstrationTest {
     }
 
     @Test
-    public void shouldInsertRowWithNonexistantKey() throws SQLException {
-        String newRow = "Nonexistingent key";
+    public void shouldInsertRowWithNonexistentKey() {
+        String newRow = "Nonexistent key";
         long pregeneratedId = 1000 + new Random().nextInt();
         Long id = tableContext.newSaveBuilder("id", pregeneratedId)
                 .uniqueKey("code", 235235)
@@ -114,7 +113,7 @@ public class FluentJdbcContextDemonstrationTest {
     }
 
     @Test
-    public void shouldUpdateRowWithDuplicateUniqueKey() throws SQLException {
+    public void shouldUpdateRowWithDuplicateUniqueKey() {
         String savedName = "old value";
         Long id = tableContext.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
@@ -132,11 +131,11 @@ public class FluentJdbcContextDemonstrationTest {
     }
 
     @Test
-    public void shouldCreateTimestamps() throws InterruptedException, SQLException {
+    public void shouldCreateTimestamps() throws InterruptedException {
         Instant start = Instant.now();
         Thread.sleep(10);
         Long id = tableContext
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
                 .execute()
@@ -150,9 +149,9 @@ public class FluentJdbcContextDemonstrationTest {
     }
 
     @Test
-    public void shouldUpdateTimestamp() throws InterruptedException, SQLException {
+    public void shouldUpdateTimestamp() throws InterruptedException {
         Long id = tableContext
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
                 .execute()
@@ -169,9 +168,9 @@ public class FluentJdbcContextDemonstrationTest {
     }
 
     @Test
-    public void shouldNotUpdateUnchangedRows() throws InterruptedException, SQLException {
+    public void shouldNotUpdateUnchangedRows() throws InterruptedException {
         Long id = tableContext
-                .newSaveBuilder("id", (Long)null)
+                .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")
                 .execute()

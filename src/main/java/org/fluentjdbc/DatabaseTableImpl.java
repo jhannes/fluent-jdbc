@@ -76,7 +76,7 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public <T> DatabaseBulkInsertBuilder<T> bulkInsert(List<T> objects) {
-        return new DatabaseBulkInsertBuilder<T>(this, objects);
+        return new DatabaseBulkInsertBuilder<>(this, objects);
     }
 
     @Override

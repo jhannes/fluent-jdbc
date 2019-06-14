@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -10,6 +11,7 @@ public class DatabaseSaveBuilderWithLong extends DatabaseSaveBuilder<Long> {
     }
 
     @Override
+    @Nonnull
     protected Long insert(Connection connection) throws SQLException {
         return table.insert()
             .setPrimaryKey(idField, idValue)

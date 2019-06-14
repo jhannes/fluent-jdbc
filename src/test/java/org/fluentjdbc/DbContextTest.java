@@ -30,7 +30,7 @@ public class DbContextTest {
 
     private JdbcDataSource dataSource;
 
-    public DbContextTest() throws SQLException {
+    public DbContextTest() {
         dataSource = new JdbcDataSource();
         dataSource.setUrl("jdbc:h2:mem:dbcontext;DB_CLOSE_DELAY=-1");
         this.dbContext = new DbContext();
@@ -38,7 +38,7 @@ public class DbContextTest {
     }
 
 
-    protected String preprocessCreateTable(String createTableStatement) throws SQLException {
+    protected String preprocessCreateTable(String createTableStatement) {
         return createTableStatement
                 .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
                 .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
@@ -46,10 +46,10 @@ public class DbContextTest {
                 ;
     }
 
-    protected void dropTableIfExists(Connection connection, String tableName) throws SQLException {
+    protected void dropTableIfExists(Connection connection, String tableName) {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException e) {
+        } catch(SQLException ignored) {
         }
     }
 
@@ -101,7 +101,7 @@ public class DbContextTest {
     }
 
     @Test
-    public void shouldListOnOptional() throws SQLException {
+    public void shouldListOnOptional() {
         Object id1 = tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "yes").execute();
         Object id2 = tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "yes").execute();
         Object id3 = tableContext.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute();
@@ -114,7 +114,7 @@ public class DbContextTest {
 
 
     @Test
-    public void shouldInsertWithExplicitKey() throws SQLException {
+    public void shouldInsertWithExplicitKey() {
         Object id = tableContext.insert()
                 .setPrimaryKey("id", 453534643)
                 .setField("code", 1003)
@@ -125,7 +125,7 @@ public class DbContextTest {
     }
 
     @Test
-    public void shouldUpdate() throws SQLException {
+    public void shouldUpdate() {
         Object id = tableContext.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1004)
@@ -139,7 +139,7 @@ public class DbContextTest {
     }
 
     @Test
-    public void shouldDelete() throws SQLException {
+    public void shouldDelete() {
         Long id = (Long) tableContext.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1)
@@ -153,7 +153,7 @@ public class DbContextTest {
 
 
     @Test
-    public void shouldThrowOnMissingColumn() throws Exception {
+    public void shouldThrowOnMissingColumn() {
         final Object id = tableContext.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1234)
@@ -162,7 +162,7 @@ public class DbContextTest {
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 tableContext.where("id", id).singleString("non_existing");
             }
         })
@@ -177,7 +177,7 @@ public class DbContextTest {
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 tableContext.where("name", "the same name").singleLong("code");
             }
         }).isInstanceOf(IllegalStateException.class);

@@ -8,6 +8,7 @@ import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -128,7 +129,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 table.where("id", id).singleString(connection, "non_existing");
             }
         })
@@ -140,17 +141,17 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     public void shouldThrowOnMissingTable() {
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 missingTable.where("id", 12).singleLong(connection, "id");
             }
         }).isInstanceOf(SQLException.class);
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 missingTable.where("id", 12).unordered().list(connection, new RowMapper<Object>() {
                     @Override
-                    public Object mapRow(DatabaseRow row) throws SQLException {
+                    public Object mapRow(@Nonnull DatabaseRow row) throws SQLException {
                         return row.getLong("id");
                     }
                 });
@@ -159,14 +160,14 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 missingTable.insert().setField("id", 12).execute(connection);
             }
         }).isInstanceOf(SQLException.class);
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 missingTable.insert().setField("name", "abc").execute(connection);
             }
         }).isInstanceOf(SQLException.class);
@@ -179,7 +180,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
-            public void call() throws Throwable {
+            public void call() {
                 table.where("name", "the same name").singleLong(connection, "code");
             }
         }).isInstanceOf(IllegalStateException.class);

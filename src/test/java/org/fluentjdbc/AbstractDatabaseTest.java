@@ -14,7 +14,7 @@ public class AbstractDatabaseTest {
         this.replacements = replacements;
     }
 
-    protected String preprocessCreateTable(String createTableStatement) throws SQLException {
+    protected String preprocessCreateTable(String createTableStatement) {
         return createTableStatement
                 .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
                 .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
@@ -22,10 +22,10 @@ public class AbstractDatabaseTest {
                 ;
     }
 
-    protected void dropTableIfExists(Connection connection, String tableName) throws SQLException {
+    protected void dropTableIfExists(Connection connection, String tableName) {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException e) {
+        } catch(SQLException ignored) {
         }
     }
 
