@@ -38,7 +38,8 @@ public class TagType {
             .newSaveBuilder("id", getId())
             .setField("name", getName())
             .setField("valid_until", getValidUntil())
-            .execute(connection);
+            .execute(connection)
+            .getId();
         return this;
     }
 

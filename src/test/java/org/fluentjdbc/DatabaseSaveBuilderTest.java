@@ -1,6 +1,8 @@
 package org.fluentjdbc;
 
 import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.INSERTED;
+import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.UPDATED;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.h2.H2TestDatabase;
@@ -57,12 +59,12 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .newSaveBuilderWithUUID("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
-                .execute(connection);
+                .execute(connection)
+                .getId();
 
         String retrievedName = table.where("id", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo(savedName);
     }
-
 
     @Test
     public void shouldUpdateRow() throws Exception {
@@ -71,18 +73,19 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .newSaveBuilderWithUUID("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
-                .execute(connection);
+                .execute(connection)
+                .getId();
 
-        table.newSaveBuilderWithUUID("id", id)
-            .uniqueKey("code", 543)
-            .setField("name", "updated value")
-            .execute(connection);
+        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("id", id)
+                .uniqueKey("code", 543)
+                .setField("name", "updated value")
+                .execute(connection);
+        assertThat(result.getSaveStatus()).isEqualTo(UPDATED);
 
         String retrievedName = table.where("id", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo("updated value");
 
         assertThat(table.where("id", id).orderBy("name").list(connection, new RowMapper<UUID>() {
-
             @Override
             public UUID mapRow(DatabaseRow row) throws SQLException {
                 return row.getUUID("id");
@@ -91,18 +94,37 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
+    public void shouldNotUpdateUnchangedRow() throws SQLException {
+        String savedName = "original row";
+        UUID firstId = table
+                .newSaveBuilderWithUUID("id", null)
+                .uniqueKey("code", 123)
+                .setField("name", savedName)
+                .execute(connection)
+                .getId();
+
+        DatabaseSaveResult<UUID> result = table
+                .newSaveBuilderWithUUID("id", null)
+                .uniqueKey("code", 123)
+                .setField("name", savedName)
+                .execute(connection);
+        assertThat(result).isEqualTo(DatabaseSaveResult.unchanged(firstId));
+    }
+
+    @Test
     public void shouldUpdateRowOnKey() throws SQLException {
         UUID idOnInsert = table.newSaveBuilderWithUUID("id", null)
             .uniqueKey("code", 10001)
             .setField("name", "old name")
-            .execute(connection);
+            .execute(connection)
+            .getId();
 
-        UUID idOnUpdate = table.newSaveBuilderWithUUID("id", null)
-            .uniqueKey("code", 10001)
-            .setField("name", "new name")
-            .execute(connection);
+        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("id", null)
+                .uniqueKey("code", 10001)
+                .setField("name", "new name")
+                .execute(connection);
+        assertThat(result).isEqualTo(DatabaseSaveResult.updated(idOnInsert));
 
-        assertThat(idOnInsert).isEqualTo(idOnUpdate);
         assertThat(table.where("id", idOnInsert).singleString(connection, "name"))
             .isEqualTo("new name");
     }
@@ -111,11 +133,13 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     public void shouldGenerateUsePregeneratedIdForNewRow() throws Exception {
         String savedName = "demo row";
         UUID id = UUID.randomUUID();
-        UUID generatedKey = table
+        DatabaseSaveResult<UUID> result = table
                 .newSaveBuilderWithUUID("id", id)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection);
+        assertThat(result.getSaveStatus()).isEqualTo(INSERTED);
+        UUID generatedKey = result.getId();
         assertThat(id).isEqualTo(generatedKey);
 
         String retrievedName = table.where("id", id).singleString(connection, "name");

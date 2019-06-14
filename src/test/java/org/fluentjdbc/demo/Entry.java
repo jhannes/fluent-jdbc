@@ -42,7 +42,8 @@ public class Entry {
         this.id = Entry.entriesTable
                 .newSaveBuilder("id", getId())
                 .setField("name", getName())
-                .execute(connection);
+                .execute(connection)
+                .getId();
 
         for (Tag tag : tags) {
             Entry.entryTaggingsTable

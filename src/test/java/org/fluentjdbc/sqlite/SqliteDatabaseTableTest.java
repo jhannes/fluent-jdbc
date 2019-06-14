@@ -27,7 +27,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
     public void shouldInsertWithoutUsingPkGenerator() throws Exception {
         Object id = table.newSaveBuilderNoGeneratedKeys("id", null)
             .setField("code", 20001)
-            .setField("name", "test insert without pkgen").execute(connection);
+            .setField("name", "test insert without pkgen").execute(connection).getId();
         FluentJdbcAsserts.assertThat(id).isNull();
 
         try (PreparedStatement statement = connection.prepareStatement("select last_insert_rowid()")) {
@@ -46,7 +46,8 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
         Long id = table.newSaveBuilderNoGeneratedKeys("id", 21912L)
             .setField("code", 20002)
             .setField("name", "test insert with original id")
-            .execute(connection);
+            .execute(connection)
+            .getId();
         FluentJdbcAsserts.assertThat(id).isEqualTo(21912L);
 
         FluentJdbcAsserts.assertThat(table.where("id", 21912L).singleString(connection, "name"))

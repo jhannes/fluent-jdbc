@@ -24,7 +24,7 @@ public class DbSaveBuilderContext<T> {
         return this;
     }
 
-    public T execute() {
+    public DatabaseSaveResult<T> execute() {
         try {
             return saveBuilder.execute(tableContext.getConnection());
         } catch (SQLException e) {

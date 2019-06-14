@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -43,8 +44,8 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         return this;
     }
 
-    @Nullable
-    public T execute(Connection connection) throws SQLException {
+    @Nonnull
+    public DatabaseSaveResult<T> execute(Connection connection) throws SQLException {
         T idValue = this.idValue;
         if (idValue != null) {
             Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
@@ -55,10 +56,13 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
             });
             if (isSame != null && !isSame) {
                 update(connection, idValue);
+                return DatabaseSaveResult.updated(idValue);
             } else if (isSame == null) {
                 insert(connection);
+                return DatabaseSaveResult.inserted(idValue);
+            } else {
+                return DatabaseSaveResult.unchanged(idValue);
             }
-            return idValue;
         } else if (hasUniqueKey()) {
             Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
                 @Override
@@ -70,12 +74,16 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
             idValue = this.idValue;
             if (idValue == null) {
                 idValue = insert(connection);
+                return DatabaseSaveResult.inserted(idValue);
             } else if (isSame != null && !isSame) {
                 update(connection, idValue);
+                return DatabaseSaveResult.updated(idValue);
+            } else {
+                return DatabaseSaveResult.unchanged(idValue);
             }
-            return idValue;
         } else {
-            return insert(connection);
+            idValue = insert(connection);
+            return DatabaseSaveResult.inserted(idValue);
         }
     }
 
@@ -83,6 +91,10 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         for (int i = 0; i < fields.size(); i++) {
             String field = fields.get(i);
             if (!equal(values.get(i), row.getObject(field))) return false;
+        }
+        for (int i = 0; i < uniqueKeyFields.size(); i++) {
+            String field = uniqueKeyFields.get(i);
+            if (!equal(uniqueKeyValues.get(i), row.getObject(field))) return false;
         }
         return true;
     }

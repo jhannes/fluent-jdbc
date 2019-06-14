@@ -28,7 +28,6 @@ public interface DatabaseTable {
 
     DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String string, @Nullable UUID uuid);
 
-
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 
     DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value);

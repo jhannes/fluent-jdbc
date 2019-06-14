@@ -71,7 +71,8 @@ public class FluentJdbcContextDemonstrationTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
-                .execute();
+                .execute()
+                .getId();
 
         String retrievedName = tableContext.where("id", id).singleString("name");
         assertThat(retrievedName).isEqualTo(savedName);
@@ -84,7 +85,8 @@ public class FluentJdbcContextDemonstrationTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
-                .execute();
+                .execute()
+                .getId();
         String updatedName = "updated name";
         tableContext
                 .newSaveBuilder("id", id)
@@ -104,7 +106,8 @@ public class FluentJdbcContextDemonstrationTest {
         Long id = tableContext.newSaveBuilder("id", pregeneratedId)
                 .uniqueKey("code", 235235)
                 .setField("name", newRow)
-                .execute();
+                .execute()
+                .getId();
 
         assertThat(tableContext.where("id", id).singleString("name"))
             .isEqualTo(newRow);
@@ -116,7 +119,8 @@ public class FluentJdbcContextDemonstrationTest {
         Long id = tableContext.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
                 .setField("name", savedName)
-                .execute();
+                .execute()
+                .getId();
         String updatedName = "updated name";
         tableContext.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
@@ -135,7 +139,8 @@ public class FluentJdbcContextDemonstrationTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
-                .execute();
+                .execute()
+                .getId();
         Thread.sleep(10);
 
         assertThat(tableContext.where("id", id).singleDateTime("created_at"))
@@ -150,7 +155,8 @@ public class FluentJdbcContextDemonstrationTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
-                .execute();
+                .execute()
+                .getId();
         Instant createdTime = tableContext.where("id", id).singleDateTime("updated_at");
         Instant updatedTime = tableContext.where("id", id).singleDateTime("updated_at");
         Thread.sleep(10);
@@ -168,7 +174,8 @@ public class FluentJdbcContextDemonstrationTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")
-                .execute();
+                .execute()
+                .getId();
         Instant updatedTime = tableContext.where("id", id).singleDateTime("updated_at");
         Thread.sleep(10);
 

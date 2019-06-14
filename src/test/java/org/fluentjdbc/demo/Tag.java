@@ -42,7 +42,8 @@ public class Tag {
                 .newSaveBuilder("id", getId())
                 .setField("type_id", getTagTypeId())
                 .setField("name", getName())
-                .execute(connection);
+                .execute(connection)
+                .getId();
         return this;
     }
 

@@ -50,7 +50,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
-                .execute(connection);
+                .execute(connection)
+                .getId();
 
         String retrievedName = table.where("id", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo(savedName);
@@ -63,7 +64,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
-                .execute(connection);
+                .execute(connection)
+                .getId();
         String updatedName = "updated name";
         table
                 .newSaveBuilder("id", id)
@@ -83,7 +85,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
         Long id = table.newSaveBuilder("id", pregeneratedId)
                 .uniqueKey("code", 235235)
                 .setField("name", newRow)
-                .execute(connection);
+                .execute(connection)
+                .getId();
 
         assertThat(table.where("id", id).singleString(connection, "name"))
             .isEqualTo(newRow);
@@ -95,7 +98,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
         Long id = table.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
                 .setField("name", savedName)
-                .execute(connection);
+                .execute(connection)
+                .getId();
         String updatedName = "updated name";
         table.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
@@ -114,7 +118,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
-                .execute(connection);
+                .execute(connection)
+                .getId();
         Thread.sleep(10);
 
         assertThat(table.where("id", id).singleDateTime(connection, "created_at"))
@@ -129,7 +134,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
-                .execute(connection);
+                .execute(connection)
+                .getId();
         Instant createdTime = table.where("id", id).singleDateTime(connection, "updated_at");
         Instant updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
         Thread.sleep(10);
@@ -147,7 +153,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .newSaveBuilder("id", (Long)null)
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")
-                .execute(connection);
+                .execute(connection)
+                .getId();
         Instant updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
         Thread.sleep(10);
 

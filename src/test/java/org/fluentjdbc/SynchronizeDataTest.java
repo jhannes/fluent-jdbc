@@ -56,7 +56,7 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldDownloadChanges() throws Exception {
-        Long id = table.newSaveBuilder("id", null).setField("name", "some name").execute(serverConnection);
+        Long id = table.newSaveBuilder("id", null).setField("name", "some name").execute(serverConnection).getId();
 
         assertThat(table.where("id", id).singleString(clientConnection, "name")).isNull();
 
