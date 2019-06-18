@@ -80,6 +80,10 @@ public class DatabaseRow {
         return result != null ? UUID.fromString(result) : null;
     }
 
+    public boolean getBoolean(String fieldName) throws SQLException {
+        return  rs.getBoolean(fieldName);
+    }
+
     private Integer getColumnIndex(String fieldName) {
         if (!columnIndexes.containsKey(fieldName.toUpperCase())) {
             throw new IllegalArgumentException("Column {" + fieldName + "} is not present in " + columnIndexes.keySet());
