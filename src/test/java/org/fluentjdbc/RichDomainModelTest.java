@@ -1,7 +1,5 @@
 package org.fluentjdbc;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
-
 import org.fluentjdbc.demo.Entry;
 import org.fluentjdbc.demo.EntryAggregate;
 import org.fluentjdbc.demo.Tag;
@@ -14,6 +12,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.LocalDate;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -21,9 +20,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import static org.assertj.core.api.Java6Assertions.assertThat;
+
 public class RichDomainModelTest extends AbstractDatabaseTest {
 
     public Connection connection;
+    private Random random = new Random();
 
     public RichDomainModelTest() throws SQLException {
         this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
@@ -58,8 +60,15 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
     private TagType sampleTagType() {
         TagType tagType = new TagType("size");
-        tagType.setValidUntil(LocalDate.now().plusDays(new Random().nextInt(365)));
+        tagType.setValidUntil(LocalDate.now().plusDays(random.nextInt(365)));
+        tagType.setCreatedAt(ZonedDateTime.now().minusMinutes(10).withNano(0));
+        tagType.setFavorite(random.nextBoolean());
+        tagType.setAccessLevel(pickOne(TagType.AccessLevel.values()));
         return tagType;
+    }
+
+    private <T> T pickOne(T[] options) {
+        return options[random.nextInt(options.length)];
     }
 
     @Test

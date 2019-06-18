@@ -13,6 +13,7 @@ public class H2TestDatabase {
         REPLACEMENTS.put("UUID", "uuid");
         REPLACEMENTS.put("INTEGER_PK", "serial primary key");
         REPLACEMENTS.put("DATETIME", "datetime");
+        REPLACEMENTS.put("BOOLEAN", "boolean");
     }
 
     public static Connection createConnection() throws SQLException {

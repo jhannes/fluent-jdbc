@@ -17,6 +17,7 @@ public class SqliteTests {
         REPLACEMENTS.put("UUID", "uuid");
         REPLACEMENTS.put("INTEGER_PK", "integer primary key autoincrement");
         REPLACEMENTS.put("DATETIME", "datetime");
+        REPLACEMENTS.put("BOOLEAN", "boolean");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {
@@ -34,7 +35,7 @@ public class SqliteTests {
         @Test
         public void shouldBulkInsert() {
             // Sqlite currently only returns the generated key for the first in a batch
-            assertThatThrownBy(() -> super.shouldBulkInsert())
+            assertThatThrownBy(super::shouldBulkInsert)
                 .isInstanceOf(IllegalStateException.class);
         }
     }

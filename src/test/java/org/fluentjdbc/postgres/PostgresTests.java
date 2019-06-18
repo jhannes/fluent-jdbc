@@ -17,6 +17,7 @@ public class PostgresTests {
         REPLACEMENTS.put("UUID", "uuid");
         REPLACEMENTS.put("INTEGER_PK", "serial primary key");
         REPLACEMENTS.put("DATETIME", "timestamp");
+        REPLACEMENTS.put("BOOLEAN", "boolean");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {

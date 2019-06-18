@@ -17,6 +17,7 @@ public class SqlServerTests {
         REPLACEMENTS.put("UUID", "uniqueidentifier");
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
         REPLACEMENTS.put("DATETIME", "datetime");
+        REPLACEMENTS.put("BOOLEAN", "bit");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {

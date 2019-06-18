@@ -13,6 +13,7 @@ public final class HsqldbTests {
         REPLACEMENTS.put("UUID", "uuid");
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
         REPLACEMENTS.put("DATETIME", "datetime");
+        REPLACEMENTS.put("BOOLEAN", "boolean");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {

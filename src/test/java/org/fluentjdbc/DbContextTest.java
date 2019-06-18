@@ -5,11 +5,14 @@ import static org.assertj.core.api.Java6Assertions.assertThat;
 
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.fluentjdbc.h2.H2TestDatabase;
+import org.fluentjdbc.opt.junit.DbContextRule;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -20,23 +23,24 @@ import java.util.regex.Pattern;
 
 public class DbContextTest {
 
-    private DbContext dbContext;
+    private final DataSource dataSource = createDataSource();
+
+    protected JdbcDataSource createDataSource() {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setUrl("jdbc:h2:mem:dbcontext;DB_CLOSE_DELAY=-1");
+        return dataSource;
+    }
+
+    @Rule
+    public final DbContextRule dbContext = new DbContextRule(dataSource);
 
     private DbTableContext tableContext;
 
     private Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
 
-    private DbContextConnection connection;
-
-    private JdbcDataSource dataSource;
-
     public DbContextTest() {
-        dataSource = new JdbcDataSource();
-        dataSource.setUrl("jdbc:h2:mem:dbcontext;DB_CLOSE_DELAY=-1");
-        this.dbContext = new DbContext();
         this.tableContext = dbContext.table("database_table_test_table");
     }
-
 
     protected String preprocessCreateTable(String createTableStatement) {
         return createTableStatement
@@ -62,13 +66,6 @@ public class DbContextTest {
                 stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null)"));
             }
         }
-
-        connection = dbContext.startConnection(dataSource);
-    }
-
-    @After
-    public void stopConnection() {
-        connection.close();
     }
 
     @Test

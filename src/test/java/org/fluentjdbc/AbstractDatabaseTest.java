@@ -19,6 +19,7 @@ public class AbstractDatabaseTest {
                 .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
                 .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
                 .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
+                .replaceAll(Pattern.quote("${BOOLEAN}"), replacements.get("BOOLEAN"))
                 ;
     }
 
