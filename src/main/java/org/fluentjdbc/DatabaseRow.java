@@ -22,6 +22,7 @@ public class DatabaseRow {
 
     private final ResultSet rs;
     private final Map<String, Integer> columnIndexes = new HashMap<>();
+    private Map<DatabaseColumnReference, Integer> columnMap;
 
     DatabaseRow(ResultSet rs, String tableName) throws SQLException {
         this.rs = rs;
@@ -50,6 +51,11 @@ public class DatabaseRow {
                 logger.warn("Duplicate column " + columnName + " in query result");
             }
         }
+    }
+
+    public DatabaseRow(ResultSet rs, Map<DatabaseColumnReference, Integer> columnMap) {
+        this.rs = rs;
+        this.columnMap = columnMap;
     }
 
     public Instant getInstant(String fieldName) throws SQLException {
@@ -101,5 +107,8 @@ public class DatabaseRow {
         return value != null ? Enum.valueOf(enumClass, value) : null;
     }
 
+    public String getString(DatabaseColumnReference column) throws SQLException {
+        return rs.getString(columnMap.get(column));
+    }
 
 }

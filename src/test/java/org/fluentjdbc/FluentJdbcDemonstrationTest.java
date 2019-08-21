@@ -121,9 +121,9 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .getId();
         Thread.sleep(10);
 
-        assertThat(table.where("id", id).singleDateTime(connection, "created_at"))
+        assertThat(table.where("id", id).singleInstant(connection, "created_at"))
             .isAfter(start).isBefore(Instant.now());
-        assertThat(table.where("id", id).singleDateTime(connection, "updated_at"))
+        assertThat(table.where("id", id).singleInstant(connection, "updated_at"))
             .isAfter(start).isBefore(Instant.now());
     }
 
@@ -135,14 +135,14 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", "demo row")
                 .execute(connection)
                 .getId();
-        Instant createdTime = table.where("id", id).singleDateTime(connection, "updated_at");
-        Instant updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        Instant createdTime = table.where("id", id).singleInstant(connection, "updated_at");
+        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at");
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "another value").execute(connection);
-        assertThat(table.where("id", id).singleDateTime(connection, "updated_at"))
+        assertThat(table.where("id", id).singleInstant(connection, "updated_at"))
             .isAfter(updatedTime);
-        assertThat(table.where("id", id).singleDateTime(connection, "created_at"))
+        assertThat(table.where("id", id).singleInstant(connection, "created_at"))
             .isEqualTo(createdTime);
     }
 
@@ -154,11 +154,11 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", "original value")
                 .execute(connection)
                 .getId();
-        Instant updatedTime = table.where("id", id).singleDateTime(connection, "updated_at");
+        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at");
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "original value").execute(connection);
-        assertThat(table.where("id", id).singleDateTime(connection, "updated_at"))
+        assertThat(table.where("id", id).singleInstant(connection, "updated_at"))
             .isEqualTo(updatedTime);
     }
 

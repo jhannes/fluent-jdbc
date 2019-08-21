@@ -36,8 +36,8 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
         String query = createSelectStatement();
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = new DatabaseResult(stmt)) {
+            bindParameters(stmt);
+            try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
                 return result.list(mapper);
             }
         } catch (SQLException e) {
@@ -76,8 +76,8 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
         String query = createSelectStatement();
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = new DatabaseResult(stmt)) {
+            bindParameters(stmt);
+            try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
                 return result.single(mapper);
             }
         } catch (SQLException e) {
@@ -86,6 +86,10 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
             logger.debug("time={}s query=\"{}\"",
                     (System.currentTimeMillis()-startTime)/1000.0, query);
         }
+    }
+
+    private int bindParameters(PreparedStatement stmt) throws SQLException {
+        return bindParameters(stmt, parameters);
     }
 
     @Override
@@ -112,7 +116,7 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
 
     @Nullable
     @Override
-    public Instant singleDateTime(Connection connection, final String fieldName) {
+    public Instant singleInstant(Connection connection, final String fieldName) {
         return singleObject(connection, new RowMapper<Instant>() {
             @Override
             public Instant mapRow(DatabaseRow row) throws SQLException {
@@ -122,15 +126,18 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
     }
 
     private String createSelectStatement() {
-        return "select * from " + table.getTableName()
+        return "select *" + fromClause()
                 + (conditions.isEmpty() ? "" : " where " + join(" AND ", conditions))
                 + (orderByClauses.isEmpty() ? "" : " order by " + join(", ", orderByClauses));
     }
 
+    protected String fromClause() {
+        return " from " + table.getTableName();
+    }
+
     @Override
     public DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value) {
-        String expression = fieldName + " = ?";
-        return whereExpression(expression, value);
+        return whereExpression(fieldName + " = ?", value);
     }
 
     @Override
@@ -145,12 +152,14 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
         return this;
     }
 
+    @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
         whereExpression(expression);
         parameters.add(parameter);
         return this;
     }
 
+    @Override
     public DatabaseQueryBuilder whereExpression(String expression) {
         conditions.add(expression);
         return this;

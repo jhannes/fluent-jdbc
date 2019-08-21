@@ -142,9 +142,9 @@ public class FluentJdbcContextDemonstrationTest {
                 .getId();
         Thread.sleep(10);
 
-        assertThat(tableContext.where("id", id).singleDateTime("created_at"))
+        assertThat(tableContext.where("id", id).singleInstant("created_at"))
             .isAfter(start).isBefore(Instant.now());
-        assertThat(tableContext.where("id", id).singleDateTime("updated_at"))
+        assertThat(tableContext.where("id", id).singleInstant("updated_at"))
             .isAfter(start).isBefore(Instant.now());
     }
 
@@ -156,14 +156,14 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", "demo row")
                 .execute()
                 .getId();
-        Instant createdTime = tableContext.where("id", id).singleDateTime("updated_at");
-        Instant updatedTime = tableContext.where("id", id).singleDateTime("updated_at");
+        Instant createdTime = tableContext.where("id", id).singleInstant("updated_at");
+        Instant updatedTime = tableContext.where("id", id).singleInstant("updated_at");
         Thread.sleep(10);
 
         tableContext.newSaveBuilder("id", id).setField("name", "another value").execute();
-        assertThat(tableContext.where("id", id).singleDateTime("updated_at"))
+        assertThat(tableContext.where("id", id).singleInstant("updated_at"))
             .isAfter(updatedTime);
-        assertThat(tableContext.where("id", id).singleDateTime("created_at"))
+        assertThat(tableContext.where("id", id).singleInstant("created_at"))
             .isEqualTo(createdTime);
     }
 
@@ -175,11 +175,11 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", "original value")
                 .execute()
                 .getId();
-        Instant updatedTime = tableContext.where("id", id).singleDateTime("updated_at");
+        Instant updatedTime = tableContext.where("id", id).singleInstant("updated_at");
         Thread.sleep(10);
 
         tableContext.newSaveBuilder("id", id).setField("name", "original value").execute();
-        assertThat(tableContext.where("id", id).singleDateTime("updated_at"))
+        assertThat(tableContext.where("id", id).singleInstant("updated_at"))
             .isEqualTo(updatedTime);
     }
 

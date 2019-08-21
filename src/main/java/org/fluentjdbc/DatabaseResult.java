@@ -2,7 +2,6 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -19,8 +18,8 @@ public class DatabaseResult implements AutoCloseable {
     private ResultSet resultSet;
     private Map<String, DatabaseRow> tableRows = new HashMap<>();
 
-    public DatabaseResult(PreparedStatement stmt) throws SQLException {
-        resultSet = stmt.executeQuery();
+    public DatabaseResult(ResultSet resultSet) {
+        this.resultSet = resultSet;
     }
 
     @Override
@@ -43,7 +42,7 @@ public class DatabaseResult implements AutoCloseable {
     public <T> List<T> list(RowMapper<T> mapper) throws SQLException {
         List<T> result = new ArrayList<>();
         while (next()) {
-            result.add(mapper.mapRow(new DatabaseRow(resultSet)));
+            result.add(mapper.mapRow(createDatabaseRow(resultSet)));
         }
         return result;
     }
@@ -53,11 +52,15 @@ public class DatabaseResult implements AutoCloseable {
         if (!next()) {
             return null;
         }
-        T result = mapper.mapRow(new DatabaseRow(resultSet));
+        T result = mapper.mapRow(createDatabaseRow(resultSet));
         if (next()) {
             throw new IllegalStateException("More than one row returned");
         }
         return result;
+    }
+
+    protected DatabaseRow createDatabaseRow(ResultSet resultSet) throws SQLException {
+        return new DatabaseRow(this.resultSet);
     }
 
 }

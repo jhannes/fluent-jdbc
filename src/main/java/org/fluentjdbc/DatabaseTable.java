@@ -10,7 +10,9 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public interface DatabaseTable {
+public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuilder> {
+
+    DatabaseTableAlias alias(String alias);
 
     @FunctionalInterface
     interface RowMapper<T> {
@@ -31,18 +33,7 @@ public interface DatabaseTable {
 
     <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 
-    DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value);
-
-    DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value);
-
-    DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters);
-
-    DatabaseSimpleQueryBuilder whereExpression(String expression);
-
-    DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter);
-
     DatabaseSimpleQueryBuilder whereAll(List<String> uniqueKeyFields, List<Object> uniqueKeyValues);
-
 
     DatabaseInsertBuilder insert();
 

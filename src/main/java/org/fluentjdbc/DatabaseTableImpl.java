@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import java.sql.Connection;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,6 +13,11 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     public DatabaseTableImpl(String tableName) {
         this.tableName = tableName;
+    }
+
+    @Override
+    public DatabaseTableAlias alias(String alias) {
+        return new DatabaseTableAlias(this, alias);
     }
 
     @Override
@@ -45,11 +51,6 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseSimpleQueryBuilder whereIn(String fieldName, List<?> parameters) {
-        return new DatabaseQueryBuilder(this).whereIn(fieldName, parameters);
-    }
-
-    @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression) {
         return new DatabaseQueryBuilder(this).whereExpression(expression);
     }
@@ -67,6 +68,11 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
         return new DatabaseQueryBuilder(this).whereAll(fieldNames, values);
+    }
+
+    @Override
+    public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
+        return new DatabaseQueryBuilder(this).whereIn(fieldName, parameters);
     }
 
     @Override

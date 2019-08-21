@@ -7,7 +7,9 @@ import java.util.UUID;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 
-public class DbTableContext {
+import javax.annotation.Nullable;
+
+public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
 
     private DatabaseTable table;
     private DbContext dbContext;
@@ -45,6 +47,9 @@ public class DbTableContext {
         return new DbSelectContext(this).whereExpression(expression);
     }
 
+    public DbSelectContext whereExpression(String expression, @Nullable Object value) {
+        return new DbSelectContext(this).whereExpression(expression, value);
+    }
 
     public <T> List<T> listObjects(RowMapper<T> mapper) {
         return new DbSelectContext(this).listObjects(mapper);

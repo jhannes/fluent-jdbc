@@ -8,7 +8,9 @@ import java.util.stream.Stream;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 
-public class DbSelectContext implements DbListableSelectContext {
+import javax.annotation.Nullable;
+
+public class DbSelectContext implements DbListableSelectContext, DatabaseQueriable<DbSelectContext> {
 
     private DbTableContext dbTableContext;
     private DatabaseQueryBuilder queryBuilder;
@@ -18,21 +20,31 @@ public class DbSelectContext implements DbListableSelectContext {
         queryBuilder = new DatabaseQueryBuilder(dbTableContext.getTable());
     }
 
+    @Override
     public DbSelectContext where(String fieldName, Object value) {
         queryBuilder.where(fieldName, value);
         return this;
     }
 
-    public DbSelectContext whereOptional(String fieldName, Object value) {
+    @Override
+    public DbSelectContext whereOptional(String fieldName, @Nullable Object value) {
         queryBuilder.whereOptional(fieldName, value);
         return this;
     }
 
+    @Override
     public DbSelectContext whereExpression(String expression) {
         queryBuilder.whereExpression(expression);
         return this;
     }
 
+    @Override
+    public DbSelectContext whereExpression(String expression, Object value) {
+        queryBuilder.whereExpression(expression, value);
+        return this;
+    }
+
+    @Override
     public DbSelectContext whereIn(String fieldName, Collection<?> parameters) {
         queryBuilder.whereIn(fieldName, parameters);
         return this;
@@ -90,8 +102,8 @@ public class DbSelectContext implements DbListableSelectContext {
         return queryBuilder.singleLong(getConnection(), fieldName);
     }
 
-    public Instant singleDateTime(String fieldName) {
-        return queryBuilder.singleDateTime(getConnection(), fieldName);
+    public Instant singleInstant(String fieldName) {
+        return queryBuilder.singleInstant(getConnection(), fieldName);
     }
 
     public DbContextUpdateBuilder update() {
