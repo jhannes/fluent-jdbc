@@ -38,7 +38,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     public void createTable() throws SQLException {
         dropTableIfExists(connection, "database_table_test_table");
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, comment varchar(100) null)"));
         }
     }
 
@@ -108,6 +108,27 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         assertThat(table.where("id", id).singleString(connection, "name"))
             .isEqualTo("New name");
     }
+
+    @Test
+    public void shouldUpdateIfPresent() throws SQLException {
+        Object id = table.insert()
+                .setPrimaryKey("id", null)
+                .setField("code", 1004)
+                .setField("name", "oldName")
+                .setField("comment", "oldComment")
+                .execute(connection);
+
+        table.where("id", id).update().setFieldIfPresent("name", null).execute(connection);
+
+        table.where("id", id).update()
+                .setFieldIfPresent("name", null)
+                .setFieldIfPresent("comment", "newComment")
+                .execute(connection);
+
+        assertThat(table.where("id", id).singleString(connection, "name")).isEqualTo("oldName");
+        assertThat(table.where("id", id).singleString(connection, "comment")).isEqualTo("newComment");
+    }
+
 
     @Test
     public void shouldDelete() throws SQLException {

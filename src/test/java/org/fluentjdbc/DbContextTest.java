@@ -3,11 +3,9 @@ package org.fluentjdbc;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Java6Assertions.assertThat;
 
-import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
 import org.h2.jdbcx.JdbcDataSource;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -136,6 +134,29 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldReadFromCache() {
+        Object id = tableContext.insert()
+                .setPrimaryKey("id", null)
+                .setField("code", 1005)
+                .setField("name", "hello")
+                .execute();
+
+        String retrievedValue = tableContext.cache(id, i -> tableContext.where("id", i)
+                .singleObject(row -> row.getString("name")));
+        assertThat(retrievedValue).isEqualTo("hello");
+
+        tableContext.where("id", id)
+                .update()
+                .setField("name", "updated")
+                .execute();
+
+        retrievedValue = tableContext.cache(id,
+                i -> tableContext.where("id", i)
+                    .singleObject(row -> row.getString("name")));
+        assertThat(retrievedValue).isEqualTo("hello");
+    }
+
+    @Test
     public void shouldDelete() {
         Long id = (Long) tableContext.insert()
                 .setPrimaryKey("id", null)
@@ -151,18 +172,14 @@ public class DbContextTest {
 
     @Test
     public void shouldThrowOnMissingColumn() {
-        final Object id = tableContext.insert()
+        final Object id;
+        id = tableContext.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1234)
                 .setField("name", "testing")
                 .execute();
 
-        assertThatThrownBy(new ThrowingCallable() {
-            @Override
-            public void call() {
-                tableContext.where("id", id).singleString("non_existing");
-            }
-        })
+        assertThatThrownBy(() -> tableContext.where("id", id).singleString("non_existing"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Column {non_existing} is not present");
     }
@@ -172,12 +189,7 @@ public class DbContextTest {
         tableContext.insert().setField("code", 123).setField("name", "the same name").execute();
         tableContext.insert().setField("code", 456).setField("name", "the same name").execute();
 
-        assertThatThrownBy(new ThrowingCallable() {
-            @Override
-            public void call() {
-                tableContext.where("name", "the same name").singleLong("code");
-            }
-        }).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> tableContext.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
 
     }
 

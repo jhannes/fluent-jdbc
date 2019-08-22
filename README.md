@@ -27,9 +27,9 @@ assertThat(table.where("name", "insertTest").orderBy("code").listLongs(connectio
 
 * `docker run --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=... -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest`
 * `docker exec -it sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ...`
-* `create login fluentjdbc_test with password '...'; go`
+* `create login fluentjdbc_test with password = '...'; go`
 * `create database fluentjdbc_test; go`
 * `create user fluentjdbc_test for login fluentjdbc_test; go`
-* `use database fluentjdbc_test; go`
+* `use fluentjdbc_test; go`
 * `EXEC sp_changedbowner 'fluentjdbc_test'; go`
 * Set `-Dtest.db.sqlserver.password=...` when running the test
