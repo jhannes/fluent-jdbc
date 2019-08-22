@@ -47,6 +47,9 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
 
 
     public void execute(Connection connection) {
+        if (updateFields.isEmpty()) {
+            return;
+        }
         List<Object> parameters = new ArrayList<>();
         parameters.addAll(updateValues);
         parameters.addAll(whereParameters);

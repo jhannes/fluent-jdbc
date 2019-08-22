@@ -19,26 +19,16 @@ import java.util.stream.Collectors;
 public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
     private final DatabaseTableAlias table;
     private List<JoinedTable> joinedTables = new ArrayList<>();
-    protected List<String> conditions = new ArrayList<>();
-    protected List<Object> parameters = new ArrayList<>();
-    protected List<String> orderByClauses = new ArrayList<>();
+    private List<String> conditions = new ArrayList<>();
+    private List<Object> parameters = new ArrayList<>();
+    private List<String> orderByClauses = new ArrayList<>();
 
     public DatabaseJoinedQueryBuilder(DatabaseTableAlias table) {
         this.table = table;
     }
 
     @Override
-    public String singleString(Connection connection, String string) {
-        return null;
-    }
-
-    @Override
     public <T> T singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
-        return null;
-    }
-
-    @Override
-    public Instant singleInstant(Connection connection, String fieldName) {
         return null;
     }
 
@@ -50,11 +40,6 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     @Override
     public void delete(Connection connection) {
 
-    }
-
-    @Override
-    public Number singleLong(Connection connection, String fieldName) {
-        return null;
     }
 
     @Override

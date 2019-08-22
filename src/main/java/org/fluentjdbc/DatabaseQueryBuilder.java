@@ -92,39 +92,6 @@ public class DatabaseQueryBuilder extends DatabaseStatement implements DatabaseS
         return bindParameters(stmt, parameters);
     }
 
-    @Override
-    @Nullable
-    public String singleString(Connection connection, final String fieldName) {
-        return singleObject(connection, new RowMapper<String>() {
-            @Override
-            public String mapRow(DatabaseRow row) throws SQLException {
-                return row.getString(fieldName);
-            }
-        });
-    }
-
-    @Nullable
-    @Override
-    public Number singleLong(Connection connection, final String fieldName) {
-        return singleObject(connection, new RowMapper<Number>() {
-            @Override
-            public Number mapRow(DatabaseRow row) throws SQLException {
-                return row.getLong(fieldName);
-            }
-        });
-    }
-
-    @Nullable
-    @Override
-    public Instant singleInstant(Connection connection, final String fieldName) {
-        return singleObject(connection, new RowMapper<Instant>() {
-            @Override
-            public Instant mapRow(DatabaseRow row) throws SQLException {
-                return row.getInstant(fieldName);
-            }
-        });
-    }
-
     private String createSelectStatement() {
         return "select *" + fromClause()
                 + (conditions.isEmpty() ? "" : " where " + join(" AND ", conditions))
