@@ -1,6 +1,5 @@
 package org.fluentjdbc;
 
-import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -13,6 +12,16 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     public DatabaseTableImpl(String tableName) {
         this.tableName = tableName;
+    }
+
+    @Override
+    public DatabaseListableQueryBuilder unordered() {
+        return new DatabaseTableQueryBuilder(this);
+    }
+
+    @Override
+    public DatabaseListableQueryBuilder orderBy(String orderByClause) {
+        return new DatabaseTableQueryBuilder(this).orderBy(orderByClause);
     }
 
     @Override
@@ -41,38 +50,28 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseSimpleQueryBuilder where(String fieldName, @Nullable Object value) {
-        return new DatabaseQueryBuilder(this).where(fieldName, value);
-    }
-
-    @Override
     public DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
-        return new DatabaseQueryBuilder(this).whereOptional(fieldName, value);
+        return new DatabaseTableQueryBuilder(this).whereOptional(fieldName, value);
     }
 
     @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression) {
-        return new DatabaseQueryBuilder(this).whereExpression(expression);
+        return new DatabaseTableQueryBuilder(this).whereExpression(expression);
     }
 
     @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter) {
-        return new DatabaseQueryBuilder(this).whereExpression(expression, parameter);
-    }
-
-    @Override
-    public <T> List<T> listObjects(Connection connection, RowMapper<T> mapper) {
-        return new DatabaseQueryBuilder(this).list(connection, mapper);
+        return new DatabaseTableQueryBuilder(this).whereExpression(expression, parameter);
     }
 
     @Override
     public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
-        return new DatabaseQueryBuilder(this).whereAll(fieldNames, values);
+        return new DatabaseTableQueryBuilder(this).whereAll(fieldNames, values);
     }
 
     @Override
     public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
-        return new DatabaseQueryBuilder(this).whereIn(fieldName, parameters);
+        return new DatabaseTableQueryBuilder(this).whereIn(fieldName, parameters);
     }
 
     @Override

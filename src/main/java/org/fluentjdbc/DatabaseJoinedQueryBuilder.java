@@ -8,7 +8,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -16,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
+public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
     private final DatabaseTableAlias table;
     private List<JoinedTable> joinedTables = new ArrayList<>();
     private List<String> conditions = new ArrayList<>();
@@ -28,28 +27,18 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     }
 
     @Override
-    public <T> T singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
-        return null;
-    }
-
-    @Override
-    public DatabaseUpdateBuilder update() {
-        return null;
-    }
-
-    @Override
-    public void delete(Connection connection) {
-
-    }
-
-    @Override
-    public DatabaseListableQueryBuilder unordered() {
+    public DatabaseJoinedQueryBuilder unordered() {
         return this;
     }
 
+    public DatabaseJoinedQueryBuilder orderBy(DatabaseColumnReference column) {
+        return orderBy(column.getQualifiedColumnName());
+    }
+
     @Override
-    public DatabaseListableQueryBuilder orderBy(String orderByClause) {
-        return null;
+    public DatabaseJoinedQueryBuilder orderBy(String orderByClause) {
+        orderByClauses.add(orderByClause);
+        return this;
     }
 
     @Override
@@ -65,8 +54,10 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     }
 
     @Override
-    public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
-        return null;
+    public DatabaseJoinedQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
+        whereExpression(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
+        this.parameters.addAll(parameters);
+        return this;
     }
 
     @Override
@@ -77,7 +68,8 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
 
     @Override
     public DatabaseJoinedQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
-        return null;
+        if (value == null) return this;
+        return where(fieldName, value);
     }
 
     public DatabaseJoinedQueryBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
@@ -88,6 +80,24 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     protected String fromClause() {
         return " from " + table.getTableNameAndAlias() + " " +
                 joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
+    }
+
+    @Override
+    public <T> T singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
+        long startTime = System.currentTimeMillis();
+        String query = createSelectStatement();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
+            bindParameters(stmt, parameters);
+            try (DatabaseResult result = createResult(stmt.executeQuery())) {
+                return result.single(mapper);
+            }
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"",
+                    (System.currentTimeMillis()-startTime)/1000.0, query);
+        }
     }
 
     @Override
@@ -153,16 +163,6 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
 
     private String whereClause() {
         return conditions.isEmpty() ? "" : " where " + join(" AND ", conditions);
-    }
-
-    @Override
-    public List<Long> listLongs(Connection connection, String fieldName) {
-        return null;
-    }
-
-    @Override
-    public List<String> listStrings(Connection connection, String fieldName) {
-        return null;
     }
 
     private class JoinedTable {

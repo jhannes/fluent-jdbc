@@ -10,20 +10,14 @@ import org.fluentjdbc.DatabaseTable.RowMapper;
 
 import javax.annotation.Nullable;
 
-public class DbSelectContext implements DbListableSelectContext, DatabaseQueriable<DbSelectContext> {
+public class DbSelectContext implements DbListableSelectContext<DbSelectContext> {
 
     private DbTableContext dbTableContext;
-    private DatabaseQueryBuilder queryBuilder;
+    private DatabaseTableQueryBuilder queryBuilder;
 
     public DbSelectContext(DbTableContext dbTableContext) {
         this.dbTableContext = dbTableContext;
-        queryBuilder = new DatabaseQueryBuilder(dbTableContext.getTable());
-    }
-
-    @Override
-    public DbSelectContext where(String fieldName, Object value) {
-        queryBuilder.where(fieldName, value);
-        return this;
+        queryBuilder = new DatabaseTableQueryBuilder(dbTableContext.getTable());
     }
 
     @Override
@@ -60,17 +54,8 @@ public class DbSelectContext implements DbListableSelectContext, DatabaseQueriab
         return this;
     }
 
-    public List<Long> listLongs(String fieldName) {
-        return queryBuilder.listLongs(getConnection(), fieldName);
-    }
-
     private Connection getConnection() {
         return dbTableContext.getConnection();
-    }
-
-    @Override
-    public List<String> listStrings(String fieldName) {
-        return queryBuilder.listStrings(getConnection(), fieldName);
     }
 
     public void executeDelete() {
@@ -83,10 +68,6 @@ public class DbSelectContext implements DbListableSelectContext, DatabaseQueriab
 
     @Override
     public <T> List<T> list(RowMapper<T> mapper) {
-        return listObjects(mapper);
-    }
-
-    public <T> List<T> listObjects(RowMapper<T> mapper) {
         return queryBuilder.list(getConnection(), mapper);
     }
 

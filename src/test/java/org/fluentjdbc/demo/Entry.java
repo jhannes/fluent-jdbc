@@ -60,10 +60,6 @@ public class Entry {
         return entriesTable.where("id", id).singleObject(connection, createRowMapper());
     }
 
-    public static List<Entry> list(Connection connection) {
-        return entriesTable.listObjects(connection, createRowMapper());
-    }
-
     private static RowMapper<Entry> createRowMapper() {
         return new RowMapper<Entry>() {
             @Override

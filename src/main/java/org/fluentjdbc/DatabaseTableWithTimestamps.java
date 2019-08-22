@@ -6,7 +6,7 @@ import java.util.List;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class DatabaseTableWithTimestamps extends DatabaseTableImpl implements DatabaseTable {
+public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
 
     public DatabaseTableWithTimestamps(String tableName) {
         super(tableName);

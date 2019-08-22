@@ -1,0 +1,87 @@
+@startuml
+
+interface DatabaseQueriable<T extends DatabaseQueriable> {
+    whereExpression : T
+    whereExpression : T
+    whereOptional : T
+    whereIn : T
+    where : T
+}
+
+interface DatabaseQueryBuilder<T> extends DatabaseQueriable {
+    unordered() : DatabaseListableQueryBuilder
+    orderedBy() : DatabaseListableQueryBuilder
+
+    singleObject(column, Connection)
+    singleString(column, Connection)
+    singleLong(column, Connection)
+    singleInstant(column, Connection)
+}
+
+interface DatabaseSimpleQueryBuilder<T> extends DatabaseQueryBuilder {
+    update()
+    delete()
+}
+
+interface DatabaseTable extends DatabaseQueriable {
+   unordered() : DatabaseListableQueryBuilder
+   orderedBy() : DatabaseListableQueryBuilder
+
+   alias() : DatabaseTableAlias
+
+   insert() : DatabaseInsertBuilder
+   bulkInsert() : DatabaseBuildInsertBuilder
+
+   newSaveBuilder() : DatabaseSaveBuilder
+}
+
+interface DatabaseListableQueryBuilder {
+    orderedBy() : DatabaseListableQueryBuilder
+    list(Connection) : List<T>
+    listStrings(Connection, column) : List<String>
+    listLongs(Connection, column) : List<Long>
+    listInstants(Connection, column) : List<Instant>
+}
+
+class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
+    update()
+    delete()
+
+    - statement : DatabaseStatement
+}
+
+class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder, DatabaseListableQueryBuilder {
+    join() : DatabaseJoinedQueryBuilder
+    - statement : DatabaseStatement
+}
+
+class DatabaseTableImpl implements DatabaseTable {
+}
+
+class DatabaseTableWithTimestamps extends DatabaseTableImpl {
+}
+
+package dbcontext {
+
+    interface DbListableSelectContext extends DatabaseQueriable {
+        list() : List<T>
+        listStrings() : List<String>
+        listLongs() : List<Long>
+        listInstants() : List<Instant>
+    }
+
+    class DbTableContext implements DatabaseQueriable {
+    }
+
+    class DbSelectContext implements DbListableSelectContext {
+        singleObject
+        singleString
+        singleLong
+        singleInstant
+    }
+
+    DbTableContext .right.> DbSelectContext: creates
+}
+@enduml
+
+

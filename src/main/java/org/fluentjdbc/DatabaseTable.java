@@ -12,6 +12,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuilder> {
 
+    DatabaseListableQueryBuilder unordered();
+
+    DatabaseListableQueryBuilder orderBy(String orderByClause);
+
     DatabaseTableAlias alias(String alias);
 
     @FunctionalInterface
@@ -30,8 +34,6 @@ public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuil
     DatabaseSaveBuilder<Long> newSaveBuilderNoGeneratedKeys(String idColumn, @Nullable Long idValue);
 
     DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String fieldName, @Nullable UUID uuid);
-
-    <T> List<T> listObjects(Connection connection, RowMapper<T> mapper);
 
     DatabaseSimpleQueryBuilder whereAll(List<String> uniqueKeyFields, List<Object> uniqueKeyValues);
 

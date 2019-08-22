@@ -67,7 +67,7 @@ public class TagType {
     }
 
     public static List<TagType> list(Connection connection) {
-        return tagTypesTable.listObjects(connection, createRowMapper());
+        return tagTypesTable.orderBy("name").list(connection, createRowMapper());
     }
 
     public static TagType retrieve(Connection connection, @NonNull Long id) {

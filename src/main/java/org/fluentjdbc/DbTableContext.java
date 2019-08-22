@@ -27,10 +27,6 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return new DbInsertContext(this);
     }
 
-    public DbSelectContext where(String propertyName, Object value) {
-        return new DbSelectContext(this).where(propertyName, value);
-    }
-
     public DatabaseTable getTable() {
         return table;
     }
@@ -51,8 +47,12 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return new DbSelectContext(this).whereExpression(expression, value);
     }
 
-    public <T> List<T> listObjects(RowMapper<T> mapper) {
-        return new DbSelectContext(this).listObjects(mapper);
+    public DbSelectContext unordered() {
+        return new DbSelectContext(this);
+    }
+
+    public DbSelectContext orderedBy(String orderByClause) {
+        return new DbSelectContext(this).orderBy(orderByClause);
     }
 
     public Connection getConnection() {

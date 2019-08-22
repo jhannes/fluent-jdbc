@@ -20,6 +20,10 @@ assertThat(table.where("name", "insertTest").orderBy("code").listLongs(connectio
 
 ```
 
+## Central classes
+
+![Class diagram](doc/classes.png)
+
 
 # Notes on running databases with docker
 

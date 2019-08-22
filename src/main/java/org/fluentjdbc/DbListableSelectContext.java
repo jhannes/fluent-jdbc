@@ -4,10 +4,15 @@ import java.util.List;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 
-public interface DbListableSelectContext {
+public interface DbListableSelectContext<T extends DbListableSelectContext<T>> extends DatabaseQueriable<T> {
 
-    List<String> listStrings(String fieldName);
+    <OBJECT> List<OBJECT> list(RowMapper<OBJECT> object);
 
-    <T> List<T> list(RowMapper<T> object);
+    default List<String> listStrings(String fieldName) {
+        return list(row -> row.getString(fieldName));
+    }
 
+    default List<Long> listLongs(String fieldName) {
+        return list(row -> row.getLong(fieldName));
+    }
 }

@@ -165,7 +165,7 @@ public class DbContextTest {
                 .execute();
 
         tableContext.where("name", "hello").executeDelete();
-        assertThat(tableContext.listObjects(row -> row.getLong("id")))
+        assertThat(tableContext.unordered().listLongs("id"))
             .doesNotContain(id);
     }
 

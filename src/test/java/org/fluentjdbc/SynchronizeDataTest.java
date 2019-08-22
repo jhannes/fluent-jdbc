@@ -66,13 +66,7 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
     }
 
     private void synchronize(Connection serverConnection, Connection clientConnection) throws SQLException {
-        List<String> names = table.listObjects(serverConnection, new RowMapper<String>() {
-            @Override
-            public String mapRow(DatabaseRow row) throws SQLException {
-                return row.getString("name");
-            }
-        });
-
+        List<String> names = table.unordered().list(serverConnection, row -> row.getString("name"));
         for (String name : names) {
             table.newSaveBuilder("id", null).setField("name", name).execute(clientConnection);
         }

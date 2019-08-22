@@ -11,6 +11,10 @@ public class DatabaseTableAlias {
         this.alias = alias;
     }
 
+    public DatabaseJoinedQueryBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
+        return new DatabaseJoinedQueryBuilder(this).join(a, b);
+    }
+
     public DatabaseJoinedQueryBuilder where(String fieldName, String value) {
         return new DatabaseJoinedQueryBuilder(this).where(fieldName, value);
     }
@@ -40,4 +44,5 @@ public class DatabaseTableAlias {
     public String getTableNameAndAlias() {
         return getTableName() + " " + getAlias();
     }
+
 }

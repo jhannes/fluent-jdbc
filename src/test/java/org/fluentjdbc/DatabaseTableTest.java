@@ -135,7 +135,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         Long id = (Long) table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
 
         table.where("name", "hello").delete(connection);
-        assertThat(table.listObjects(connection, row -> row.getLong("id")))
+        assertThat(table.unordered().listLongs(connection, "id"))
             .doesNotContain(id);
     }
 
@@ -160,12 +160,8 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldThrowOnMissingTable() {
-        assertThatThrownBy(new ThrowingCallable() {
-            @Override
-            public void call() {
-                missingTable.where("id", 12).singleLong(connection, "id");
-            }
-        }).isInstanceOf(SQLException.class);
+        assertThatThrownBy(() -> missingTable.where("id", 12).singleLong(connection, "id"))
+                .isInstanceOf(SQLException.class);
 
         assertThatThrownBy(new ThrowingCallable() {
             @Override
