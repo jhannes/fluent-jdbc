@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class AbstractDatabaseTest {
 
@@ -21,6 +22,11 @@ public class AbstractDatabaseTest {
                 .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
                 .replaceAll(Pattern.quote("${BOOLEAN}"), replacements.get("BOOLEAN"))
                 ;
+    }
+
+    protected void dropTablesIfExists(Connection connection, String... tableNames) {
+
+        Stream.of(tableNames).forEach(t -> dropTableIfExists(connection, t));
     }
 
     protected void dropTableIfExists(Connection connection, String tableName) {
