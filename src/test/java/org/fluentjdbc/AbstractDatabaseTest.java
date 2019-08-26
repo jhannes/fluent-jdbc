@@ -25,7 +25,6 @@ public class AbstractDatabaseTest {
     }
 
     protected void dropTablesIfExists(Connection connection, String... tableNames) {
-
         Stream.of(tableNames).forEach(t -> dropTableIfExists(connection, t));
     }
 

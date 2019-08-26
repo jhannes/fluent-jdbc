@@ -3,24 +3,30 @@ package org.fluentjdbc;
 import java.util.Objects;
 
 public class DatabaseColumnReference {
-    private final DatabaseTableAlias alias;
     private final String columnName;
+    private final String tableName;
+    private final DatabaseTableAlias alias;
 
     DatabaseColumnReference(DatabaseTableAlias alias, String columnName) {
-        this.alias = alias;
         this.columnName = columnName;
+        this.tableName = alias.getTableName();
+        this.alias = alias;
+    }
+
+    public DatabaseTableAlias getTableAlias() {
+        return alias;
     }
 
     public String getTableName() {
-        return alias.getTableName();
+        return tableName;
     }
 
     public String getQualifiedColumnName() {
         return alias.getAlias() + "." + columnName;
     }
 
-    public DatabaseTableAlias getTableAlias() {
-        return alias;
+    public String getTableNameAndAlias() {
+        return alias.getTableNameAndAlias();
     }
 
     @Override
@@ -39,6 +45,6 @@ public class DatabaseColumnReference {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + getQualifiedColumnName() + " in " + alias.getTableNameAndAlias() + "]";
+        return getClass().getSimpleName() + "[" + getQualifiedColumnName() + " in " + getTableNameAndAlias() + "]";
     }
 }

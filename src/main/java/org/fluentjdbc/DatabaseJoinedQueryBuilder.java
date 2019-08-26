@@ -122,7 +122,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         Map<DatabaseColumnReference, Integer> columnMap = new LinkedHashMap<>();
         List<DatabaseTableAlias> aliases = new ArrayList<>();
         aliases.add(table);
-        joinedTables.stream().map(t -> t.getAlias()).forEach(aliases::add);
+        joinedTables.stream().map(JoinedTable::getAlias).forEach(aliases::add);
         int index = 0;
 
         // Unfortunately, even though the database should know the alias for the each table, JDBC doesn't reveal it
@@ -147,7 +147,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
 
         return new DatabaseResult(rs) {
             @Override
-            protected DatabaseRow createDatabaseRow(ResultSet resultSet) throws SQLException {
+            protected DatabaseRow createDatabaseRow(ResultSet resultSet) {
                 return new DatabaseRow(resultSet, columnMap);
             }
         };
@@ -175,7 +175,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         }
 
         public String toSql() {
-            return "inner join " + b.getTableAlias().getTableNameAndAlias() + " on " + a.getQualifiedColumnName() + " = " + b.getQualifiedColumnName();
+            return "inner join " + b.getTableNameAndAlias() + " on " + a.getQualifiedColumnName() + " = " + b.getQualifiedColumnName();
         }
 
         @Override
@@ -183,7 +183,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
             return getClass().getSimpleName() + "[" + toSql() + "]";
         }
 
-        public DatabaseTableAlias getAlias() {
+        DatabaseTableAlias getAlias() {
             return b.getTableAlias();
         }
     }

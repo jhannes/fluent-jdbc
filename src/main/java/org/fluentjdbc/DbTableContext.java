@@ -71,4 +71,11 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return DbContext.cache(getTable().getTableName(), key, retriever);
     }
 
+    public DbTableAliasContext alias(String alias) {
+        return new DbTableAliasContext(this, alias);
+    }
+
+    public DbContext getDbContext() {
+        return dbContext;
+    }
 }
