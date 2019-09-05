@@ -86,7 +86,7 @@
             <version>7.3.0.jre8-preview</version>
             <scope>test</scope>
         </dependency>
-        
+
 
         <dependency>
             <groupId>org.logevents</groupId>
@@ -164,6 +164,14 @@
                     <targetTests>
                         <param>org.fluentjdbc*</param>
                     </targetTests>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <releaseProfiles>release</releaseProfiles>
                 </configuration>
             </plugin>
         </plugins>
