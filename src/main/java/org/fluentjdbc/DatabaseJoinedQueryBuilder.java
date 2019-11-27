@@ -55,6 +55,9 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
 
     @Override
     public DatabaseJoinedQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
+        if (parameters.isEmpty()) {
+            throw new IllegalArgumentException("Can't do " + fieldName + " IN (....) with empty list");
+        }
         whereExpression(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
         this.parameters.addAll(parameters);
         return this;

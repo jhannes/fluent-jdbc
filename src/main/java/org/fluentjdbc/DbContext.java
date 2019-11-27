@@ -6,12 +6,16 @@ import java.util.HashMap;
 
 public class DbContext {
 
+    public DbTableContext table(DatabaseTable table) {
+        return new DbTableContext(table, this);
+    }
+
     public DbTableContext table(String tableName) {
-        return new DbTableContext(tableName, this);
+        return table(new DatabaseTableImpl(tableName));
     }
 
     public DbTableContext tableWithTimestamps(String tableName) {
-        return new DbTableContext(new DatabaseTableWithTimestamps(tableName), this);
+        return table(new DatabaseTableWithTimestamps(tableName));
     }
 
     public DbContextConnection startConnection(DataSource dataSource) {

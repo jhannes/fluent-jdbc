@@ -14,10 +14,6 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
     private DatabaseTable table;
     private DbContext dbContext;
 
-    public DbTableContext(String tableName, DbContext dbContext) {
-        this(new DatabaseTableImpl(tableName), dbContext);
-    }
-
     public DbTableContext(DatabaseTable databaseTable, DbContext dbContext) {
         this.table = databaseTable;
         this.dbContext = dbContext;
