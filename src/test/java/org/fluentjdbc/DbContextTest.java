@@ -67,6 +67,49 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldBeAbleToTurnOffAutoCommits() throws InterruptedException {
+        final Thread thread = new Thread(() -> {
+            try (DbContextConnection ignored = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
+                tableContext.insert()
+                        .setField("code", 1001)
+                        .setField("name", "insertTest")
+                        .execute();
+            }
+        });
+        thread.start();
+        thread.join();
+
+        assertThat(tableContext.where("name", "insertTest").unordered().listLongs("code"))
+                .isEmpty();
+    }
+
+    @Test
+    public void shouldBeAbleToManuallyCommit() throws InterruptedException {
+        final Thread thread = new Thread(() -> {
+            try (DbContextConnection dbContextConnection = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
+                tableContext.insert()
+                        .setField("code", 1001)
+                        .setField("name", "insertTest")
+                        .execute();
+                dbContextConnection.commitTransaction();
+            }
+        });
+        thread.start();
+        thread.join();
+
+        assertThat(tableContext.where("name", "insertTest").unordered().listLongs("code"))
+                .containsExactly(1001L);
+    }
+
+    private ConnectionSupplier getConnectionWithoutAutoCommit() {
+        return () -> {
+            final Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+            return connection;
+        };
+    }
+
+    @Test
     public void shouldInsertWithoutKey() {
         tableContext.insert()
             .setField("code", 1001)
