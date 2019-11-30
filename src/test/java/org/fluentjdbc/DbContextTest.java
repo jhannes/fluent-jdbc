@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -64,6 +65,22 @@ public class DbContextTest {
                 stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null)"));
             }
         }
+    }
+
+    @Test
+    public void shouldHaveAccessToConnection() throws SQLException {
+        tableContext.insert()
+                .setField("code", 1001)
+                .setField("name", "customSqlTest")
+                .execute();
+
+        String customSql = String.format("select code from %s where name = 'customSqlTest'", tableContext.getTable().getTableName());
+        ResultSet resultSet = dbContext.getThreadConnection()
+                .prepareStatement(customSql)
+                .executeQuery();
+        resultSet.next();
+
+        assertThat(resultSet.getLong("code")).isEqualTo(1001);
     }
 
     @Test

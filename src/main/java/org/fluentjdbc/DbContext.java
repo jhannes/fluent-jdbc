@@ -31,7 +31,7 @@ public class DbContext {
         return currentConnection.get();
     }
 
-    Connection getThreadConnection() {
+    public Connection getThreadConnection() {
         if (currentConnection.get() == null) {
             throw new IllegalStateException("Call startConnection first");
         }
