@@ -53,6 +53,12 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return this;
     }
 
+    public DatabaseJoinedQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
+        whereExpression(expression);
+        this.parameters.addAll(parameters);
+        return this;
+    }
+
     @Override
     public DatabaseJoinedQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
         if (parameters.isEmpty()) {

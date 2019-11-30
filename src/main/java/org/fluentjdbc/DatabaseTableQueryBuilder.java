@@ -92,6 +92,12 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         return this;
     }
 
+    public DatabaseTableQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
+        whereExpression(expression);
+        this.parameters.addAll(parameters);
+        return this;
+    }
+
     @Override
     public DatabaseTableQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
         whereExpression(expression);

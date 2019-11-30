@@ -68,6 +68,23 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldHandleOrStatements() {
+        tableContext.insert()
+                .setField("code", 1001)
+                .setField("name", "A")
+                .execute();
+        tableContext.insert()
+                .setField("code", 1002)
+                .setField("name", "B")
+                .execute();
+
+        assertThat(tableContext.whereExpressionWithMultipleParameters("(name = ? OR name = ?)", Arrays.asList("A","B"))
+                .unordered()
+                .listLongs("code"))
+                .containsExactly(1001L, 1002L);
+    }
+
+    @Test
     public void shouldHaveAccessToConnection() throws SQLException {
         tableContext.insert()
                 .setField("code", 1001)

@@ -64,6 +64,10 @@ public class DatabaseTableImpl implements DatabaseTable {
         return new DatabaseTableQueryBuilder(this).whereExpression(expression, parameter);
     }
 
+    public DatabaseSimpleQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
+        return new DatabaseTableQueryBuilder(this).whereExpressionWithMultipleParameters(expression, parameters);
+    }
+
     @Override
     public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
         return new DatabaseTableQueryBuilder(this).whereAll(fieldNames, values);
