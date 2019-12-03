@@ -77,11 +77,21 @@ public class DbContextTest {
                 .setField("code", 1002)
                 .setField("name", "B")
                 .execute();
+        tableContext.insert()
+                .setField("code", 2001)
+                .setField("name", "C")
+                .execute();
+        tableContext.insert()
+                .setField("code", 2002)
+                .setField("name", "D")
+                .execute();
 
-        assertThat(tableContext.whereExpressionWithMultipleParameters("(name = ? OR name = ?)", Arrays.asList("A","B"))
+        assertThat(tableContext
+                .whereExpressionWithMultipleParameters("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
+                .whereExpressionWithMultipleParameters("(name = ? OR code > ?)", Arrays.asList("A", 2000L))
                 .unordered()
                 .listLongs("code"))
-                .containsExactly(1001L, 1002L);
+                .containsExactlyInAnyOrder(1001L, 2001L);
     }
 
     @Test
