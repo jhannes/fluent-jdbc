@@ -43,6 +43,10 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return new DbSelectContext(this).whereExpression(expression, value);
     }
 
+    public DbSelectContext whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
+        return new DbSelectContext(this).whereExpressionWithMultipleParameters(expression, parameters);
+    }
+
     public DbSelectContext unordered() {
         return new DbSelectContext(this);
     }

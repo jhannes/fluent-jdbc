@@ -5,6 +5,8 @@ import java.util.Collection;
 
 public interface DatabaseQueriable<T extends DatabaseQueriable<T>> {
 
+    T whereExpressionWithMultipleParameters(String expression, Collection<?> parameters);
+
     T whereExpression(String expression, @Nullable Object value);
 
     T whereExpression(String expression);

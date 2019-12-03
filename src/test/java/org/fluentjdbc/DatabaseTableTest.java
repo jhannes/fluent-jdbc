@@ -60,6 +60,24 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
             .containsExactly(1001L, 1002L);
     }
 
+
+
+    @Test
+    public void shouldHandleOrStatements() throws SQLException {
+        Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1001).setField("name", "A").execute(connection);
+        Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 1002).setField("name", "B").execute(connection);
+        Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 2001).setField("name", "C").execute(connection);
+        Object id4 = table.insert().setPrimaryKey("id", null).setField("code", 2002).setField("name", "D").execute(connection);
+
+        assertThat(table
+                .whereExpressionWithMultipleParameters("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
+                .whereExpressionWithMultipleParameters("(name = ? OR code > ?)", Arrays.asList("A", 2000L))
+                .unordered()
+                .listStrings(connection, "id"))
+                .containsOnly(id1.toString(), id3.toString())
+                .doesNotContain(id2.toString(), id4.toString());
+    }
+
     @Test
     public void shouldListOnWhereIn() throws SQLException {
         Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);

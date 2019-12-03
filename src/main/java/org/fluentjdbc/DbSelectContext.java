@@ -44,6 +44,12 @@ public class DbSelectContext implements DbListableSelectContext<DbSelectContext>
         return this;
     }
 
+    @Override
+    public DbSelectContext whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
+        queryBuilder.whereExpressionWithMultipleParameters(expression, parameters);
+        return this;
+    }
+
     public DbSelectContext orderBy(String orderByClause) {
         queryBuilder.orderBy(orderByClause);
         return this;

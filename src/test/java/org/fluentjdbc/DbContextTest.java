@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
@@ -64,6 +65,92 @@ public class DbContextTest {
                 stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null)"));
             }
         }
+    }
+
+    @Test
+    public void shouldHandleOrStatements() {
+        tableContext.insert()
+                .setField("code", 1001)
+                .setField("name", "A")
+                .execute();
+        tableContext.insert()
+                .setField("code", 1002)
+                .setField("name", "B")
+                .execute();
+        tableContext.insert()
+                .setField("code", 2001)
+                .setField("name", "C")
+                .execute();
+        tableContext.insert()
+                .setField("code", 2002)
+                .setField("name", "D")
+                .execute();
+
+        assertThat(tableContext
+                .whereExpressionWithMultipleParameters("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
+                .whereExpressionWithMultipleParameters("(name = ? OR code > ?)", Arrays.asList("A", 2000L))
+                .unordered()
+                .listLongs("code"))
+                .containsExactlyInAnyOrder(1001L, 2001L);
+    }
+
+    @Test
+    public void shouldHaveAccessToConnection() throws SQLException {
+        tableContext.insert()
+                .setField("code", 1001)
+                .setField("name", "customSqlTest")
+                .execute();
+
+        String customSql = String.format("select code from %s where name = 'customSqlTest'", tableContext.getTable().getTableName());
+        ResultSet resultSet = dbContext.getThreadConnection()
+                .prepareStatement(customSql)
+                .executeQuery();
+        resultSet.next();
+
+        assertThat(resultSet.getLong("code")).isEqualTo(1001);
+    }
+
+    @Test
+    public void shouldBeAbleToTurnOffAutoCommits() throws InterruptedException {
+        final Thread thread = new Thread(() -> {
+            try (DbContextConnection ignored = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
+                tableContext.insert()
+                        .setField("code", 1001)
+                        .setField("name", "insertTest")
+                        .execute();
+            }
+        });
+        thread.start();
+        thread.join();
+
+        assertThat(tableContext.where("name", "insertTest").unordered().listLongs("code"))
+                .isEmpty();
+    }
+
+    @Test
+    public void shouldBeAbleToManuallyCommit() throws InterruptedException {
+        final Thread thread = new Thread(() -> {
+            try (DbContextConnection dbContextConnection = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
+                tableContext.insert()
+                        .setField("code", 1001)
+                        .setField("name", "insertTest")
+                        .execute();
+                dbContextConnection.commitTransaction();
+            }
+        });
+        thread.start();
+        thread.join();
+
+        assertThat(tableContext.where("name", "insertTest").unordered().listLongs("code"))
+                .containsExactly(1001L);
+    }
+
+    private ConnectionSupplier getConnectionWithoutAutoCommit() {
+        return () -> {
+            final Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(false);
+            return connection;
+        };
     }
 
     @Test

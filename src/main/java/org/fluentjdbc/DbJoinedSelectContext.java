@@ -29,6 +29,11 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
         return this;
     }
 
+    public DbJoinedSelectContext whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
+        builder.whereExpressionWithMultipleParameters(expression, parameters);
+        return this;
+    }
+
     @Override
     public DbJoinedSelectContext whereExpression(String expression) {
         builder.whereExpression(expression);

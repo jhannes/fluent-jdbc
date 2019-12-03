@@ -39,4 +39,13 @@ public class DbContextConnection implements AutoCloseable {
         return connection;
     }
 
+    public void commitTransaction() {
+        if (connection != null) {
+            try {
+                connection.commit();
+            } catch (SQLException e) {
+                throw ExceptionUtil.softenCheckedException(e);
+            }
+        }
+    }
 }
