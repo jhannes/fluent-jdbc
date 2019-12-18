@@ -43,7 +43,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         dropTableIfExists(connection, "uuid_table");
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(
-                    preprocessCreateTable("create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
+                    preprocessCreateTable("create table uuid_table (idField ${UUID} primary key, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 
@@ -57,13 +57,13 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     public void shouldGenerateIdForNewRow() throws Exception {
         String savedName = "demo row";
         UUID id = table
-                .newSaveBuilderWithUUID("id", null)
+                .newSaveBuilderWithUUID("idField", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection)
                 .getId();
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
+        String retrievedName = table.where("idField", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo(savedName);
     }
 
@@ -71,25 +71,25 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     public void shouldUpdateRow() throws Exception {
         String savedName = "original row";
         UUID id = table
-                .newSaveBuilderWithUUID("id", null)
+                .newSaveBuilderWithUUID("idField", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection)
                 .getId();
 
-        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("id", id)
+        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("idField", id)
                 .uniqueKey("code", 543)
                 .setField("name", "updated value")
                 .execute(connection);
         assertThat(result.getSaveStatus()).isEqualTo(UPDATED);
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
+        String retrievedName = table.where("idField", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo("updated value");
 
-        assertThat(table.where("id", id).orderBy("name").list(connection, new RowMapper<UUID>() {
+        assertThat(table.where("idField", id).orderBy("name").list(connection, new RowMapper<UUID>() {
             @Override
             public UUID mapRow(@Nonnull DatabaseRow row) throws SQLException {
-                return row.getUUID("id");
+                return row.getUUID("idField");
             }
         })).containsOnly(id);
     }
@@ -98,14 +98,14 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     public void shouldNotUpdateUnchangedRow() throws SQLException {
         String savedName = "original row";
         UUID firstId = table
-                .newSaveBuilderWithUUID("id", null)
+                .newSaveBuilderWithUUID("idField", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection)
                 .getId();
 
         DatabaseSaveResult<UUID> result = table
-                .newSaveBuilderWithUUID("id", null)
+                .newSaveBuilderWithUUID("idField", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection);
@@ -114,19 +114,19 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldUpdateRowOnKey() throws SQLException {
-        UUID idOnInsert = table.newSaveBuilderWithUUID("id", null)
+        UUID idOnInsert = table.newSaveBuilderWithUUID("idField", null)
             .uniqueKey("code", 10001)
             .setField("name", "old name")
             .execute(connection)
             .getId();
 
-        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("id", null)
+        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("idField", null)
                 .uniqueKey("code", 10001)
                 .setField("name", "new name")
                 .execute(connection);
         assertThat(result).isEqualTo(DatabaseSaveResult.updated(idOnInsert));
 
-        assertThat(table.where("id", idOnInsert).singleString(connection, "name"))
+        assertThat(table.where("idField", idOnInsert).singleString(connection, "name"))
             .isEqualTo("new name");
     }
 
@@ -135,7 +135,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         String savedName = "demo row";
         UUID id = UUID.randomUUID();
         DatabaseSaveResult<UUID> result = table
-                .newSaveBuilderWithUUID("id", id)
+                .newSaveBuilderWithUUID("idField", id)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
                 .execute(connection);
@@ -143,7 +143,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         UUID generatedKey = result.getId();
         assertThat(id).isEqualTo(generatedKey);
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
+        String retrievedName = table.where("idField", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo(savedName);
     }
 

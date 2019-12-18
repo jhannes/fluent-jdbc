@@ -26,7 +26,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
 
     @Nullable protected T idValue;
 
-    DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable T id) {
+    protected DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable T id) {
         this.table = table;
         this.idField = idField;
         this.idValue = id;
@@ -110,8 +110,8 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     @Nullable
     protected abstract T insert(Connection connection) throws SQLException;
 
-    private T update(Connection connection, T idValue) {
-        table.where("id", idValue)
+    protected T update(Connection connection, T idValue) {
+        table.where(idField, idValue)
                 .update()
                 .setFields(this.fields, this.values)
                 .setFields(uniqueKeyFields, uniqueKeyValues)
