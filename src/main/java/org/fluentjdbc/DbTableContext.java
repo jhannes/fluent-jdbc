@@ -2,10 +2,7 @@ package org.fluentjdbc;
 
 import java.sql.Connection;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
-
-import org.fluentjdbc.DatabaseTable.RowMapper;
 
 import javax.annotation.Nullable;
 
@@ -60,11 +57,15 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
     }
 
     public DbSaveBuilderContext<Long> newSaveBuilder(String idColumn, Long idValue) {
-        return new DbSaveBuilderContext<>(this, table.newSaveBuilder(idColumn, idValue));
+        return save(table.newSaveBuilder(idColumn, idValue));
     }
 
     public DbSaveBuilderContext<UUID> newSaveBuilderWithUUID(String field, UUID uuid) {
-        return new DbSaveBuilderContext<>(this, table.newSaveBuilderWithUUID(field, uuid));
+        return save(table.newSaveBuilderWithUUID(field, uuid));
+    }
+
+    public <T> DbSaveBuilderContext<T> save(DatabaseSaveBuilder<T> saveBuilder) {
+        return new DbSaveBuilderContext<>(this, saveBuilder);
     }
 
     public <KEY,ENTITY> ENTITY cache(KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
@@ -77,5 +78,9 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
 
     public DbContext getDbContext() {
         return dbContext;
+    }
+
+    public DbSelectContext query() {
+        return new DbSelectContext(this);
     }
 }

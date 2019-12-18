@@ -1,5 +1,8 @@
 package org.fluentjdbc.h2;
 
+import org.h2.jdbcx.JdbcDataSource;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -19,6 +22,12 @@ public class H2TestDatabase {
     public static Connection createConnection() throws SQLException {
         String jdbcUrl = System.getProperty("test.db.jdbc_url", "jdbc:h2:mem:FluentJdbcDemoTest");
         return DriverManager.getConnection(jdbcUrl);
+    }
+
+    public static DataSource createDataSource() {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setUrl("jdbc:h2:mem:FluentJdbcDemoTest;DB_CLOSE_DELAY=-1");
+        return dataSource;
     }
 
 }

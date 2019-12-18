@@ -1,8 +1,14 @@
 package org.fluentjdbc.sqlserver;
 
+import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import org.fluentjdbc.postgres.PostgresTests;
 import org.junit.Assume;
 import org.junit.Ignore;
+import org.postgresql.ds.PGSimpleDataSource;
+import org.postgresql.util.PSQLException;
+import org.postgresql.util.PSQLState;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -89,19 +95,31 @@ public class SqlServerTests {
         }
     }
 
-    static Connection getConnection() throws SQLException {
-        String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
-        String password = System.getProperty("test.db.sqlserver.password", username);
-        String url = System.getProperty("test.db.sqlserver.url",
-                "jdbc:sqlserver://localhost:1433;databaseName=" + username);
+    public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
+        public UsageDemonstrationTest() throws SQLException {
+            super(getDataSource(), REPLACEMENTS);
+        }
+    }
 
+    static Connection getConnection() throws SQLException {
+        return getDataSource().getConnection();
+    }
+
+    static DataSource getDataSource() throws SQLException {
+        SQLServerDataSource dataSource = new SQLServerDataSource();
+        String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
+        dataSource.setURL(System.getProperty("test.db.sqlserver.url", "jdbc:sqlserver://localhost:1433;databaseName=" + username));
+        dataSource.setUser(username);
+        dataSource.setPassword(System.getProperty("test.db.sqlserver.password", username));
         try {
-            return DriverManager.getConnection(url, username, password);
+            dataSource.getConnection().close();
         } catch (SQLException e) {
             if (e.getSQLState().equals("08S03")) {
                 Assume.assumeNoException(e);
             }
             throw e;
         }
+        return dataSource;
     }
 }
+

@@ -8,7 +8,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Test;
+import org.sqlite.SQLiteDataSource;
+
+import javax.sql.DataSource;
 
 public class SqliteTests {
 
@@ -58,8 +62,19 @@ public class SqliteTests {
         }
     }
 
+    public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
+        public UsageDemonstrationTest() throws SQLException {
+            super(getDataSource(), REPLACEMENTS);
+        }
+    }
+
+    public static DataSource getDataSource() {
+        SQLiteDataSource dataSource = new SQLiteDataSource();
+        dataSource.setUrl("jdbc:sqlite:target/test-db-sqlite");
+        return dataSource;
+    }
 
     static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:sqlite:target/test-db-sqlite");
+        return getDataSource().getConnection();
     }
 }

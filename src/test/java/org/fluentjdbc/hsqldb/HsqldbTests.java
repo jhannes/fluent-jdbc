@@ -1,7 +1,9 @@
 package org.fluentjdbc.hsqldb;
 
+import org.hsqldb.jdbc.JDBCDataSource;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -46,7 +48,21 @@ public final class HsqldbTests {
         }
     }
 
-    static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection("jdbc:hsqldb:mem:test", "sa", null);
+    public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
+        public UsageDemonstrationTest() throws SQLException {
+            super(getDataSource(), REPLACEMENTS);
+        }
     }
+
+    static Connection getConnection() throws SQLException {
+        return getDataSource().getConnection();
+    }
+
+    public static DataSource getDataSource() {
+        JDBCDataSource dataSource = new JDBCDataSource();
+        dataSource.setUrl("jdbc:hsqldb:mem:test");
+        dataSource.setUser("sa");
+        return dataSource;
+    }
+
 }
