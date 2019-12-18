@@ -26,7 +26,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
 
     @Nullable protected T idValue;
 
-    DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable T id) {
+    protected DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable T id) {
         this.table = table;
         this.idField = idField;
         this.idValue = id;
@@ -48,12 +48,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     public DatabaseSaveResult<T> execute(Connection connection) throws SQLException {
         T idValue = this.idValue;
         if (idValue != null) {
-            Boolean isSame = table.where(idField, this.idValue).singleObject(connection, new RowMapper<Boolean>() {
-                @Override
-                public Boolean mapRow(DatabaseRow row) throws SQLException {
-                    return shouldSkipRow(row);
-                }
-            });
+            Boolean isSame = tableWhereId(this.idValue).singleObject(connection, this::shouldSkipRow);
             if (isSame != null && !isSame) {
                 update(connection, idValue);
                 return DatabaseSaveResult.updated(idValue);
@@ -64,12 +59,9 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
                 return DatabaseSaveResult.unchanged(idValue);
             }
         } else if (hasUniqueKey()) {
-            Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, new RowMapper<Boolean>() {
-                @Override
-                public Boolean mapRow(DatabaseRow row) throws SQLException {
-                    DatabaseSaveBuilder.this.idValue = getId(row);
-                    return shouldSkipRow(row);
-                }
+            Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
+                DatabaseSaveBuilder.this.idValue = getId(row);
+                return shouldSkipRow(row);
             });
             idValue = this.idValue;
             if (idValue == null) {
@@ -85,6 +77,10 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
             idValue = insert(connection);
             return DatabaseSaveResult.inserted(idValue);
         }
+    }
+
+    protected DatabaseSimpleQueryBuilder tableWhereId(T p) {
+        return table.where(idField, p);
     }
 
     private boolean shouldSkipRow(DatabaseRow row) throws SQLException {
@@ -110,8 +106,8 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     @Nullable
     protected abstract T insert(Connection connection) throws SQLException;
 
-    private T update(Connection connection, T idValue) {
-        table.where("id", idValue)
+    protected T update(Connection connection, T idValue) {
+        tableWhereId(idValue)
                 .update()
                 .setFields(this.fields, this.values)
                 .setFields(uniqueKeyFields, uniqueKeyValues)
