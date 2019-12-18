@@ -26,6 +26,99 @@ assertThat(table.where("name", "insertTest").orderBy("code").listLongs(connectio
 ![Class diagram](doc/classes.png)
 
 
+## Full usage example
+
+[From UsageDemonstrationTest](https://github.com/jhannes/fluent-jdbc/blob/master/src/test/java/org/fluentjdbc/usage/context/UsageDemonstrationTest.java):
+
+```java
+public class UsageDemonstrationTest {
+
+    @Test
+    public void shouldSaveOrder() {
+        Order order = sampleOrder();
+        orderRepository.save(order);
+        assertThat(orderRepository.query().customerEmail(order.getCustomerEmail()).list())
+                .extracting(Order::getOrderId)
+                .contains(order.getOrderId());
+    }
+
+    @Test
+    public void shouldUpdateOrder() {
+        Order originalOrder = sampleOrder();
+        orderRepository.save(originalOrder);
+        Order updatedOrder = sampleOrder();
+        updatedOrder.setOrderId(originalOrder.getOrderId());
+        orderRepository.save(updatedOrder);
+        assertThat(orderRepository.retrieve(originalOrder.getOrderId()))
+                .hasNoNullFieldsOrProperties()
+                .isEqualToComparingFieldByField(updatedOrder);
+    }
+
+}
+```
+
+```java
+public class OrderRepository implements Repository<Order, UUID> {
+
+    private final DbTableContext table;
+
+    public OrderRepository(DbContext dbContext) {
+        this.table = dbContext.tableWithTimestamps("orders");
+    }
+
+    @Override
+    public DatabaseSaveResult.SaveStatus save(Order product) {
+        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("order_id", product.getOrderId())
+                .setField("customer_name", product.getCustomerName())
+                .setField("customer_email", product.getCustomerEmail())
+                .execute();
+        product.setOrderId(result.getId());
+        return result.getSaveStatus();
+    }
+
+    @Override
+    public Query query() {
+        return new Query(table.query());
+    }
+
+    @Override
+    public Order retrieve(UUID uuid) {
+        return table.where("order_id", uuid).singleObject(this::toOrder);
+    }
+
+    public class Query implements Repository.Query<Order> {
+
+        private DbSelectContext context;
+
+        public Query(DbSelectContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public List<Order> list() {
+            return context.list(row -> toOrder(row));
+        }
+
+        public Query customerEmail(String customerEmail) {
+            return query(context.where("customer_email", customerEmail));
+        }
+
+        private Query query(DbSelectContext contex) {
+            return this;
+        }
+    }
+
+    private Order toOrder(DatabaseRow row) throws SQLException {
+        Order order = new Order();
+        order.setOrderId(row.getUUID("order_id"));
+        order.setCustomerName(row.getString("customer_name"));
+        order.setCustomerEmail(row.getString("customer_email"));
+        return order;
+    }
+}
+```
+
+
 # Notes on running databases with docker
 
 ### MSSQL
