@@ -7,6 +7,7 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
@@ -41,10 +42,20 @@ public class UsageDemonstrationTest {
     @Before
     public void createTables() throws SQLException {
         try (Statement statement = dbContext.getThreadConnection().createStatement()) {
+            dropTableIfExists(statement, "products");
+            dropTableIfExists(statement, "orders");
             statement.executeUpdate(preprocessCreateTable(ProductRepository.CREATE_TABLE));
             statement.executeUpdate(preprocessCreateTable(OrderRepository.CREATE_TABLE));
         }
     }
+
+    protected void dropTableIfExists(Statement stmt, String tableName) {
+        try {
+            stmt.executeUpdate("drop table " + tableName);
+        } catch(SQLException ignored) {
+        }
+    }
+
 
     @Test
     public void shouldFindSavedRow() {

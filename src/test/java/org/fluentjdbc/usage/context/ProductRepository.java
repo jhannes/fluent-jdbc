@@ -49,7 +49,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
     }
 
 
-    public static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS products (" +
+    public static final String CREATE_TABLE = "CREATE TABLE products (" +
             "product_id ${UUID} primary key, " +
             "name varchar(200) not null, " +
             "category varchar(200), " +

@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class OrderRepository implements Repository<Order, UUID> {
-    public static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS orders (" +
+    public static final String CREATE_TABLE = "CREATE TABLE orders (" +
             "order_id ${UUID} primary key, " +
             "customer_name varchar(200) not null, " +
             "customer_email varchar(200) not null, " +

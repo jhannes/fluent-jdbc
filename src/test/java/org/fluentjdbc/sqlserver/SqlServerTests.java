@@ -1,16 +1,11 @@
 package org.fluentjdbc.sqlserver;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
-import org.fluentjdbc.postgres.PostgresTests;
 import org.junit.Assume;
 import org.junit.Ignore;
-import org.postgresql.ds.PGSimpleDataSource;
-import org.postgresql.util.PSQLException;
-import org.postgresql.util.PSQLState;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
