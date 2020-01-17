@@ -16,6 +16,18 @@ import java.util.List;
 import java.util.UUID;
 
 public class ProductRepository implements Repository<Product, Product.Id> {
+    public void syncProducts(List<Product> products) {
+        table.synch(products)
+                .unique("product_id", p -> p.getProductId().getValue())
+                .field("name", Product::getName)
+                .field("category", Product::getCategory)
+                .field("price_in_cents", Product::getPriceInCents)
+                .cacheExisting()
+                .deleteExtras()
+                .insertMissing()
+                .updateDiffering();
+    }
+
     private static class DatabaseSaveBuilderWithId extends DatabaseSaveBuilder<Product.Id> {
 
         public DatabaseSaveBuilderWithId(DatabaseTable table, @Nullable Product.Id id) {
@@ -24,7 +36,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
 
         @Nullable
         @Override
-        protected Product.Id insert(Connection connection) throws SQLException {
+        protected Product.Id insert(Connection connection) {
             Product.Id idValue = this.idValue;
             if (idValue == null) {
                 idValue = new Product.Id(UUID.randomUUID());
@@ -92,7 +104,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
 
         @Override
         public List<Product> list() {
-            return query.list(row -> toProduct(row));
+            return query.list(ProductRepository.this::toProduct);
         }
     }
 

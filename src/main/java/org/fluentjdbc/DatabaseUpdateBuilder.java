@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -27,7 +28,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
     }
 
     @Override
-    public DatabaseUpdateBuilder setFields(List<String> fields, List<Object> values) {
+    public DatabaseUpdateBuilder setFields(Collection<String> fields, Collection<Object> values) {
         this.updateFields.addAll(fields);
         this.updateValues.addAll(values);
         return this;

@@ -95,4 +95,8 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
     public DbContextUpdateBuilder update() {
         return new DbContextUpdateBuilder(this, new DatabaseUpdateBuilder(table.getTableName()));
     }
+
+    public <T> DbSyncBuilderContext<T> synch(List<T> entities) {
+        return new DbSyncBuilderContext<>(this, entities);
+    }
 }

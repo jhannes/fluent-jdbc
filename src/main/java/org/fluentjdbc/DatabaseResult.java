@@ -47,6 +47,12 @@ public class DatabaseResult implements AutoCloseable {
         return result;
     }
 
+    public void forEach(DatabaseTable.RowConsumer consumer) throws SQLException {
+        while (next()) {
+            consumer.apply(createDatabaseRow(resultSet));
+        }
+    }
+
     @Nullable
     public <T> T single(RowMapper<T> mapper) throws SQLException {
         if (!next()) {

@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -28,7 +29,7 @@ public class DatabaseInsertBuilder extends DatabaseStatement implements Database
         return this;
     }
 
-    public DatabaseInsertBuilder setFields(List<String> fieldNames, List<Object> parameters) {
+    public DatabaseInsertBuilder setFields(Collection<String> fieldNames, Collection<Object> parameters) {
         this.fieldNames.addAll(fieldNames);
         this.parameters.addAll(parameters);
         return this;

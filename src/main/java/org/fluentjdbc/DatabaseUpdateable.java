@@ -1,10 +1,10 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nullable;
-import java.util.List;
+import java.util.Collection;
 
 public interface DatabaseUpdateable<T extends DatabaseUpdateable<T>> {
-    T setFields(List<String> fields, List<Object> values);
+    T setFields(Collection<String> fields, Collection<Object> values);
 
     T setField(String field, @Nullable Object value);
 

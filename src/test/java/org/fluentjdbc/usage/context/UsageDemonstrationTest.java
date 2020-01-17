@@ -7,9 +7,9 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class UsageDemonstrationTest {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
     }
 
-    protected UsageDemonstrationTest(DataSource dataSource, Map<String, String> replacements) throws SQLException {
+    protected UsageDemonstrationTest(DataSource dataSource, Map<String, String> replacements) {
         this.dbContext = new DbContextRule(dataSource);
         this.replacements = replacements;
         this.productRepository = new ProductRepository(dbContext);
@@ -107,6 +107,27 @@ public class UsageDemonstrationTest {
         assertThat(orderRepository.retrieve(originalOrder.getOrderId()))
                 .hasNoNullFieldsOrProperties()
                 .isEqualToComparingFieldByField(updatedOrder);
+    }
+
+    @Test
+    public void shouldSyncProducts() {
+        Product changedProduct = sampleProduct();
+        Product unchangedProduct = sampleProduct();
+        Product deletedProduct = sampleProduct();
+
+        productRepository.save(changedProduct);
+        productRepository.save(unchangedProduct);
+        productRepository.save(deletedProduct);
+
+        changedProduct.setName("Updated");
+        Product newProduct = sampleProduct();
+        newProduct.setProductId(new Product.Id(UUID.randomUUID()));
+
+        productRepository.syncProducts(Arrays.asList(unchangedProduct, changedProduct, newProduct));
+
+        assertThat(productRepository.query().list())
+                .extracting(Product::getName)
+                .containsExactlyInAnyOrder(changedProduct.getName(), unchangedProduct.getName(), newProduct.getName());
     }
 
     private Order sampleOrder() {

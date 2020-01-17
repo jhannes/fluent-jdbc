@@ -1,10 +1,13 @@
 package org.fluentjdbc;
 
 import java.sql.SQLException;
+import java.util.Collection;
 
 import org.fluentjdbc.util.ExceptionUtil;
 
-public class DbInsertContext {
+import javax.annotation.Nullable;
+
+public class DbInsertContext implements DatabaseUpdateable<DbInsertContext> {
 
     public class DbInsertContextWithPk<T> {
 
@@ -33,7 +36,7 @@ public class DbInsertContext {
 
     public DbInsertContext(DbTableContext dbTableContext) {
         this.dbTableContext = dbTableContext;
-        builder = new DatabaseInsertBuilder(dbTableContext.getTable().getTableName());
+        builder = dbTableContext.getTable().insert();
     }
 
     public <T> DbInsertContextWithPk<T> setPrimaryKey(String idField, T idValue) {
@@ -43,6 +46,18 @@ public class DbInsertContext {
 
     public DbInsertContext setField(String fieldName, Object parameter) {
         builder.setField(fieldName, parameter);
+        return this;
+    }
+
+    @Override
+    public DbInsertContext setFieldIfPresent(String field, @Nullable Object value) {
+        builder.setFieldIfPresent(field, value);
+        return this;
+    }
+
+    @Override
+    public DbInsertContext setFields(Collection<String> fields, Collection<Object> values) {
+        builder.setFields(fields, values);
         return this;
     }
 

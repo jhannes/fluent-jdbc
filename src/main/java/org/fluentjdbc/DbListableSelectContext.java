@@ -31,4 +31,6 @@ public interface DbListableSelectContext<T extends DbListableSelectContext<T>> e
         return singleObject(row -> row.getInstant(fieldName));
     }
 
+    void forEach(DatabaseTable.RowConsumer row);
+
 }

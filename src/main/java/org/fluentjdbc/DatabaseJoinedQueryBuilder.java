@@ -139,6 +139,24 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         }
     }
 
+    public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
+        long startTime = System.currentTimeMillis();
+        String query = createSelectStatement();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
+            bindParameters(stmt, parameters);
+            try (DatabaseResult result = createResult(stmt.executeQuery())) {
+                result.forEach(consumer);
+            }
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"",
+                    (System.currentTimeMillis()-startTime)/1000.0, query);
+        }
+    }
+
+
     protected DatabaseResult createResult(ResultSet rs) throws SQLException {
         Map<DatabaseColumnReference, Integer> columnMap = new LinkedHashMap<>();
         List<DatabaseTableAlias> aliases = new ArrayList<>();
@@ -187,11 +205,11 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     }
 
     @Override
-    public DatabaseUpdateable update() {
+    public DatabaseUpdateable<?> update() {
         throw new UnsupportedOperationException();
     }
 
-    private class JoinedTable {
+    private static class JoinedTable {
         private final DatabaseColumnReference a;
         private final DatabaseColumnReference b;
 

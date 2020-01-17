@@ -47,6 +47,24 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         }
     }
 
+    public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
+        long startTime = System.currentTimeMillis();
+        String query = createSelectStatement();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
+            bindParameters(stmt);
+            try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
+                result.forEach(consumer);
+            }
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"",
+                    (System.currentTimeMillis()-startTime)/1000.0, query);
+        }
+    }
+
+
     @Nullable
     @Override
     public <T> T singleObject(Connection connection, RowMapper<T> mapper) {

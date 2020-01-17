@@ -104,6 +104,11 @@ public class DbSelectContext implements DbListableSelectContext<DbSelectContext>
         return queryBuilder.singleInstant(getConnection(), fieldName);
     }
 
+    @Override
+    public void forEach(DatabaseTable.RowConsumer row) {
+        queryBuilder.forEach(getConnection(), row);
+    }
+
     public DbContextUpdateBuilder update() {
         return new DbContextUpdateBuilder(this.dbTableContext, queryBuilder.update());
     }

@@ -23,6 +23,11 @@ public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuil
         T mapRow(DatabaseRow row) throws SQLException;
     }
 
+    @FunctionalInterface
+    interface RowConsumer {
+        void apply(DatabaseRow row) throws SQLException;
+    }
+
     String getTableName();
 
     DatabaseSaveBuilder<Long> newSaveBuilder(String idColumn, @Nullable Long idValue);

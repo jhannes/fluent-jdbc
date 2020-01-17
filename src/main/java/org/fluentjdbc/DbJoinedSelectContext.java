@@ -24,6 +24,11 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
     }
 
     @Override
+    public void forEach(DatabaseTable.RowConsumer consumer) {
+        builder.forEach(dbContext.getThreadConnection(), consumer);
+    }
+
+    @Override
     public DbJoinedSelectContext whereExpression(String expression, @Nullable Object value) {
         builder.whereExpression(expression, value);
         return this;

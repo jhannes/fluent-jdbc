@@ -1,6 +1,6 @@
 package org.fluentjdbc;
 
-import java.util.List;
+import java.util.Collection;
 
 public class DbContextUpdateBuilder implements DatabaseUpdateable<DbContextUpdateBuilder> {
 
@@ -13,7 +13,7 @@ public class DbContextUpdateBuilder implements DatabaseUpdateable<DbContextUpdat
     }
 
     @Override
-    public DbContextUpdateBuilder setFields(List<String> fields, List<Object> values) {
+    public DbContextUpdateBuilder setFields(Collection<String> fields, Collection<Object> values) {
         updateBuilder.setFields(fields, values);
         return this;
     }
