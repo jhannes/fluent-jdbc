@@ -11,7 +11,9 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -108,6 +110,7 @@ public class DbContextJoinedQueryBuilderTest {
             .join(memberships.column("person_id"), ps.column("id"))
             .join(memberships.column("organization_id"), o.column("id"))
             .whereOptional("name", applicationName)
+            .whereExpressionWithMultipleParameters("(p.name = ? or p.name = ?)", Arrays.asList(applicationName, applicationName2))
             .unordered()
             .list(row ->
                 String.format(
@@ -188,6 +191,7 @@ public class DbContextJoinedQueryBuilderTest {
         List<String> result = m
                 .join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"))
+                .query()
                 .whereIn(o.column("name").getQualifiedColumnName(), Arrays.asList("Army", "Boutique"))
                 .whereOptional(p.column("name").getQualifiedColumnName(), null)
                 .orderBy(p.column("name"))
@@ -197,6 +201,38 @@ public class DbContextJoinedQueryBuilderTest {
                 .containsExactly("Army Alice", "Boutique Alice", "Army Bob");
     }
 
+    @Test
+    public void shouldCollectJoinedTables() {
+        String personOneName = "Jane";
+        String personTwoName = "James";
+        long personOneId = savePerson(personOneName);
+        long personTwoId = savePerson(personTwoName);
+
+        String orgOneName = "Oslo";
+        String orgTwoName = "Bergen";
+        long orgOneId = saveOrganization(orgOneName);
+        long orgTwoId = saveOrganization(orgTwoName);
+
+        saveMembership(personOneId, orgOneId);
+        saveMembership(personOneId, orgTwoId);
+        saveMembership(personTwoId, orgOneId);
+        saveMembership(personTwoId, orgTwoId);
+
+        DbTableAliasContext p = persons.alias("p");
+        DbTableAliasContext m = this.memberships.alias("m");
+        DbTableAliasContext o = organizations.alias("o");
+
+        Map<Long, List<String>> organizationsPerPerson = new HashMap<>();
+        p.join(p.column("id"), m.column("person_id"))
+                .join(m.column("organization_id"), o.column("id"))
+                .whereAll(Arrays.asList("id", "name"), Arrays.asList(personOneId, personOneName))
+                .orderBy(o.column("name"))
+                .forEach(row -> organizationsPerPerson
+                        .computeIfAbsent(row.getLong(p.column("id")), id -> new ArrayList<>())
+                        .add(row.getString(o.column("name"))));
+        assertThat(organizationsPerPerson)
+                .containsEntry(personOneId, Arrays.asList(orgTwoName, orgOneName));
+    }
 
     private long savePerson(String personOneName) {
         return persons.insert()

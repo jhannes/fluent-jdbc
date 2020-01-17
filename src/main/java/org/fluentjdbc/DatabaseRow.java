@@ -107,6 +107,11 @@ public class DatabaseRow {
         return value != null ? Enum.valueOf(enumClass, value) : null;
     }
 
+    public Long getLong(DatabaseColumnReference column) throws SQLException {
+        long result = rs.getLong(columnMap.get(column));
+        return rs.wasNull() ? null : result;
+    }
+
     public String getString(DatabaseColumnReference column) throws SQLException {
         return rs.getString(columnMap.get(column));
     }
