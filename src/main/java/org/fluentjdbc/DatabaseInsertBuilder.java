@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class DatabaseInsertBuilder extends DatabaseStatement {
+public class DatabaseInsertBuilder extends DatabaseStatement implements DatabaseUpdateable<DatabaseInsertBuilder> {
 
     private List<String> fieldNames = new ArrayList<>();
     private List<Object> parameters = new ArrayList<>();
@@ -31,6 +31,14 @@ public class DatabaseInsertBuilder extends DatabaseStatement {
     public DatabaseInsertBuilder setFields(List<String> fieldNames, List<Object> parameters) {
         this.fieldNames.addAll(fieldNames);
         this.parameters.addAll(parameters);
+        return this;
+    }
+
+    @Override
+    public DatabaseInsertBuilder setFieldIfPresent(String field, @Nullable Object value) {
+        if (value == null) {
+            setField(field, value);
+        }
         return this;
     }
 

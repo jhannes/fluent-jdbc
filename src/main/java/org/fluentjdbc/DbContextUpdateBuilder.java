@@ -1,6 +1,8 @@
 package org.fluentjdbc;
 
-public class DbContextUpdateBuilder {
+import java.util.List;
+
+public class DbContextUpdateBuilder implements DatabaseUpdateable<DbContextUpdateBuilder> {
 
     private DbTableContext tableContext;
     private DatabaseUpdateBuilder updateBuilder;
@@ -10,11 +12,19 @@ public class DbContextUpdateBuilder {
         this.updateBuilder = updateBuilder;
     }
 
+    @Override
+    public DbContextUpdateBuilder setFields(List<String> fields, List<Object> values) {
+        updateBuilder.setFields(fields, values);
+        return this;
+    }
+
+    @Override
     public DbContextUpdateBuilder setField(String field, Object value) {
         updateBuilder.setField(field, value);
         return this;
     }
 
+    @Override
     public DbContextUpdateBuilder setFieldIfPresent(String field, Object value) {
         updateBuilder.setFieldIfPresent(field, value);
         return this;

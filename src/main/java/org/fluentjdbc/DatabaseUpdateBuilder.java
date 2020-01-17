@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
-public class DatabaseUpdateBuilder extends DatabaseStatement {
+public class DatabaseUpdateBuilder extends DatabaseStatement implements DatabaseUpdateable<DatabaseUpdateBuilder> {
 
     private final String tableName;
     private final List<String> whereConditions = new ArrayList<>();
@@ -26,25 +26,27 @@ public class DatabaseUpdateBuilder extends DatabaseStatement {
         return this;
     }
 
+    @Override
     public DatabaseUpdateBuilder setFields(List<String> fields, List<Object> values) {
         this.updateFields.addAll(fields);
         this.updateValues.addAll(values);
         return this;
     }
 
+    @Override
     public DatabaseUpdateBuilder setField(String field, @Nullable Object value) {
         this.updateFields.add(field);
         this.updateValues.add(value);
         return this;
     }
 
+    @Override
     public DatabaseUpdateBuilder setFieldIfPresent(String field, @Nullable Object value) {
         if (value != null) {
             setField(field, value);
         }
         return this;
     }
-
 
     public void execute(Connection connection) {
         if (updateFields.isEmpty()) {
