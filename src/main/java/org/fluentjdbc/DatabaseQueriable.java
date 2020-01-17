@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.List;
 
 public interface DatabaseQueriable<T extends DatabaseQueriable<T>> {
 
@@ -15,7 +16,13 @@ public interface DatabaseQueriable<T extends DatabaseQueriable<T>> {
 
     T whereIn(String fieldName, Collection<?> parameters);
 
+    T whereAll(List<String> fields, List<Object> values);
+
     default T where(String fieldName, @Nullable Object value) {
         return whereExpression(fieldName + " = ?", value);
     }
+
+    <U extends DatabaseUpdateable<U>> DatabaseUpdateable<U> update();
+
+    T query();
 }

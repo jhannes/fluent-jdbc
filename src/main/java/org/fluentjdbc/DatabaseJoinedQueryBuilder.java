@@ -81,6 +81,18 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return where(fieldName, value);
     }
 
+    @Override
+    public DatabaseJoinedQueryBuilder whereAll(List<String> fields, List<Object> values) {
+        fields.stream().map(s -> table.getAlias() + "." + s + " = ?").forEach(this.conditions::add);
+        this.parameters.addAll(values);
+        return this;
+    }
+
+    @Override
+    public DatabaseJoinedQueryBuilder query() {
+        return this;
+    }
+
     public DatabaseJoinedQueryBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
         joinedTables.add(new JoinedTable(a, b));
         return this;
@@ -172,6 +184,11 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
 
     private String whereClause() {
         return conditions.isEmpty() ? "" : " where " + join(" AND ", conditions);
+    }
+
+    @Override
+    public DatabaseUpdateable update() {
+        throw new UnsupportedOperationException();
     }
 
     private class JoinedTable {

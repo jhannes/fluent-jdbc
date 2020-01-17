@@ -21,6 +21,11 @@ public class DbSelectContext implements DbListableSelectContext<DbSelectContext>
     }
 
     @Override
+    public DbSelectContext query() {
+        return this;
+    }
+
+    @Override
     public DbSelectContext whereOptional(String fieldName, @Nullable Object value) {
         queryBuilder.whereOptional(fieldName, value);
         return this;
@@ -50,12 +55,18 @@ public class DbSelectContext implements DbListableSelectContext<DbSelectContext>
         return this;
     }
 
+    @Override
+    public DbSelectContext whereAll(List<String> fields, List<Object> values) {
+        queryBuilder.whereAll(fields, values);
+        return this;
+    }
+
     public DbSelectContext orderBy(String orderByClause) {
         queryBuilder.orderBy(orderByClause);
         return this;
     }
 
-    public DbListableSelectContext unordered() {
+    public DbSelectContext unordered() {
         queryBuilder.unordered();
         return this;
     }

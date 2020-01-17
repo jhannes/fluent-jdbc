@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import java.sql.Connection;
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -44,6 +45,11 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return new DbSelectContext(this).whereExpressionWithMultipleParameters(expression, parameters);
     }
 
+    @Override
+    public DbSelectContext whereAll(List<String> fields, List<Object> values) {
+        return new DbSelectContext(this).whereAll(fields, values);
+    }
+
     public DbSelectContext unordered() {
         return new DbSelectContext(this);
     }
@@ -80,7 +86,13 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return dbContext;
     }
 
+    @Override
     public DbSelectContext query() {
         return new DbSelectContext(this);
+    }
+
+    @Override
+    public DbContextUpdateBuilder update() {
+        return new DbContextUpdateBuilder(this, new DatabaseUpdateBuilder(table.getTableName()));
     }
 }

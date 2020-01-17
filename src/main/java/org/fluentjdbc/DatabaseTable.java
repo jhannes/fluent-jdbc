@@ -35,8 +35,6 @@ public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuil
 
     DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String fieldName, @Nullable UUID uuid);
 
-    DatabaseSimpleQueryBuilder whereAll(List<String> uniqueKeyFields, List<Object> uniqueKeyValues);
-
     DatabaseInsertBuilder insert();
 
     DatabaseUpdateBuilder update();

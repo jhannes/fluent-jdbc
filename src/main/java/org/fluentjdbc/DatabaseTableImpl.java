@@ -21,7 +21,7 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public DatabaseListableQueryBuilder orderBy(String orderByClause) {
-        return new DatabaseTableQueryBuilder(this).orderBy(orderByClause);
+        return query().orderBy(orderByClause);
     }
 
     @Override
@@ -51,31 +51,36 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
-        return new DatabaseTableQueryBuilder(this).whereOptional(fieldName, value);
+        return query().whereOptional(fieldName, value);
     }
 
     @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression) {
-        return new DatabaseTableQueryBuilder(this).whereExpression(expression);
+        return query().whereExpression(expression);
     }
 
     @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter) {
-        return new DatabaseTableQueryBuilder(this).whereExpression(expression, parameter);
+        return query().whereExpression(expression, parameter);
     }
 
     public DatabaseSimpleQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
-        return new DatabaseTableQueryBuilder(this).whereExpressionWithMultipleParameters(expression, parameters);
+        return query().whereExpressionWithMultipleParameters(expression, parameters);
     }
 
     @Override
-    public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
-        return new DatabaseTableQueryBuilder(this).whereAll(fieldNames, values);
+    public DatabaseSimpleQueryBuilder whereAll(List<String> fields, List<Object> values) {
+        return query().whereAll(fields, values);
     }
 
     @Override
     public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
-        return new DatabaseTableQueryBuilder(this).whereIn(fieldName, parameters);
+        return query().whereIn(fieldName, parameters);
+    }
+
+    @Override
+    public DatabaseSimpleQueryBuilder query() {
+        return new DatabaseTableQueryBuilder(this);
     }
 
     @Override

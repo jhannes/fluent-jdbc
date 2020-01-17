@@ -86,34 +86,34 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         return where(fieldName, value);
     }
 
-    public DatabaseTableQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
+    public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
         whereExpression(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
         this.parameters.addAll(parameters);
         return this;
     }
 
-    public DatabaseTableQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
+    public DatabaseSimpleQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
         whereExpression(expression);
         this.parameters.addAll(parameters);
         return this;
     }
 
     @Override
-    public DatabaseTableQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
+    public DatabaseSimpleQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
         whereExpression(expression);
         parameters.add(parameter);
         return this;
     }
 
     @Override
-    public DatabaseTableQueryBuilder whereExpression(String expression) {
+    public DatabaseSimpleQueryBuilder whereExpression(String expression) {
         conditions.add(expression);
         return this;
     }
 
-    public DatabaseSimpleQueryBuilder whereAll(List<String> fieldNames, List<Object> values) {
-        for (int i = 0; i < fieldNames.size(); i++) {
-            where(fieldNames.get(i), values.get(i));
+    public DatabaseSimpleQueryBuilder whereAll(List<String> fields, List<Object> values) {
+        for (int i = 0; i < fields.size(); i++) {
+            where(fields.get(i), values.get(i));
         }
         return this;
     }
@@ -121,6 +121,11 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     @Override
     public DatabaseUpdateBuilder update() {
         return table.update().setWhereFields(conditions, parameters);
+    }
+
+    @Override
+    public DatabaseSimpleQueryBuilder query() {
+        return this;
     }
 
     @Override

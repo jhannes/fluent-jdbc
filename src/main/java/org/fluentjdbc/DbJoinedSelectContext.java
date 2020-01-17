@@ -53,6 +53,22 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
     }
 
     @Override
+    public DbJoinedSelectContext whereAll(List<String> fields, List<Object> values) {
+        builder.whereAll(fields, values);
+        return this;
+    }
+
+    @Override
+    public DbJoinedSelectContext query() {
+        return this;
+    }
+
+    @Override
+    public DatabaseUpdateable update() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public <OBJECT> OBJECT singleObject(DatabaseTable.RowMapper<OBJECT> mapper) {
         return builder.singleObject(dbContext.getThreadConnection(), mapper);
     }
