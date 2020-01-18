@@ -109,11 +109,19 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return new DbBulkInsertContext<>(this, table.bulkInsert(objects));
     }
 
-    public <T> DbBulkDeleteContext<T> buildDelete(Stream<T> objects) {
-        return buildDelete(objects.collect(Collectors.toList()));
+    public <T> DbBulkDeleteContext<T> bulkDelete(Stream<T> objects) {
+        return bulkDelete(objects.collect(Collectors.toList()));
     }
 
-    public <T> DbBulkDeleteContext<T> buildDelete(Iterable<T> objects) {
+    public <T> DbBulkDeleteContext<T> bulkDelete(Iterable<T> objects) {
         return new DbBulkDeleteContext<>(this, table.bulkDelete(objects));
+    }
+
+    public <T> DbBulkUpdateContext<T> bulkUpdate(Stream<T> objects) {
+        return bulkUpdate(objects.collect(Collectors.toList()));
+    }
+
+    private <T> DbBulkUpdateContext<T> bulkUpdate(List<T> objects) {
+        return new DbBulkUpdateContext<>(this, table.bulkUpdate(objects));
     }
 }

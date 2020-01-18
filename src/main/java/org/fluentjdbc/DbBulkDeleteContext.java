@@ -1,9 +1,8 @@
 package org.fluentjdbc;
 
-import java.util.List;
 import java.util.function.Function;
 
-public class DbBulkDeleteContext<T> {
+public class DbBulkDeleteContext<T> implements DatabaseBulkQueriable<T, DbBulkDeleteContext<T>> {
     private final DbTableContext tableContext;
     private final DatabaseBulkDeleteBuilder<T> builder;
 
@@ -12,8 +11,9 @@ public class DbBulkDeleteContext<T> {
         this.builder = builder;
     }
 
-    public DbBulkDeleteContext<T> whereAll(List<String> fields, Function<T, List<?>> values) {
-        return build(builder.whereAll(fields, values));
+    @Override
+    public DbBulkDeleteContext<T> where(String field, Function<T, ?> value) {
+        return build(builder.where(field, value));
     }
 
     private DbBulkDeleteContext<T> build(DatabaseBulkDeleteBuilder<T> builder) {

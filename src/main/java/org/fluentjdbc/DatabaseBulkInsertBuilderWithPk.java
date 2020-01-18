@@ -6,33 +6,36 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
+import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 public class DatabaseBulkInsertBuilderWithPk<T> extends DatabaseStatement {
 
     private DatabaseTable table;
-    private Map<String, Function<T, ?>> fields;
+    private final List<String> updateFields;
+    private final List<Function<T, ?>> updateParameters;
     private BiConsumer<T, Long> primaryKeyCallback;
     private Iterable<T> objects;
 
     public DatabaseBulkInsertBuilderWithPk(
             Iterable<T> objects,
             DatabaseTable table,
-            Map<String, Function<T, ?>> fields,
+            List<String> updateFields,
+            List<Function<T, ?>> updateParameters,
             BiConsumer<T, Long> primaryKeyCallback
     ) {
         this.objects = objects;
         this.table = table;
-        this.fields = fields;
+        this.updateFields = updateFields;
+        this.updateParameters = updateParameters;
         this.primaryKeyCallback = primaryKeyCallback;
     }
 
     public void execute(Connection connection) {
-        String insertStatement = createInsertSql(table.getTableName(), fields.keySet());
+        String insertStatement = createInsertSql(table.getTableName(), updateFields);
         try (PreparedStatement statement = connection.prepareStatement(insertStatement, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            addBatch(statement, objects, fields.values());
+            addBatch(statement, objects, updateParameters);
             statement.executeBatch();
 
             ResultSet generatedKeys = statement.getGeneratedKeys();

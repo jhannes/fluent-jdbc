@@ -10,7 +10,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
-public class DatabaseBulkDeleteBuilder<T> extends DatabaseStatement {
+public class DatabaseBulkDeleteBuilder<T> extends DatabaseStatement
+        implements DatabaseBulkQueriable<T, DatabaseBulkDeleteBuilder<T>> {
 
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Function<T, ?>> whereParameters = new ArrayList<>();
@@ -22,17 +23,10 @@ public class DatabaseBulkDeleteBuilder<T> extends DatabaseStatement {
         this.objects = objects;
     }
 
+    @Override
     public DatabaseBulkDeleteBuilder<T> where(String field, Function<T, ?> value) {
         whereConditions.add(field + " = ?");
         whereParameters.add(value);
-        return this;
-    }
-
-    public DatabaseBulkDeleteBuilder<T> whereAll(List<String> fields, Function<T, List<?>> values) {
-        for (int i = 0, fieldsSize = fields.size(); i < fieldsSize; i++) {
-            int index = i;
-            where(fields.get(i), o -> values.apply(o).get(index));
-        }
         return this;
     }
 

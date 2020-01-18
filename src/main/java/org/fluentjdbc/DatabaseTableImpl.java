@@ -106,6 +106,11 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
+    public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(List<T> objects) {
+        return new DatabaseBulkUpdateBuilder<>(this, objects);
+    }
+
+    @Override
     public DatabaseUpdateBuilder update() {
         return new DatabaseUpdateBuilder(tableName);
     }

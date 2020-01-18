@@ -8,5 +8,11 @@ public interface DatabaseUpdateable<T extends DatabaseUpdateable<T>> {
 
     T setField(String field, @Nullable Object value);
 
-    T setFieldIfPresent(String field, @Nullable Object value);
+    default T setFieldIfPresent(String field, @Nullable Object value) {
+        if (value != null) {
+            setField(field, value);
+        }
+        //noinspection unchecked
+        return (T)this;
+    }
 }

@@ -1,12 +1,11 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class DatabaseUpdateBuilder extends DatabaseStatement implements DatabaseUpdateable<DatabaseUpdateBuilder> {
@@ -41,14 +40,6 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
         return this;
     }
 
-    @Override
-    public DatabaseUpdateBuilder setFieldIfPresent(String field, @Nullable Object value) {
-        if (value != null) {
-            setField(field, value);
-        }
-        return this;
-    }
-
     public void execute(Connection connection) {
         if (updateFields.isEmpty()) {
             return;
@@ -56,21 +47,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
         List<Object> parameters = new ArrayList<>();
         parameters.addAll(updateValues);
         parameters.addAll(whereParameters);
-        executeUpdate(createUpdateStatement(), parameters, connection);
-    }
-
-    private String createUpdateStatement() {
-        return "update " + tableName
-            + " set " + join(",", updates(updateFields))
-            + (whereParameters.isEmpty() ? "" : " where " + join(" and ", whereConditions));
-    }
-
-    private static List<String> updates(List<String> columns) {
-        List<String> result = new ArrayList<>();
-        for (String column : columns) {
-            result.add(column + " = ?");
-        }
-        return result;
+        executeUpdate(createUpdateStatement(tableName, updateFields, whereConditions), parameters, connection);
     }
 
 }

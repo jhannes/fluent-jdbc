@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @ParametersAreNonnullByDefault
 class DatabaseStatement {
@@ -87,31 +88,27 @@ class DatabaseStatement {
 
     protected String createInsertSql(String tableName, Collection<String> fieldNames) {
         return "insert into " + tableName +
-                " (" + join(",", fieldNames)
+                " (" + String.join(",", fieldNames)
                 + ") values ("
-                + join(",", repeat("?", fieldNames.size())) + ")";
-    }
-
-    protected static List<String> repeat(String string, int size) {
-        List<String> result = new ArrayList<>();
-        for (int i = 0; i < size; i++) {
-            result.add(string);
-        }
-        return result;
-    }
-
-    protected static String join(String delimiter, Collection<String> strings) {
-        StringBuilder result = new StringBuilder();
-        for (String s : strings) {
-            if (result.length() != 0) {
-                result.append(delimiter);
-            }
-            result.append(s);
-        }
-        return result.toString();
+                + parameterString(fieldNames.size()) + ")";
     }
 
     protected String createDeleteStatement(String tableName, List<String> whereConditions) {
-        return "delete from " + tableName + " where "  + join(" and ", whereConditions);
+        return "delete from " + tableName + " where "  + String.join(" and ", whereConditions);
     }
+
+    protected String createUpdateStatement(String tableName, List<String> updateFields, List<String> whereConditions) {
+        return "update " + tableName
+            + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
+            + (whereConditions.isEmpty() ? "" : " where " + String.join(" and ", whereConditions));
+    }
+
+    protected String parameterString(int parameterCount) {
+        StringBuilder parameterString = new StringBuilder("?");
+        for (int i = 1; i < parameterCount; i++) {
+            parameterString.append(", ?");
+        }
+        return parameterString.toString();
+    }
+
 }

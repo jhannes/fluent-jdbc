@@ -64,7 +64,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         if (parameters.isEmpty()) {
             throw new IllegalArgumentException("Can't do " + fieldName + " IN (....) with empty list");
         }
-        whereExpression(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
+        whereExpression(fieldName + " IN (" + parameterString(parameters.size()) + ")");
         this.parameters.addAll(parameters);
         return this;
     }
@@ -197,11 +197,11 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     }
 
     private String orderByClause() {
-        return orderByClauses.isEmpty() ? "" : " order by " + join(", ", orderByClauses);
+        return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
     }
 
     private String whereClause() {
-        return conditions.isEmpty() ? "" : " where " + join(" AND ", conditions);
+        return conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions);
     }
 
     @Override

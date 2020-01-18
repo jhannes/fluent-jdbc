@@ -90,8 +90,8 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
 
     private String createSelectStatement() {
         return "select *" + fromClause()
-                + (conditions.isEmpty() ? "" : " where " + join(" AND ", conditions))
-                + (orderByClauses.isEmpty() ? "" : " order by " + join(", ", orderByClauses));
+                + (conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions))
+                + (orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses));
     }
 
     protected String fromClause() {
@@ -105,7 +105,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     }
 
     public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
-        whereExpression(fieldName + " IN (" + join(",", repeat("?", parameters.size())) + ")");
+        whereExpression(fieldName + " IN (" + parameterString(parameters.size()) + ")");
         this.parameters.addAll(parameters);
         return this;
     }

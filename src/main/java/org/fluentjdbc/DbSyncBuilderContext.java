@@ -66,7 +66,7 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> deleteExtras() {
-        int count = table.buildDelete(this.existingRows.keySet().stream()
+        int count = table.bulkDelete(this.existingRows.keySet().stream()
                 .filter(key -> !updated.containsKey(key)))
                 .whereAll(uniqueFields, entry -> entry)
                 .execute();
@@ -75,30 +75,30 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> insertMissing() {
-        table.bulkInsert(this.updated.entrySet().stream()
-                .filter(entry -> !existingRows.containsKey(entry.getKey()))
-                .peek(entry -> addStatus(DatabaseSaveResult.SaveStatus.INSERTED)))
+        int count = table.bulkInsert(this.updated.entrySet().stream()
+                .filter(entry -> !existingRows.containsKey(entry.getKey())))
                 .setFields(uniqueFields, Map.Entry::getKey)
                 .setFields(updatedFields, Map.Entry::getValue)
                 .execute();
-
+        status.put(DatabaseSaveResult.SaveStatus.INSERTED, count);
         return this;
     }
 
     public DbSyncBuilderContext<T> updateDiffering() {
-        this.updated.entrySet().stream()
+        int count = table.bulkUpdate(this.updated.entrySet().stream()
                 .filter(entry -> existingRows.containsKey(entry.getKey()))
-                .forEach(entry -> {
-                    if (valuesEqual(entry.getKey())) {
+                .filter(entry -> {
+                    boolean equal = valuesEqual(entry.getKey());
+                    if (equal) {
                         addStatus(DatabaseSaveResult.SaveStatus.UNCHANGED);
-                    } else {
-                        addStatus(DatabaseSaveResult.SaveStatus.UPDATED);
-                        table.whereAll(uniqueFields, entry.getKey())
-                                .update()
-                                .setFields(updatedFields, entry.getValue())
-                                .execute();
                     }
-                });
+                    return !equal;
+                }))
+                .whereAll(uniqueFields, Map.Entry::getKey)
+                .setFields(updatedFields, Map.Entry::getValue)
+                .execute();
+        status.put(DatabaseSaveResult.SaveStatus.UPDATED, count);
+
         return this;
     }
 

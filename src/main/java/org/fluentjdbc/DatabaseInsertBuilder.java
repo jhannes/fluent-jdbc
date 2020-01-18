@@ -37,14 +37,6 @@ public class DatabaseInsertBuilder extends DatabaseStatement implements Database
         return this;
     }
 
-    @Override
-    public DatabaseInsertBuilder setFieldIfPresent(String field, @Nullable Object value) {
-        if (value == null) {
-            setField(field, value);
-        }
-        return this;
-    }
-
     public void execute(Connection connection) {
         executeUpdate(createInsertStatement(), parameters, connection);
     }

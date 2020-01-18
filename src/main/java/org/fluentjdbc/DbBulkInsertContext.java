@@ -21,7 +21,7 @@ public class DbBulkInsertContext<T> {
         return this;
     }
 
-    public void execute() {
-        builder.execute(tableContext.getConnection());
+    public int execute() {
+        return builder.execute(tableContext.getConnection());
     }
 }

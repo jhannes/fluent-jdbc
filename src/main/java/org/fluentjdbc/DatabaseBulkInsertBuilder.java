@@ -5,20 +5,22 @@ import org.fluentjdbc.util.ExceptionUtil;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 
-public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
+public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement implements DatabaseBulkUpdateable<T, DatabaseBulkInsertBuilder<T>> {
 
     private DatabaseTable table;
     private Iterable<T> objects;
-    private Map<String, Function<T, ?>> fields = new LinkedHashMap<>();
+
+    private final List<String> updateFields = new ArrayList<>();
+    private final List<Function<T, ?>> updateParameters = new ArrayList<>();
 
     DatabaseBulkInsertBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;
@@ -29,30 +31,25 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
         this(table, objects.collect(Collectors.toList()));
     }
 
+    @Override
     public DatabaseBulkInsertBuilder<T> setField(String fieldName, Function<T, Object> transformer) {
-        fields.put(fieldName, transformer);
+        updateFields.add(fieldName);
+        updateParameters.add(transformer);
         return this;
     }
 
-    public <VALUES extends List<?>> DatabaseBulkInsertBuilder<T> setFields(List<String> fields, Function<T, VALUES> values) {
-        for (int i = 0, fieldsSize = fields.size(); i < fieldsSize; i++) {
-            int index = i;
-            setField(fields.get(i), o -> values.apply(o).get(index));
-        }
-        return this;
-    }
-
-    public void execute(Connection connection) {
-        String insertStatement = createInsertSql(table.getTableName(), fields.keySet());
+    public int execute(Connection connection) {
+        String insertStatement = createInsertSql(table.getTableName(), updateFields);
         try (PreparedStatement statement = connection.prepareStatement(insertStatement)) {
-            addBatch(statement, objects, fields.values());
-            statement.executeBatch();
+            addBatch(statement, objects, updateParameters);
+            int[] counts = statement.executeBatch();
+            return IntStream.of(counts).sum();
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }
     }
 
     public DatabaseBulkInsertBuilderWithPk<T> generatePrimaryKeys(BiConsumer<T, Long> consumer) {
-        return new DatabaseBulkInsertBuilderWithPk<>(objects, table, fields, consumer);
+        return new DatabaseBulkInsertBuilderWithPk<>(objects, table, updateFields, updateParameters, consumer);
     }
 }
