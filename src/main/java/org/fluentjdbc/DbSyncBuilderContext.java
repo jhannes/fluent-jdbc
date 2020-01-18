@@ -9,7 +9,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DbSyncBuilderContext<T> {
+public class DbSyncBuilderContext<T>  {
     private final DbTableContext table;
     private final List<T> entities;
     private List<String> uniqueFields = new ArrayList<>();
@@ -66,10 +66,11 @@ public class DbSyncBuilderContext<T> {
     }
 
     public DbSyncBuilderContext<T> deleteExtras() {
-        this.existingRows.keySet().stream()
-                .filter(key -> !updated.containsKey(key))
-                .peek(entry -> addStatus(DatabaseSaveResult.SaveStatus.DELETED))
-                .forEach(key -> table.whereAll(uniqueFields, key).executeDelete());
+        int count = table.buildDelete(this.existingRows.keySet().stream()
+                .filter(key -> !updated.containsKey(key)))
+                .whereAll(uniqueFields, entry -> entry)
+                .execute();
+        status.put(DatabaseSaveResult.SaveStatus.DELETED, count);
         return this;
     }
 

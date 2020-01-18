@@ -22,10 +22,7 @@ class DatabaseDeleteBuilder extends DatabaseStatement {
     }
 
     public void execute(Connection connection) {
-        executeUpdate(createDeleteStatement(), whereParameters, connection);
+        executeUpdate(createDeleteStatement(tableName, whereConditions), whereParameters, connection);
     }
 
-    private String createDeleteStatement() {
-        return "delete from " + tableName + " where "  + join(" and ", whereConditions);
-    }
 }

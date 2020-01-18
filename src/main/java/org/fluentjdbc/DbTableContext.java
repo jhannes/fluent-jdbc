@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
@@ -100,11 +101,19 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return new DbSyncBuilderContext<>(this, entities);
     }
 
-    public <T> DbBuildInsertContext<T> bulkInsert(Iterable<T> objects) {
-        return new DbBuildInsertContext<>(this, objects);
+    public <T> DbBulkInsertContext<T> bulkInsert(Stream<T> objects) {
+        return bulkInsert(objects.collect(Collectors.toList()));
     }
 
-    public <T> DbBuildInsertContext<T> bulkInsert(Stream<T> objects) {
-        return new DbBuildInsertContext<>(this, objects);
+    public <T> DbBulkInsertContext<T> bulkInsert(Iterable<T> objects) {
+        return new DbBulkInsertContext<>(this, table.bulkInsert(objects));
+    }
+
+    public <T> DbBulkDeleteContext<T> buildDelete(Stream<T> objects) {
+        return buildDelete(objects.collect(Collectors.toList()));
+    }
+
+    public <T> DbBulkDeleteContext<T> buildDelete(Iterable<T> objects) {
+        return new DbBulkDeleteContext<>(this, table.bulkDelete(objects));
     }
 }

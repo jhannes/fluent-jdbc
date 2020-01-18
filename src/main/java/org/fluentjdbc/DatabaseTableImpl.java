@@ -101,6 +101,11 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
+    public <T> DatabaseBulkDeleteBuilder<T> bulkDelete(Iterable<T> objects) {
+        return new DatabaseBulkDeleteBuilder<>(this, objects);
+    }
+
+    @Override
     public DatabaseUpdateBuilder update() {
         return new DatabaseUpdateBuilder(tableName);
     }

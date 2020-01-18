@@ -57,10 +57,10 @@ class DatabaseStatement {
         }
     }
 
-    protected <T> void addBatch(PreparedStatement statement, Iterable<T> objects, Collection<Function<T, Object>> columnValueExtractors) throws SQLException {
+    protected <T> void addBatch(PreparedStatement statement, Iterable<T> objects, Collection<Function<T, ?>> columnValueExtractors) throws SQLException {
         for (T object : objects) {
             int columnIndex = 1;
-            for (Function<T, Object> f : columnValueExtractors) {
+            for (Function<T, ?> f : columnValueExtractors) {
                 bindParameter(statement, columnIndex++, f.apply(object));
             }
             statement.addBatch();
@@ -85,7 +85,7 @@ class DatabaseStatement {
         }
     }
 
-    String createInsertSql(String tableName, Collection<String> fieldNames) {
+    protected String createInsertSql(String tableName, Collection<String> fieldNames) {
         return "insert into " + tableName +
                 " (" + join(",", fieldNames)
                 + ") values ("
@@ -109,5 +109,9 @@ class DatabaseStatement {
             result.append(s);
         }
         return result.toString();
+    }
+
+    protected String createDeleteStatement(String tableName, List<String> whereConditions) {
+        return "delete from " + tableName + " where "  + join(" and ", whereConditions);
     }
 }

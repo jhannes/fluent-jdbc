@@ -13,14 +13,14 @@ import java.util.function.Function;
 public class DatabaseBulkInsertBuilderWithPk<T> extends DatabaseStatement {
 
     private DatabaseTable table;
-    private Map<String, Function<T, Object>> fields;
+    private Map<String, Function<T, ?>> fields;
     private BiConsumer<T, Long> primaryKeyCallback;
     private Iterable<T> objects;
 
     public DatabaseBulkInsertBuilderWithPk(
             Iterable<T> objects,
             DatabaseTable table,
-            Map<String, Function<T, Object>> fields,
+            Map<String, Function<T, ?>> fields,
             BiConsumer<T, Long> primaryKeyCallback
     ) {
         this.objects = objects;

@@ -45,6 +45,8 @@ public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuil
 
     <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects);
 
+    <T> DatabaseBulkDeleteBuilder<T> bulkDelete(Iterable<T> objects);
+
     DatabaseDeleteBuilder delete();
 
 }

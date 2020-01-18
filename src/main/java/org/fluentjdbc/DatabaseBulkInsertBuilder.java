@@ -18,7 +18,7 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
 
     private DatabaseTable table;
     private Iterable<T> objects;
-    private Map<String, Function<T, Object>> fields = new LinkedHashMap<>();
+    private Map<String, Function<T, ?>> fields = new LinkedHashMap<>();
 
     DatabaseBulkInsertBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;
@@ -39,7 +39,6 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
             int index = i;
             setField(fields.get(i), o -> values.apply(o).get(index));
         }
-
         return this;
     }
 
@@ -51,11 +50,9 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }
-
     }
 
     public DatabaseBulkInsertBuilderWithPk<T> generatePrimaryKeys(BiConsumer<T, Long> consumer) {
         return new DatabaseBulkInsertBuilderWithPk<>(objects, table, fields, consumer);
     }
-
 }

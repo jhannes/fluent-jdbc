@@ -23,12 +23,14 @@ public class DatabaseInsertBuilder extends DatabaseStatement implements Database
         return parameters;
     }
 
+    @Override
     public DatabaseInsertBuilder setField(String fieldName, @Nullable Object parameter) {
         this.fieldNames.add(fieldName);
         this.parameters.add(parameter);
         return this;
     }
 
+    @Override
     public DatabaseInsertBuilder setFields(Collection<String> fieldNames, Collection<?> parameters) {
         this.fieldNames.addAll(fieldNames);
         this.parameters.addAll(parameters);
