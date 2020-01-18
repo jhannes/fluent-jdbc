@@ -11,18 +11,18 @@ import java.util.stream.Stream;
 
 public class DbSyncBuilderContext<T>  {
     private final DbTableContext table;
-    private final List<T> entities;
+    private EnumMap<DatabaseSaveResult.SaveStatus, Integer> status = new EnumMap<>(DatabaseSaveResult.SaveStatus.class);
+    private final List<T> theirObjects;
+    private Map<List<Object>, List<Object>> ourRows;
+    private Map<List<Object>, List<Object>> theirRows;
     private List<String> uniqueFields = new ArrayList<>();
     private List<Function<T, Object>> uniqueValueFunctions = new ArrayList<>();
     private List<String> updatedFields = new ArrayList<>();
     private List<Function<T, Object>> updatedValueFunctions = new ArrayList<>();
-    private Map<List<Object>, List<Object>> existingRows;
-    private Map<List<Object>, List<Object>> updated;
-    private EnumMap<DatabaseSaveResult.SaveStatus, Integer> status = new EnumMap<>(DatabaseSaveResult.SaveStatus.class);
 
-    public DbSyncBuilderContext(DbTableContext table, List<T> entities) {
+    public DbSyncBuilderContext(DbTableContext table, List<T> theirObjects) {
         this.table = table;
-        this.entities = entities;
+        this.theirObjects = theirObjects;
         Stream.of(DatabaseSaveResult.SaveStatus.values()).forEach(v -> status.put(v, 0));
     }
 
@@ -39,35 +39,35 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> cacheExisting() {
-        Map<List<Object>, List<Object>> existing = new HashMap<>();
+        Map<List<Object>, List<Object>> ourRows = new HashMap<>();
         table.query().forEach(row -> {
             List<Object> key = new ArrayList<>();
             for (String field : uniqueFields) {
                 key.add(row.getObject(field));
             }
-            List<Object> result = new ArrayList<>();
+            List<Object> fields = new ArrayList<>();
             for (String field : updatedFields) {
-                result.add(row.getObject(field));
+                fields.add(row.getObject(field));
             }
-            existing.put(key, result);
+            ourRows.put(key, fields);
         });
-        this.existingRows = existing;
+        this.ourRows = ourRows;
 
-        Map<List<Object>, List<Object>> updated = new HashMap<>();
-        entities.forEach(entity -> {
+        Map<List<Object>, List<Object>> theirRows = new HashMap<>();
+        theirObjects.forEach(entity -> {
             List<Object> keys = uniqueValueFunctions.stream().map(f -> f.apply(entity)).collect(Collectors.toList());
-            updated.put(keys, updatedValueFunctions.stream()
+            theirRows.put(keys, updatedValueFunctions.stream()
                     .map(function -> function.apply(entity))
                     .collect(Collectors.toList()));
         });
-        this.updated = updated;
+        this.theirRows = theirRows;
 
         return this;
     }
 
     public DbSyncBuilderContext<T> deleteExtras() {
-        int count = table.bulkDelete(this.existingRows.keySet().stream()
-                .filter(key -> !updated.containsKey(key)))
+        int count = table.bulkDelete(this.ourRows.keySet().stream()
+                .filter(key -> !theirRows.containsKey(key)))
                 .whereAll(uniqueFields, entry -> entry)
                 .execute();
         status.put(DatabaseSaveResult.SaveStatus.DELETED, count);
@@ -75,8 +75,8 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> insertMissing() {
-        int count = table.bulkInsert(this.updated.entrySet().stream()
-                .filter(entry -> !existingRows.containsKey(entry.getKey())))
+        int count = table.bulkInsert(this.theirRows.entrySet().stream()
+                .filter(entry -> !ourRows.containsKey(entry.getKey())))
                 .setFields(uniqueFields, Map.Entry::getKey)
                 .setFields(updatedFields, Map.Entry::getValue)
                 .execute();
@@ -85,8 +85,8 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> updateDiffering() {
-        int count = table.bulkUpdate(this.updated.entrySet().stream()
-                .filter(entry -> existingRows.containsKey(entry.getKey()))
+        int count = table.bulkUpdate(this.theirRows.entrySet().stream()
+                .filter(entry -> ourRows.containsKey(entry.getKey()))
                 .filter(entry -> {
                     boolean equal = valuesEqual(entry.getKey());
                     if (equal) {
@@ -103,7 +103,7 @@ public class DbSyncBuilderContext<T>  {
     }
 
     protected boolean valuesEqual(List<Object> key) {
-        return existingRows.get(key).equals(updated.get(key));
+        return ourRows.get(key).equals(theirRows.get(key));
     }
 
     private void addStatus(DatabaseSaveResult.SaveStatus status) {
