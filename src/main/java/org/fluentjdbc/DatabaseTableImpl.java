@@ -3,6 +3,8 @@ package org.fluentjdbc;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -89,8 +91,13 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public <T> DatabaseBulkInsertBuilder<T> bulkInsert(List<T> objects) {
+    public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects) {
         return new DatabaseBulkInsertBuilder<>(this, objects);
+    }
+
+    @Override
+    public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects) {
+        return bulkInsert(objects.collect(Collectors.toList()));
     }
 
     @Override

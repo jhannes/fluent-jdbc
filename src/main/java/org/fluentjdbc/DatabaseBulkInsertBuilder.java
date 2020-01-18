@@ -10,17 +10,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
 
     private DatabaseTable table;
-    private List<T> objects;
+    private Iterable<T> objects;
     private Map<String, Function<T, Object>> fields = new LinkedHashMap<>();
 
-    public DatabaseBulkInsertBuilder(DatabaseTable table, List<T> objects) {
+    DatabaseBulkInsertBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;
         this.objects = objects;
+    }
+
+    DatabaseBulkInsertBuilder(DatabaseTable table, Stream<T> objects) {
+        this(table, objects.collect(Collectors.toList()));
     }
 
     public DatabaseBulkInsertBuilder<T> setField(String fieldName, Function<T, Object> transformer) {
@@ -28,17 +34,19 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement {
         return this;
     }
 
+    public <VALUES extends List<?>> DatabaseBulkInsertBuilder<T> setFields(List<String> fields, Function<T, VALUES> values) {
+        for (int i = 0, fieldsSize = fields.size(); i < fieldsSize; i++) {
+            int index = i;
+            setField(fields.get(i), o -> values.apply(o).get(index));
+        }
+
+        return this;
+    }
+
     public void execute(Connection connection) {
         String insertStatement = createInsertSql(table.getTableName(), fields.keySet());
         try (PreparedStatement statement = connection.prepareStatement(insertStatement)) {
-            for (T object : objects) {
-                int columnIndex = 1;
-                for (Function<T, Object> f : fields.values()) {
-                    bindParameter(statement, columnIndex++, f.apply(object));
-                }
-                statement.addBatch();
-            }
-
+            addBatch(statement, objects, fields.values());
             statement.executeBatch();
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);

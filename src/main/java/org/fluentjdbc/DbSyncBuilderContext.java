@@ -16,8 +16,8 @@ public class DbSyncBuilderContext<T> {
     private List<Function<T, Object>> uniqueValueFunctions = new ArrayList<>();
     private List<String> updatedFields = new ArrayList<>();
     private List<Function<T, Object>> updatedValueFunctions = new ArrayList<>();
-    private Map<List<Object>, Map<String, Object>> existingRows;
-    private Map<List<Object>, Map<String, Object>> updated;
+    private Map<List<Object>, List<Object>> existingRows;
+    private Map<List<Object>, List<Object>> updated;
     private EnumMap<DatabaseSaveResult.SaveStatus, Integer> status = new EnumMap<>(DatabaseSaveResult.SaveStatus.class);
 
     public DbSyncBuilderContext(DbTableContext table, List<T> entities) {
@@ -39,29 +39,26 @@ public class DbSyncBuilderContext<T> {
     }
 
     public DbSyncBuilderContext<T> cacheExisting() {
-        Map<List<Object>, Map<String, Object>> existing = new HashMap<>();
+        Map<List<Object>, List<Object>> existing = new HashMap<>();
         table.query().forEach(row -> {
             List<Object> key = new ArrayList<>();
             for (String field : uniqueFields) {
                 key.add(row.getObject(field));
             }
-            HashMap<String, Object> result = new HashMap<>();
+            List<Object> result = new ArrayList<>();
             for (String field : updatedFields) {
-                result.put(field, row.getObject(field));
+                result.add(row.getObject(field));
             }
             existing.put(key, result);
         });
         this.existingRows = existing;
 
-        Map<List<Object>, Map<String, Object>> updated = new HashMap<>();
+        Map<List<Object>, List<Object>> updated = new HashMap<>();
         entities.forEach(entity -> {
             List<Object> keys = uniqueValueFunctions.stream().map(f -> f.apply(entity)).collect(Collectors.toList());
-            HashMap<String, Object> result = new HashMap<>();
-            for (int i = 0; i < updatedFields.size(); i++) {
-                String field = updatedFields.get(i);
-                result.put(updatedFields.get(i), updatedValueFunctions.get(i).apply(entity));
-            }
-            updated.put(keys, result);
+            updated.put(keys, updatedValueFunctions.stream()
+                    .map(function -> function.apply(entity))
+                    .collect(Collectors.toList()));
         });
         this.updated = updated;
 
@@ -77,13 +74,13 @@ public class DbSyncBuilderContext<T> {
     }
 
     public DbSyncBuilderContext<T> insertMissing() {
-        this.updated.entrySet().stream()
+        table.bulkInsert(this.updated.entrySet().stream()
                 .filter(entry -> !existingRows.containsKey(entry.getKey()))
-                .peek(entry -> addStatus(DatabaseSaveResult.SaveStatus.INSERTED))
-                .forEach(entry -> table.insert()
-                        .setFields(uniqueFields, entry.getKey())
-                        .setFields(entry.getValue().keySet(), entry.getValue().values())
-                        .execute());
+                .peek(entry -> addStatus(DatabaseSaveResult.SaveStatus.INSERTED)))
+                .setFields(uniqueFields, Map.Entry::getKey)
+                .setFields(updatedFields, Map.Entry::getValue)
+                .execute();
+
         return this;
     }
 
@@ -97,7 +94,7 @@ public class DbSyncBuilderContext<T> {
                         addStatus(DatabaseSaveResult.SaveStatus.UPDATED);
                         table.whereAll(uniqueFields, entry.getKey())
                                 .update()
-                                .setFields(entry.getValue().keySet(), entry.getValue().values())
+                                .setFields(updatedFields, entry.getValue())
                                 .execute();
                     }
                 });
@@ -105,8 +102,6 @@ public class DbSyncBuilderContext<T> {
     }
 
     protected boolean valuesEqual(List<Object> key) {
-        System.out.println(existingRows.get(key));
-        System.out.println(updated.get(key));
         return existingRows.get(key).equals(updated.get(key));
     }
 

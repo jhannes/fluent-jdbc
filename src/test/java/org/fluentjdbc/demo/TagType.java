@@ -1,20 +1,19 @@
 package org.fluentjdbc.demo;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.List;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.DatabaseTableImpl;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 @RequiredArgsConstructor
 @ToString
@@ -76,18 +75,14 @@ public class TagType {
     }
 
     private static RowMapper<TagType> createRowMapper() {
-        return new RowMapper<TagType>() {
-
-            @Override
-            public TagType mapRow(DatabaseRow row) throws SQLException {
-                TagType tagType = new TagType(row.getString("name"));
-                tagType.setId(row.getLong("id"));
-                tagType.setAccessLevel(row.getEnum(AccessLevel.class, "access_level"));
-                tagType.setValidUntil(row.getLocalDate("valid_until"));
-                tagType.setCreatedAt(row.getZonedDateTime("created_at"));
-                tagType.setFavorite(row.getBoolean("is_favorite"));
-                return tagType;
-            }
+        return row -> {
+            TagType tagType = new TagType(row.getString("name"));
+            tagType.setId(row.getLong("id"));
+            tagType.setAccessLevel(row.getEnum(AccessLevel.class, "access_level"));
+            tagType.setValidUntil(row.getLocalDate("valid_until"));
+            tagType.setCreatedAt(row.getZonedDateTime("created_at"));
+            tagType.setFavorite(row.getBoolean("is_favorite"));
+            return tagType;
         };
     }
 

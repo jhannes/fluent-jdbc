@@ -56,7 +56,7 @@ public class DbInsertContext implements DatabaseUpdateable<DbInsertContext> {
     }
 
     @Override
-    public DbInsertContext setFields(Collection<String> fields, Collection<Object> values) {
+    public DbInsertContext setFields(Collection<String> fields, Collection<?> values) {
         builder.setFields(fields, values);
         return this;
     }

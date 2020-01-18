@@ -1,11 +1,11 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
+import java.util.stream.Stream;
 
 public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
 
@@ -98,5 +98,13 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
 
     public <T> DbSyncBuilderContext<T> synch(List<T> entities) {
         return new DbSyncBuilderContext<>(this, entities);
+    }
+
+    public <T> DbBuildInsertContext<T> bulkInsert(Iterable<T> objects) {
+        return new DbBuildInsertContext<>(this, objects);
+    }
+
+    public <T> DbBuildInsertContext<T> bulkInsert(Stream<T> objects) {
+        return new DbBuildInsertContext<>(this, objects);
     }
 }

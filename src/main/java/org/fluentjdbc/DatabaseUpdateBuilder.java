@@ -28,7 +28,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
     }
 
     @Override
-    public DatabaseUpdateBuilder setFields(Collection<String> fields, Collection<Object> values) {
+    public DatabaseUpdateBuilder setFields(Collection<String> fields, Collection<?> values) {
         this.updateFields.addAll(fields);
         this.updateValues.addAll(values);
         return this;

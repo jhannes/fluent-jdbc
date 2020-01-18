@@ -29,7 +29,7 @@ public class DatabaseInsertBuilder extends DatabaseStatement implements Database
         return this;
     }
 
-    public DatabaseInsertBuilder setFields(Collection<String> fieldNames, Collection<Object> parameters) {
+    public DatabaseInsertBuilder setFields(Collection<String> fieldNames, Collection<?> parameters) {
         this.fieldNames.addAll(fieldNames);
         this.parameters.addAll(parameters);
         return this;

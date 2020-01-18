@@ -4,6 +4,8 @@ import org.fluentjdbc.util.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -17,9 +19,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.function.Function;
 
 @ParametersAreNonnullByDefault
 class DatabaseStatement {
@@ -54,6 +54,16 @@ class DatabaseStatement {
             stmt.setString(index, parameter.toString());
         } else {
             stmt.setObject(index, parameter);
+        }
+    }
+
+    protected <T> void addBatch(PreparedStatement statement, Iterable<T> objects, Collection<Function<T, Object>> columnValueExtractors) throws SQLException {
+        for (T object : objects) {
+            int columnIndex = 1;
+            for (Function<T, Object> f : columnValueExtractors) {
+                bindParameter(statement, columnIndex++, f.apply(object));
+            }
+            statement.addBatch();
         }
     }
 

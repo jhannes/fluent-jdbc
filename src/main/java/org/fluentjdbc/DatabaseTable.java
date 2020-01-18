@@ -1,13 +1,10 @@
 package org.fluentjdbc;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.UUID;
-
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.sql.SQLException;
+import java.util.UUID;
+import java.util.stream.Stream;
 
 @ParametersAreNonnullByDefault
 public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuilder> {
@@ -44,7 +41,9 @@ public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuil
 
     DatabaseUpdateBuilder update();
 
-    <T> DatabaseBulkInsertBuilder<T> bulkInsert(List<T> objects);
+    <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects);
+
+    <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects);
 
     DatabaseDeleteBuilder delete();
 

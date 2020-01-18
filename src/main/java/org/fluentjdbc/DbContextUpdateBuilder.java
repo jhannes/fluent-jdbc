@@ -13,7 +13,7 @@ public class DbContextUpdateBuilder implements DatabaseUpdateable<DbContextUpdat
     }
 
     @Override
-    public DbContextUpdateBuilder setFields(Collection<String> fields, Collection<Object> values) {
+    public DbContextUpdateBuilder setFields(Collection<String> fields, Collection<?> values) {
         updateBuilder.setFields(fields, values);
         return this;
     }

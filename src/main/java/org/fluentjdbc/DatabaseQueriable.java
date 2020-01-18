@@ -22,7 +22,7 @@ public interface DatabaseQueriable<T extends DatabaseQueriable<T>> {
         return whereExpression(fieldName + " = ?", value);
     }
 
-    <U extends DatabaseUpdateable<U>> DatabaseUpdateable<U> update();
+    <U extends DatabaseUpdateable<U>> U update();
 
     T query();
 }
