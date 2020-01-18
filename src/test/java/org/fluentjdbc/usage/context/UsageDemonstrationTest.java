@@ -1,5 +1,6 @@
 package org.fluentjdbc.usage.context;
 
+import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
 import org.junit.Before;
@@ -10,6 +11,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -28,7 +30,7 @@ public class UsageDemonstrationTest {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
 
-    public UsageDemonstrationTest() throws SQLException {
+    public UsageDemonstrationTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
     }
 
@@ -123,11 +125,21 @@ public class UsageDemonstrationTest {
         Product newProduct = sampleProduct();
         newProduct.setProductId(new Product.Id(UUID.randomUUID()));
 
-        productRepository.syncProducts(Arrays.asList(unchangedProduct, changedProduct, newProduct));
+        EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus = productRepository
+                .syncProducts(Arrays.asList(unchangedProduct, changedProduct, newProduct));
 
+        verifySyncStatus(syncStatus);
         assertThat(productRepository.query().list())
                 .extracting(Product::getName)
                 .containsExactlyInAnyOrder(changedProduct.getName(), unchangedProduct.getName(), newProduct.getName());
+    }
+
+    protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {
+        assertThat(syncStatus)
+                .containsEntry(DatabaseSaveResult.SaveStatus.UNCHANGED, 1)
+                .containsEntry(DatabaseSaveResult.SaveStatus.UPDATED, 1)
+                .containsEntry(DatabaseSaveResult.SaveStatus.DELETED, 1)
+                .containsEntry(DatabaseSaveResult.SaveStatus.INSERTED, 1);
     }
 
     private Order sampleOrder() {

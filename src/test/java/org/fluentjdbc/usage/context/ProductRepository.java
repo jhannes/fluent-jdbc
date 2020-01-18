@@ -10,22 +10,25 @@ import org.fluentjdbc.DbSelectContext;
 import org.fluentjdbc.DbTableContext;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.UUID;
 
 public class ProductRepository implements Repository<Product, Product.Id> {
-    public void syncProducts(List<Product> products) {
-        table.synch(products)
+    public EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncProducts(List<Product> products) {
+        return table.synch(products)
                 .unique("product_id", p -> p.getProductId().getValue())
                 .field("name", Product::getName)
                 .field("category", Product::getCategory)
-                .field("price_in_cents", Product::getPriceInCents)
+                .field("price_in_cents", product -> new BigDecimal(product.getPriceInCents()))
                 .cacheExisting()
                 .deleteExtras()
                 .insertMissing()
-                .updateDiffering();
+                .updateDiffering()
+                .getStatus();
     }
 
     private static class DatabaseSaveBuilderWithId extends DatabaseSaveBuilder<Product.Id> {

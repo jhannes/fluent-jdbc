@@ -52,6 +52,6 @@ public class DatabaseSaveResult<T> {
     }
 
     public enum SaveStatus {
-        INSERTED, UNCHANGED, UPDATED
+        INSERTED, UNCHANGED, DELETED, UPDATED
     }
 }
