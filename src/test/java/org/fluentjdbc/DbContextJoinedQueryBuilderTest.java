@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DbContextJoinedQueryBuilderTest {
 
@@ -232,6 +233,26 @@ public class DbContextJoinedQueryBuilderTest {
                         .add(row.getString(o.column("name"))));
         assertThat(organizationsPerPerson)
                 .containsEntry(personOneId, Arrays.asList(orgTwoName, orgOneName));
+    }
+
+    @Test
+    public void shouldFailOnMisplacedExpression() {
+        DbTableAliasContext p = persons.alias("p");
+        DbTableAliasContext m = this.memberships.alias("m");
+
+        DbJoinedSelectContext selectContext = p
+                .join(p.column("id"), m.column("person_id"))
+                .whereExpression("p.non_existing is null");
+
+        assertThatThrownBy(() -> selectContext.forEach(row -> {}))
+                .isInstanceOf(SQLException.class)
+                .hasMessageContaining("non_existing");
+        assertThatThrownBy(() -> selectContext.list(row -> row.getString("id")))
+                .isInstanceOf(SQLException.class)
+                .hasMessageContaining("non_existing");
+        assertThatThrownBy(() -> selectContext.singleString("id"))
+                .isInstanceOf(SQLException.class)
+                .hasMessageContaining("non_existing");
     }
 
     private long savePerson(String personOneName) {

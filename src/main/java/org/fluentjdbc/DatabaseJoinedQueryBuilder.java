@@ -116,8 +116,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
@@ -134,8 +133,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
@@ -151,11 +149,9 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
-
 
     protected DatabaseResult createResult(ResultSet rs) throws SQLException {
         Map<DatabaseColumnReference, Integer> columnMap = new LinkedHashMap<>();

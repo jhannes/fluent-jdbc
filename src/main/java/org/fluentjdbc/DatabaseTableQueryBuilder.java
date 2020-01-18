@@ -25,10 +25,6 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         this.table = table;
     }
 
-    public <T> Stream<T> stream(Connection connection, RowMapper<T> mapper) {
-        return list(connection, mapper).stream();
-    }
-
     @Override
     public <T> List<T> list(Connection connection, RowMapper<T> mapper) {
         long startTime = System.currentTimeMillis();

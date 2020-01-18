@@ -79,10 +79,6 @@ public class DbSelectContext implements DbListableSelectContext<DbSelectContext>
         queryBuilder.delete(getConnection());
     }
 
-    public <T> Stream<T> stream(RowMapper<T> mapper) {
-        return queryBuilder.stream(getConnection(), mapper);
-    }
-
     @Override
     public <T> List<T> list(RowMapper<T> mapper) {
         return queryBuilder.list(getConnection(), mapper);

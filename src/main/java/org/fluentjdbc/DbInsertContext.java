@@ -50,12 +50,6 @@ public class DbInsertContext implements DatabaseUpdateable<DbInsertContext> {
     }
 
     @Override
-    public DbInsertContext setFieldIfPresent(String field, @Nullable Object value) {
-        builder.setFieldIfPresent(field, value);
-        return this;
-    }
-
-    @Override
     public DbInsertContext setFields(Collection<String> fields, Collection<?> values) {
         builder.setFields(fields, values);
         return this;

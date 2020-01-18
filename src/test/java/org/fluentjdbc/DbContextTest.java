@@ -1,8 +1,5 @@
 package org.fluentjdbc;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.Java6Assertions.assertThat;
-
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
 import org.h2.jdbcx.JdbcDataSource;
@@ -18,6 +15,9 @@ import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.assertThat;
 
 
 public class DbContextTest {
@@ -70,8 +70,7 @@ public class DbContextTest {
     @Test
     public void shouldHandleOrStatements() {
         tableContext.insert()
-                .setField("code", 1001)
-                .setField("name", "A")
+                .setFields(Arrays.asList("code", "name"), Arrays.asList(1001, "A"))
                 .execute();
         tableContext.insert()
                 .setField("code", 1002)
@@ -149,6 +148,32 @@ public class DbContextTest {
         return () -> {
             final Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
+            return connection;
+        };
+    }
+
+    private Exception thrownException;
+
+    @Test
+    public void shouldThrowOnCommitWhenAutocommitIsTrue() throws InterruptedException {
+        final Thread thread = new Thread(() -> {
+            try (DbContextConnection dbContextConnection = dbContext.startConnection(getConnectionWithAutoCommit())) {
+                tableContext.insert().setField("code", 1001).execute();
+                dbContextConnection.commitTransaction();
+            } catch (Exception e) {
+                thrownException = e;
+            }
+        });
+        thread.start();
+        thread.join();
+
+        assertThat(thrownException).isInstanceOf(SQLException.class);
+    }
+
+    private ConnectionSupplier getConnectionWithAutoCommit() {
+        return () -> {
+            final Connection connection = dataSource.getConnection();
+            connection.setAutoCommit(true);
             return connection;
         };
     }
@@ -251,11 +276,13 @@ public class DbContextTest {
                 .setField("name", "hello")
                 .execute();
 
-        tableContext.where("name", "hello").executeDelete();
+        tableContext
+                .whereAll(Arrays.asList("code", "name"), Arrays.asList(1, "hello"))
+                .whereExpression("id is not null")
+                .executeDelete();
         assertThat(tableContext.unordered().listLongs("id"))
             .doesNotContain(id);
     }
-
 
     @Test
     public void shouldThrowOnMissingColumn() {

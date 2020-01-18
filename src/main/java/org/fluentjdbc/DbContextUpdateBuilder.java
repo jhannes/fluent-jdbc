@@ -24,12 +24,6 @@ public class DbContextUpdateBuilder implements DatabaseUpdateable<DbContextUpdat
         return this;
     }
 
-    @Override
-    public DbContextUpdateBuilder setFieldIfPresent(String field, Object value) {
-        updateBuilder.setFieldIfPresent(field, value);
-        return this;
-    }
-
     public void execute() {
         updateBuilder.execute(tableContext.getConnection());
     }
