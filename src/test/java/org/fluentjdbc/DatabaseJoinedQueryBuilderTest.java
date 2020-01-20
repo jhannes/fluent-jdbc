@@ -3,15 +3,23 @@ package org.fluentjdbc;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.event.Level;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
 
@@ -35,10 +43,10 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
     public void createTable() throws SQLException {
         dropTablesIfExists(connection, "dbtest_permissions","dbtest_memberships", "dbtest_organizations", "dbtest_persons");
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable("create table dbtest_persons (id ${INTEGER_PK}, name varchar(50) not null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table dbtest_persons (id ${INTEGER_PK}, name varchar(50) not null, birth_date date)"));
             stmt.executeUpdate(preprocessCreateTable("create table dbtest_organizations (id ${INTEGER_PK}, name varchar(50) not null)"));
-            stmt.executeUpdate(preprocessCreateTable("create table dbtest_memberships (id ${INTEGER_PK}, person_id integer not null references dbtest_persons(id), organization_id integer not null references dbtest_organizations(id))"));
-            stmt.executeUpdate(preprocessCreateTable("create table dbtest_permissions (id ${INTEGER_PK}, name varchar(50) not null, membership_id integer not null references dbtest_memberships(id), granted_by integer null references dbtest_persons(id))"));
+            stmt.executeUpdate(preprocessCreateTable("create table dbtest_memberships (id ${INTEGER_PK}, person_id integer not null references dbtest_persons(id), organization_id integer not null references dbtest_organizations(id), status varchar(100), expires_at ${DATETIME})"));
+            stmt.executeUpdate(preprocessCreateTable("create table dbtest_permissions (id ${INTEGER_PK}, name varchar(50) not null, membership_id integer not null references dbtest_memberships(id), granted_by integer null references dbtest_persons(id), is_admin ${BOOLEAN})"));
         }
     }
 
@@ -168,6 +176,66 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .containsExactly("Army Alice", "Boutique Alice", "Army Bob");
     }
 
+    @Test
+    public void shouldReadAllDataTypes() throws SQLException {
+        long alice = savePerson("Alice");
+        long army = saveOrganization("Army");
+        Long membershipId = saveMembership(alice, army);
+
+        ZonedDateTime inTwoWeeks = ZonedDateTime.now().plusWeeks(2).truncatedTo(ChronoUnit.SECONDS);
+        LocalDate birthDate = LocalDate.of(2001, 1, 1);
+        persons.where("id", alice).update().setField("birth_date", birthDate).execute(connection);
+
+        memberships.where("id", membershipId).update()
+                .setField("status", Level.INFO)
+                .setField("expires_at", inTwoWeeks)
+                .execute(connection);
+
+        permissions.insert()
+                .setPrimaryKey("id", (Long) null)
+                .setField("name", "uniquePermName")
+                .setField("membership_id", membershipId)
+                .setField("is_admin", true)
+                .execute(connection);
+
+        DatabaseTableAlias m = memberships.alias("m");
+        DatabaseTableAlias p = persons.alias("p");
+        DatabaseTableAlias o = organizations.alias("o");
+        DatabaseTableAlias perm = permissions.alias("perm");
+
+        p.join(p.column("id"), m.column("person_id"))
+                .join(m.column("organization_id"), o.column("id"))
+                .join(m.column("id"), perm.column("membership_id"))
+                .where("id", alice)
+                .forEach(connection, row -> {
+                    assertThat(row.getEnum(Level.class, m.column("status"))).isEqualTo(Level.INFO);
+                    assertThat(row.getZonedDateTime(m.column("expires_at"))).isEqualTo(inTwoWeeks);
+                    assertThat(row.getObject(m.column("expires_at")))
+                            .isEqualTo(Timestamp.from(inTwoWeeks.toInstant()));
+                    assertThat(row.getInstant(m.column("expires_at")))
+                            .isEqualTo(inTwoWeeks.toInstant());
+                    assertThat(row.getLocalDate(p.column("birth_date"))).isEqualTo(birthDate);
+                    assertThat(row.getBoolean(perm.column("is_admin"))).isEqualTo(true);
+                });
+    }
+
+    @Test
+    public void shouldThrowOnUnknownColumn() throws SQLException {
+        long alice = savePerson("Alice");
+        long army = saveOrganization("Army");
+        saveMembership(alice, army);
+
+        DatabaseTableAlias m = memberships.alias("m");
+        DatabaseTableAlias p = persons.alias("p");
+        DatabaseTableAlias o = organizations.alias("o");
+
+        assertThatThrownBy(() -> {
+            p.join(p.column("id"), m.column("person_id"))
+                    .join(m.column("organization_id"), o.column("id"))
+                    .list(connection, row -> row.getLocalDate(p.column("non_existing_column")));
+        }).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("non_existing_column");
+    }
 
     private long savePerson(String personOneName) throws SQLException {
         return persons.insert()

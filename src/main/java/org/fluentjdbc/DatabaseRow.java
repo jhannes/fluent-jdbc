@@ -28,7 +28,7 @@ public class DatabaseRow {
         this.rs = rs;
 
         ResultSetMetaData metaData = rs.getMetaData();
-        for (int i=1; i<=metaData.getColumnCount(); i++) {
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
             // TODO: This doesn't work on Android or SQL server
             if (metaData.getTableName(i).isEmpty()) {
                 throw new IllegalStateException("getTableName not supported");
@@ -43,7 +43,7 @@ public class DatabaseRow {
         this.rs = rs;
 
         ResultSetMetaData metaData = rs.getMetaData();
-        for (int i=1; i<=metaData.getColumnCount(); i++) {
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
             String columnName = metaData.getColumnName(i).toUpperCase();
             if (!columnIndexes.containsKey(columnName)) {
                 columnIndexes.put(columnName, i);
@@ -58,8 +58,25 @@ public class DatabaseRow {
         this.columnMap = columnMap;
     }
 
-    public Instant getInstant(String fieldName) throws SQLException {
-        Timestamp timestamp = rs.getTimestamp(getColumnIndex(fieldName));
+    public Object getObject(String column) throws SQLException {
+        return rs.getObject(getColumnIndex(column));
+    }
+
+    public String getString(String column) throws SQLException {
+        return rs.getString(getColumnIndex(column));
+    }
+
+    public Long getLong(String column) throws SQLException {
+        long result = rs.getLong(getColumnIndex(column));
+        return rs.wasNull() ? null : result;
+    }
+
+    public boolean getBoolean(String fieldName) throws SQLException {
+        return rs.getBoolean(fieldName);
+    }
+
+    public Instant getInstant(String column) throws SQLException {
+        Timestamp timestamp = rs.getTimestamp(getColumnIndex(column));
         return timestamp != null ? timestamp.toInstant() : null;
     }
 
@@ -68,17 +85,9 @@ public class DatabaseRow {
         return instant != null ? instant.atZone(ZoneId.systemDefault()) : null;
     }
 
-    public String getString(String fieldName) throws SQLException {
-        return rs.getString(getColumnIndex(fieldName));
-    }
-
-    public Long getLong(String fieldName) throws SQLException {
-        long result = rs.getLong(getColumnIndex(fieldName));
-        return rs.wasNull() ? null : result;
-    }
-
-    public Object getObject(String fieldName) throws SQLException {
-        return rs.getObject(getColumnIndex(fieldName));
+    public LocalDate getLocalDate(String fieldName) throws SQLException {
+        Date date = rs.getDate(fieldName);
+        return date != null ? date.toLocalDate() : null;
     }
 
     public UUID getUUID(String fieldName) throws SQLException {
@@ -86,8 +95,9 @@ public class DatabaseRow {
         return result != null ? UUID.fromString(result) : null;
     }
 
-    public boolean getBoolean(String fieldName) throws SQLException {
-        return  rs.getBoolean(fieldName);
+    public <T extends Enum<T>> T getEnum(Class<T> enumClass, String fieldName) throws SQLException {
+        String value = getString(fieldName);
+        return value != null ? Enum.valueOf(enumClass, value) : null;
     }
 
     private Integer getColumnIndex(String fieldName) {
@@ -97,23 +107,52 @@ public class DatabaseRow {
         return columnIndexes.get(fieldName.toUpperCase());
     }
 
-    public LocalDate getLocalDate(String fieldName) throws SQLException {
-        Date date = rs.getDate(fieldName);
-        return date != null ? date.toLocalDate() : null;
-    }
-
-    public <T extends Enum<T>> T getEnum(Class<T> enumClass, String fieldName) throws SQLException {
-        String value = getString(fieldName);
-        return value != null ? Enum.valueOf(enumClass, value) : null;
-    }
-
-    public Long getLong(DatabaseColumnReference column) throws SQLException {
-        long result = rs.getLong(columnMap.get(column));
-        return rs.wasNull() ? null : result;
+    public Object getObject(DatabaseColumnReference column) throws SQLException {
+        return rs.getObject(getColumnIndex(column));
     }
 
     public String getString(DatabaseColumnReference column) throws SQLException {
-        return rs.getString(columnMap.get(column));
+        return rs.getString(getColumnIndex(column));
     }
 
+    public Long getLong(DatabaseColumnReference column) throws SQLException {
+        long result = rs.getLong(getColumnIndex(column));
+        return rs.wasNull() ? null : result;
+    }
+
+    public boolean getBoolean(DatabaseColumnReference column) throws SQLException {
+        return rs.getBoolean(getColumnIndex(column));
+    }
+
+    public Instant getInstant(DatabaseColumnReference column) throws SQLException {
+        Timestamp timestamp = rs.getTimestamp(getColumnIndex(column));
+        return timestamp != null ? timestamp.toInstant() : null;
+    }
+
+    public ZonedDateTime getZonedDateTime(DatabaseColumnReference fieldName) throws SQLException {
+        Instant instant = getInstant(fieldName);
+        return instant != null ? instant.atZone(ZoneId.systemDefault()) : null;
+    }
+
+    public LocalDate getLocalDate(DatabaseColumnReference column) throws SQLException {
+        Date date = rs.getDate(getColumnIndex(column));
+        return date != null ? date.toLocalDate() : null;
+    }
+
+    public UUID getUUID(DatabaseColumnReference column) throws SQLException {
+        String result = getString(column);
+        return result != null ? UUID.fromString(result) : null;
+    }
+
+    public <T extends Enum<T>> T getEnum(Class<T> enumClass, DatabaseColumnReference column) throws SQLException {
+        String value = getString(column);
+        return value != null ? Enum.valueOf(enumClass, value) : null;
+    }
+
+    private Integer getColumnIndex(DatabaseColumnReference column) {
+        if (!columnMap.containsKey(column)) {
+            throw new IllegalArgumentException("Column {" + column + "} is not present in " + columnMap.keySet());
+        }
+        return columnMap.get(column);
+    }
 }
