@@ -129,8 +129,8 @@ public class DatabaseRow {
         return timestamp != null ? timestamp.toInstant() : null;
     }
 
-    public ZonedDateTime getZonedDateTime(DatabaseColumnReference fieldName) throws SQLException {
-        Instant instant = getInstant(fieldName);
+    public ZonedDateTime getZonedDateTime(DatabaseColumnReference column) throws SQLException {
+        Instant instant = getInstant(column);
         return instant != null ? instant.atZone(ZoneId.systemDefault()) : null;
     }
 
