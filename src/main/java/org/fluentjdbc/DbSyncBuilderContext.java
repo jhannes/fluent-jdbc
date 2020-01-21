@@ -13,6 +13,7 @@ public class DbSyncBuilderContext<T>  {
     private final DbTableContext table;
     private EnumMap<DatabaseSaveResult.SaveStatus, Integer> status = new EnumMap<>(DatabaseSaveResult.SaveStatus.class);
     private final List<T> theirObjects;
+    private boolean isCached = false;
     private Map<List<Object>, List<Object>> ourRows;
     private Map<List<Object>, List<Object>> theirRows;
     private List<String> uniqueFields = new ArrayList<>();
@@ -39,6 +40,9 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> cacheExisting() {
+        if (isCached) {
+            return this;
+        }
         Map<List<Object>, List<Object>> ourRows = new HashMap<>();
         table.query().forEach(row -> {
             List<Object> key = new ArrayList<>();
@@ -61,11 +65,13 @@ public class DbSyncBuilderContext<T>  {
                     .collect(Collectors.toList()));
         });
         this.theirRows = theirRows;
+        isCached = true;
 
         return this;
     }
 
     public DbSyncBuilderContext<T> deleteExtras() {
+        cacheExisting();
         int count = table.bulkDelete(this.ourRows.keySet().stream()
                 .filter(key -> !theirRows.containsKey(key)))
                 .whereAll(uniqueFields, entry -> entry)
@@ -75,6 +81,7 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> insertMissing() {
+        cacheExisting();
         int count = table.bulkInsert(this.theirRows.entrySet().stream()
                 .filter(entry -> !ourRows.containsKey(entry.getKey())))
                 .setFields(uniqueFields, Map.Entry::getKey)
@@ -85,6 +92,7 @@ public class DbSyncBuilderContext<T>  {
     }
 
     public DbSyncBuilderContext<T> updateDiffering() {
+        cacheExisting();
         int count = table.bulkUpdate(this.theirRows.entrySet().stream()
                 .filter(entry -> ourRows.containsKey(entry.getKey()))
                 .filter(entry -> {
