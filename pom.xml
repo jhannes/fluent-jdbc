@@ -175,6 +175,15 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.2</version>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.1.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <doclint>all,-missing</doclint>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <scm>
@@ -252,6 +261,10 @@
                                 </goals>
                             </execution>
                         </executions>
+                        <configuration>
+                            <source>1.8</source>
+                            <doclint>all,-missing</doclint>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
