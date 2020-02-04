@@ -10,6 +10,8 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
@@ -156,6 +158,7 @@ public class UsageDemonstrationTest {
         product.setName(pickOne("Apples", "Bananas", "Coconuts", "Doritos") + " " + UUID.randomUUID());
         product.setCategory(pickOne("fruit", "breakfast", "dairy", "non-food", "literature", "candy"));
         product.setPriceInCents(1000 + random.nextInt(1000) * 10);
+        product.setLaunchedAt(Instant.now().truncatedTo(ChronoUnit.SECONDS));
         return product;
     }
 

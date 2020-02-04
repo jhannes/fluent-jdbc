@@ -96,11 +96,6 @@ public class SqlServerTests {
         public UsageDemonstrationTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
         }
-
-        @Override
-        protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {
-            // SQL Server doesn't convert keys correctly and so doesn't match the existing rows
-        }
     }
 
     static Connection getConnection() throws SQLException {

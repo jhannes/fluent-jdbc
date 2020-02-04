@@ -1,12 +1,9 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.DatabaseTable.RowMapper;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,7 +45,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     public DatabaseSaveResult<T> execute(Connection connection) throws SQLException {
         T idValue = this.idValue;
         if (idValue != null) {
-            Boolean isSame = tableWhereId(this.idValue).singleObject(connection, this::shouldSkipRow);
+            Boolean isSame = tableWhereId(this.idValue).singleObject(connection, row -> shouldSkipRow(row, connection));
             if (isSame != null && !isSame) {
                 update(connection, idValue);
                 return DatabaseSaveResult.updated(idValue);
@@ -61,7 +58,7 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         } else if (hasUniqueKey()) {
             Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
                 DatabaseSaveBuilder.this.idValue = getId(row);
-                return shouldSkipRow(row);
+                return shouldSkipRow(row, connection);
             });
             idValue = this.idValue;
             if (idValue == null) {
@@ -83,14 +80,14 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         return table.where(idField, p);
     }
 
-    private boolean shouldSkipRow(DatabaseRow row) throws SQLException {
+    private boolean shouldSkipRow(DatabaseRow row, Connection connection) throws SQLException {
         for (int i = 0; i < fields.size(); i++) {
             String field = fields.get(i);
-            if (!Objects.equals(values.get(i), row.getObject(field))) return false;
+            if (!dbValuesAreEqual(values.get(i), row.getObject(field), connection)) return false;
         }
         for (int i = 0; i < uniqueKeyFields.size(); i++) {
             String field = uniqueKeyFields.get(i);
-            if (!Objects.equals(uniqueKeyValues.get(i), row.getObject(field))) return false;
+            if (!dbValuesAreEqual(uniqueKeyValues.get(i), row.getObject(field), connection)) return false;
         }
         return true;
     }

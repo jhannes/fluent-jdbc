@@ -49,7 +49,7 @@ public final class HsqldbTests {
     }
 
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
-        public UsageDemonstrationTest() throws SQLException {
+        public UsageDemonstrationTest() {
             super(getDataSource(), REPLACEMENTS);
         }
     }

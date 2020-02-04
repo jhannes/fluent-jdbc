@@ -1,10 +1,12 @@
 package org.fluentjdbc;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -59,9 +61,11 @@ public class DbSyncBuilderContext<T>  {
 
         Map<List<Object>, List<Object>> theirRows = new HashMap<>();
         theirObjects.forEach(entity -> {
-            List<Object> keys = uniqueValueFunctions.stream().map(f -> f.apply(entity)).collect(Collectors.toList());
+            List<Object> keys = uniqueValueFunctions.stream()
+                    .map(function -> DatabaseStatement.toDatabaseType(function.apply(entity), table.getConnection()))
+                    .collect(Collectors.toList());
             theirRows.put(keys, updatedValueFunctions.stream()
-                    .map(function -> function.apply(entity))
+                    .map(function -> DatabaseStatement.toDatabaseType(function.apply(entity), table.getConnection()))
                     .collect(Collectors.toList()));
         });
         this.theirRows = theirRows;
@@ -111,7 +115,31 @@ public class DbSyncBuilderContext<T>  {
     }
 
     protected boolean valuesEqual(List<Object> key) {
-        return ourRows.get(key).equals(theirRows.get(key));
+        return areEqual(ourRows.get(key), theirRows.get(key));
+    }
+
+    private boolean areEqual(List<Object> a, List<Object> b) {
+        if (a == null) {
+            return b == null;
+        } else if (a.size() != b.size()) {
+            return false;
+        }
+        for (int i = 0; i < a.size(); i++) {
+            if (!areEqual(a.get(i), b.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean areEqual(Object o, Object o1) {
+        if (o instanceof BigDecimal) {
+            if (!(o1 instanceof BigDecimal)) {
+                return false;
+            }
+            return ((BigDecimal)o).compareTo((BigDecimal)o1) == 0;
+        }
+        return Objects.equals(o, o1);
     }
 
     private void addStatus(DatabaseSaveResult.SaveStatus status) {

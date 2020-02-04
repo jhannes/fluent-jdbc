@@ -30,6 +30,11 @@ public class SqliteTests {
         public DatabaseSaveBuilderTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
         }
+
+        @Override
+        public void shouldNotUpdateUnchangedRow() throws SQLException {
+            // Ignored because Sqlite doesn't have proper timestamps
+        }
     }
 
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
@@ -71,7 +76,7 @@ public class SqliteTests {
 
         @Override
         protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {
-            // SQL Lite doesn't convert keys correctly and so doesn't match the existing rows
+            // SQL Lite doesn't convert Timestamps correctly and so doesn't match the existing rows
         }
     }
 

@@ -123,9 +123,9 @@ public class OrderRepository implements Repository<Order, UUID> {
 
 ### MSSQL
 
-* `docker run --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=... -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest`
-* `docker exec -it sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P ...`
-* `create login fluentjdbc_test with password = '...'; go`
+* `docker run --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=28sdnnasaAs -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest`
+* `docker exec -it sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 28sdnnasaAs`
+* `create login fluentjdbc_test with password = '28sdnnasaAs'; go`
 * `create database fluentjdbc_test; go`
 * `create user fluentjdbc_test for login fluentjdbc_test; go`
 * `use fluentjdbc_test; go`

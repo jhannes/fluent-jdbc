@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -15,9 +16,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,21 +41,39 @@ class DatabaseStatement {
 
     protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof Instant) {
-            stmt.setTimestamp(index, Timestamp.from((Instant)parameter));
+            stmt.setTimestamp(index, (Timestamp) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof ZonedDateTime) {
-            stmt.setTimestamp(index, Timestamp.from(Instant.from((ZonedDateTime)parameter)));
+            stmt.setTimestamp(index, (Timestamp) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof LocalDate) {
-            stmt.setDate(index, Date.valueOf((LocalDate)parameter));
-        } else if (parameter instanceof UUID && isSqlServer(stmt.getConnection())) {
-            stmt.setObject(index, parameter.toString());
-        } else if (parameter instanceof Temporal) {
-            stmt.setObject(index, parameter.toString());
+            stmt.setDate(index, (Date) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof CharSequence) {
-            stmt.setString(index, parameter.toString());
+            stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof Enum<?>) {
-            stmt.setString(index, parameter.toString());
+            stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
         } else {
-            stmt.setObject(index, parameter);
+            stmt.setObject(index, toDatabaseType(parameter, stmt.getConnection()));
+        }
+    }
+
+    public static Object toDatabaseType(@Nullable Object parameter, Connection connection) {
+        if (parameter instanceof Instant) {
+            return Timestamp.from((Instant)parameter);
+        } else if (parameter instanceof ZonedDateTime) {
+            return Timestamp.from(Instant.from((ZonedDateTime)parameter));
+        } else if (parameter instanceof LocalDate) {
+            return Date.valueOf((LocalDate)parameter);
+        } else if (parameter instanceof UUID && isSqlServer(connection)) {
+            return parameter.toString().toUpperCase();
+        } else if (parameter instanceof Double) {
+            return BigDecimal.valueOf(((Number) parameter).doubleValue());
+        } else if (parameter instanceof Temporal) {
+            return parameter.toString();
+        } else if (parameter instanceof CharSequence) {
+            return parameter.toString();
+        } else if (parameter instanceof Enum<?>) {
+            return parameter.toString();
+        } else {
+            return parameter;
         }
     }
 
@@ -68,8 +87,9 @@ class DatabaseStatement {
         }
     }
 
-    private boolean isSqlServer(Connection connection) {
-        return connection.getClass().getName().startsWith("net.sourceforge.jtds.jdbc");
+    private static boolean isSqlServer(Connection connection) {
+        return connection.getClass().getName().startsWith("net.sourceforge.jtds.jdbc") ||
+                connection.getClass().getName().startsWith("com.microsoft.sqlserver.jdbc");
     }
 
     protected void executeUpdate(String query, List<Object> parameters, Connection connection) {
@@ -111,4 +131,7 @@ class DatabaseStatement {
         return parameterString.toString();
     }
 
+    protected boolean dbValuesAreEqual(Object a, Object b, Connection connection) {
+        return Objects.equals(toDatabaseType(a, connection), toDatabaseType(b, connection));
+    }
 }

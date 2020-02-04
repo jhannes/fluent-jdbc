@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.Instant;
 import java.util.UUID;
 
 @ToString
@@ -30,5 +31,9 @@ public class Product {
 
     @Getter
     @Setter
-    private long priceInCents;
+    private int priceInCents;
+
+    @Getter
+    @Setter
+    private Instant launchedAt;
 }

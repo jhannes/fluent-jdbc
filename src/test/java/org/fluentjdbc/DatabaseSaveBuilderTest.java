@@ -1,22 +1,22 @@
 package org.fluentjdbc;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
-import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.INSERTED;
-import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.UPDATED;
-
-import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.INSERTED;
+import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.UPDATED;
 
 public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
@@ -43,7 +43,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         dropTableIfExists(connection, "uuid_table");
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate(
-                    preprocessCreateTable("create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
+                    preprocessCreateTable("create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, expired_at ${DATETIME}, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
         }
     }
 
@@ -86,21 +86,21 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         String retrievedName = table.where("id", id).singleString(connection, "name");
         assertThat(retrievedName).isEqualTo("updated value");
 
-        assertThat(table.where("id", id).orderBy("name").list(connection, new RowMapper<UUID>() {
-            @Override
-            public UUID mapRow(@Nonnull DatabaseRow row) throws SQLException {
-                return row.getUUID("id");
-            }
-        })).containsOnly(id);
+        assertThat(table.where("id", id)
+                .orderBy("name")
+                .list(connection, row -> row.getUUID("id")))
+            .containsOnly(id);
     }
 
     @Test
     public void shouldNotUpdateUnchangedRow() throws SQLException {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         String savedName = "original row";
         UUID firstId = table
                 .newSaveBuilderWithUUID("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
+                .setField("expired_at", now)
                 .execute(connection)
                 .getId();
 
@@ -108,6 +108,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .newSaveBuilderWithUUID("id", null)
                 .uniqueKey("code", 123)
                 .setField("name", savedName)
+                .setField("expired_at", now)
                 .execute(connection);
         assertThat(result).isEqualTo(DatabaseSaveResult.unchanged(firstId));
     }

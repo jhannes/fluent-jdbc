@@ -10,7 +10,6 @@ import org.fluentjdbc.DbSelectContext;
 import org.fluentjdbc.DbTableContext;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumMap;
@@ -23,7 +22,8 @@ public class ProductRepository implements Repository<Product, Product.Id> {
                 .unique("product_id", p -> p.getProductId().getValue())
                 .field("name", Product::getName)
                 .field("category", Product::getCategory)
-                .field("price_in_cents", product -> new BigDecimal(product.getPriceInCents()))
+                .field("price_in_cents", Product::getPriceInCents)
+                .field("launched_at", Product::getLaunchedAt)
                 .cacheExisting()
                 .deleteExtras()
                 .insertMissing()
@@ -68,7 +68,8 @@ public class ProductRepository implements Repository<Product, Product.Id> {
             "product_id ${UUID} primary key, " +
             "name varchar(200) not null, " +
             "category varchar(200), " +
-            "price_in_cents numeric, " +
+            "price_in_cents integer, " +
+            "launched_at ${DATETIME}, " +
             "updated_at ${DATETIME} not null, " +
             "created_at ${DATETIME} not null)";
     private DbTableContext table;
@@ -83,6 +84,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
                 .setField("name", product.getName())
                 .setField("category", product.getCategory())
                 .setField("price_in_cents", product.getPriceInCents())
+                .setField("launched_at", product.getLaunchedAt())
                 .execute();
         product.setProductId(result.getId());
         return result.getSaveStatus();
@@ -116,7 +118,8 @@ public class ProductRepository implements Repository<Product, Product.Id> {
         product.setProductId(new Product.Id(row.getUUID("product_id")));
         product.setName(row.getString("name"));
         product.setCategory(row.getString("category"));
-        product.setPriceInCents(row.getLong("price_in_cents"));
+        product.setPriceInCents(row.getInt("price_in_cents"));
+        product.setLaunchedAt(row.getInstant("launched_at"));
         return product;
     }
 }

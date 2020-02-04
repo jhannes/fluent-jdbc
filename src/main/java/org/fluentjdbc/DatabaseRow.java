@@ -71,6 +71,11 @@ public class DatabaseRow {
         return rs.wasNull() ? null : result;
     }
 
+    public Integer getInt(String column) throws SQLException {
+        int result = rs.getInt(getColumnIndex(column));
+        return rs.wasNull() ? null : result;
+    }
+
     public boolean getBoolean(String fieldName) throws SQLException {
         return rs.getBoolean(fieldName);
     }
@@ -120,6 +125,11 @@ public class DatabaseRow {
         return rs.wasNull() ? null : result;
     }
 
+    public Integer getInt(DatabaseColumnReference column) throws SQLException {
+        int result = rs.getInt(getColumnIndex(column));
+        return rs.wasNull() ? null : result;
+    }
+
     public boolean getBoolean(DatabaseColumnReference column) throws SQLException {
         return rs.getBoolean(getColumnIndex(column));
     }
@@ -155,4 +165,5 @@ public class DatabaseRow {
         }
         return columnMap.get(column);
     }
+
 }
