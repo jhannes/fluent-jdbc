@@ -3,7 +3,7 @@ package org.fluentjdbc;
 import java.util.List;
 import java.util.function.Function;
 
-public class DbBulkInsertContext<T> {
+public class DbBulkInsertContext<T> implements DatabaseBulkUpdateable<T, DbBulkInsertContext<T>> {
 
     private final DbTableContext tableContext;
     private DatabaseBulkInsertBuilder<T> builder;
@@ -13,6 +13,12 @@ public class DbBulkInsertContext<T> {
         this.builder = builder;
     }
 
+    @Override
+    public DbBulkInsertContext<T> setField(String fieldName, Function<T, Object> transformer) {
+        return build(builder.setField(fieldName, transformer));
+    }
+
+    @Override
     public <VALUES extends List<?>> DbBulkInsertContext<T> setFields(List<String> fields, Function<T, VALUES> values) {
         return build(builder.setFields(fields, values));
     }
