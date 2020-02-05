@@ -65,7 +65,7 @@ public class UsageDemonstrationTest {
     public void shouldFindSavedRow() {
         Product sampleProduct = sampleProduct();
         productRepository.save(sampleProduct);
-        assertThat(productRepository.query().list())
+        assertThat(productRepository.query().stream())
                 .extracting(Product::getName)
                 .contains(sampleProduct.getName());
     }
@@ -96,7 +96,7 @@ public class UsageDemonstrationTest {
     public void shouldSaveOrder() {
         Order order = sampleOrder();
         orderRepository.save(order);
-        assertThat(orderRepository.query().customerEmail(order.getCustomerEmail()).list())
+        assertThat(orderRepository.query().customerEmail(order.getCustomerEmail()).stream())
                 .extracting(Order::getOrderId)
                 .contains(order.getOrderId());
     }
@@ -131,7 +131,7 @@ public class UsageDemonstrationTest {
                 .syncProducts(Arrays.asList(unchangedProduct, changedProduct, newProduct));
 
         verifySyncStatus(syncStatus);
-        assertThat(productRepository.query().list())
+        assertThat(productRepository.query().stream())
                 .extracting(Product::getName)
                 .containsExactlyInAnyOrder(changedProduct.getName(), unchangedProduct.getName(), newProduct.getName());
     }

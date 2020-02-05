@@ -5,11 +5,16 @@ import org.fluentjdbc.util.ExceptionUtil;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -25,22 +30,60 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         this.table = table;
     }
 
-    @Override
-    public <T> List<T> list(Connection connection, RowMapper<T> mapper) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
+    public <T> Stream<T> stream(Connection connection, RowMapper<T> mapper) {
+        try {
+            long startTime = System.currentTimeMillis();
+            String query = createSelectStatement();
+            logger.trace(query);
+            PreparedStatement stmt = connection.prepareStatement(query);
             bindParameters(stmt);
-            try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
-                return result.list(mapper);
-            }
+            ResultSet rs = stmt.executeQuery();
+
+            Iterator<T> iterator = new Iterator<T>() {
+                private boolean hasNext;
+                {
+                    hasNext = rs.next();
+                }
+
+                @Override
+                public boolean hasNext() {
+                    return hasNext;
+                }
+
+                @Override
+                public T next() {
+                    try {
+                        T o = mapper.mapRow(new DatabaseRow(rs));
+                        hasNext = rs.next();
+                        if (!hasNext) {
+                            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+                            close();
+                        }
+                        return o;
+                    } catch (SQLException e) {
+                        throw ExceptionUtil.softenCheckedException(e);
+                    }
+                }
+
+                protected void close() throws SQLException {
+                    rs.close();
+                    stmt.close();
+                }
+
+                @Override
+                protected void finalize() throws Throwable {
+                    close();
+                }
+            };
+            return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false);
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
         }
+    }
+
+    @Override
+    public <T> List<T> list(Connection connection, RowMapper<T> mapper) {
+        return stream(connection, mapper).collect(Collectors.toList());
     }
 
     public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {

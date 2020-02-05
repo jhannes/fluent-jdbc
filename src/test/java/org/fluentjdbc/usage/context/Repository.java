@@ -2,8 +2,7 @@ package org.fluentjdbc.usage.context;
 
 import org.fluentjdbc.DatabaseSaveResult;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.stream.Stream;
 
 public interface Repository<T, ID> {
     DatabaseSaveResult.SaveStatus save(T product);
@@ -13,6 +12,6 @@ public interface Repository<T, ID> {
     T retrieve(ID id);
 
     interface Query<T> {
-        List<T> list();
+        Stream<T> stream();
     }
 }

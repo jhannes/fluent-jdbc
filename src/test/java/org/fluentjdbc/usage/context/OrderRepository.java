@@ -9,6 +9,7 @@ import org.fluentjdbc.DbTableContext;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class OrderRepository implements Repository<Order, UUID> {
     public static final String CREATE_TABLE = "CREATE TABLE orders (" +
@@ -53,8 +54,8 @@ public class OrderRepository implements Repository<Order, UUID> {
         }
 
         @Override
-        public List<Order> list() {
-            return context.list(row -> toOrder(row));
+        public Stream<Order> stream() {
+            return context.stream(row -> toOrder(row));
         }
 
         public Query customerEmail(String customerEmail) {

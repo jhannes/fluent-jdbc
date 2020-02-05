@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 public class ProductRepository implements Repository<Product, Product.Id> {
     public EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncProducts(List<Product> products) {
@@ -108,8 +109,8 @@ public class ProductRepository implements Repository<Product, Product.Id> {
         }
 
         @Override
-        public List<Product> list() {
-            return query.list(ProductRepository.this::toProduct);
+        public Stream<Product> stream() {
+            return query.stream(ProductRepository.this::toProduct);
         }
     }
 
