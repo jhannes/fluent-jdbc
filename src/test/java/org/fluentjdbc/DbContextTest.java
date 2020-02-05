@@ -197,6 +197,53 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldCommitTransaction() {
+        try (DbTransaction tx = dbContext.ensureTransaction()) {
+            tableContext.insert().setField("code", 1003).setField("name", "commitTest").execute();
+            tx.setComplete();
+        }
+        assertThat(tableContext.where("name", "commitTest").listLongs("code"))
+                .contains(1003L);
+    }
+
+    @Test
+    public void shouldRollbackTransaction() {
+        try (DbTransaction tx = dbContext.ensureTransaction()) {
+            tableContext.insert().setField("code", 1004).setField("name", "txTest").execute();
+            tableContext.insert().setField("code", 1005).setField("name", "txTest").execute();
+        }
+        assertThat(tableContext.where("name", "txTest").listLongs("code")).isEmpty();
+    }
+
+    @Test
+    public void shouldCommitNestedTransaction() {
+        try (DbTransaction outerTx = dbContext.ensureTransaction()) {
+            tableContext.insert().setField("code", 1006).setField("name", "nestedTx").execute();
+            try (DbTransaction innerTx = dbContext.ensureTransaction()) {
+                tableContext.insert().setField("code", 1007).setField("name", "nestedTx").execute();
+                innerTx.setComplete();
+            }
+            outerTx.setComplete();
+        }
+        assertThat(tableContext.where("name", "nestedTx").listLongs("code"))
+                .contains(1006L, 1006L);
+    }
+
+    @Test
+    public void shouldRollbackNestedTransaction() {
+        try (DbTransaction tx = dbContext.ensureTransaction()) {
+            tableContext.insert().setField("code", 1008).setField("name", "nestedTx").execute();
+            try (DbTransaction innerTx = dbContext.ensureTransaction()) {
+                tableContext.insert().setField("code", 1009).setField("name", "nestedTx").execute();
+                // Rollback by default
+            }
+            tx.setComplete();
+        }
+        assertThat(tableContext.where("name", "nestedTx").listLongs("code"))
+                .contains();
+    }
+
+    @Test
     public void shouldListOnWhereIn() {
         Object id1 = tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute();
         Object id2 = tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "world").execute();

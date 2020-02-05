@@ -1,7 +1,10 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.util.ExceptionUtil;
+
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.HashMap;
 
 public class DbContext {
@@ -55,5 +58,76 @@ public class DbContext {
             currentCache.get().get(tableName).put(key, retriever.retrieve(key));
         }
         return (ENTITY) currentCache.get().get(tableName).get(key);
+    }
+
+    private ThreadLocal<DbTransaction> currentTransaction = new ThreadLocal<>();
+
+    public DbTransaction ensureTransaction() {
+        if (currentTransaction.get() != null) {
+            return new NestedTransactionContext(currentTransaction.get());
+        }
+        try {
+            getThreadConnection().setAutoCommit(false);
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        }
+        currentTransaction.set(new TopLevelTransaction());
+        return currentTransaction.get();
+    }
+
+    private static class NestedTransactionContext implements DbTransaction {
+        private boolean complete = false;
+        private DbTransaction outerTransaction;
+
+        public NestedTransactionContext(DbTransaction outerTransaction) {
+            this.outerTransaction = outerTransaction;
+        }
+
+        @Override
+        public void close() {
+            if (!complete) {
+                outerTransaction.setRollback();
+            }
+        }
+
+        @Override
+        public void setRollback() {
+            complete = false;
+        }
+
+        @Override
+        public void setComplete() {
+            complete = true;
+        }
+    }
+
+    private class TopLevelTransaction implements DbTransaction {
+        boolean complete = false;
+        boolean rollback = false;
+
+        @Override
+        public void setComplete() {
+            complete = true;
+        }
+
+        @Override
+        public void setRollback() {
+            rollback = true;
+        }
+
+        @Override
+        public void close() {
+            currentTransaction.remove();
+            try {
+                if (!complete || rollback) {
+                    getThreadConnection().rollback();
+                } else {
+                    getThreadConnection().commit();
+                }
+                getThreadConnection().setAutoCommit(false);
+            } catch (SQLException e) {
+                throw ExceptionUtil.softenCheckedException(e);
+            }
+        }
     }
 }
