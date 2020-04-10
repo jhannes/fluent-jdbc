@@ -144,6 +144,9 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     }
 
     public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
+        if (parameters.isEmpty()) {
+            return whereExpression(fieldName + " <> " + fieldName);
+        }
         whereExpression(fieldName + " IN (" + parameterString(parameters.size()) + ")");
         this.parameters.addAll(parameters);
         return this;

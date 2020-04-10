@@ -13,6 +13,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
@@ -87,6 +88,15 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         assertThat(table.whereIn("name", Arrays.asList("hello", "world")).unordered().listStrings(connection, "id"))
             .containsOnly(id1.toString(), id2.toString())
             .doesNotContain(id3.toString());
+    }
+
+    @Test
+    public void shouldReturnEmptyListOnEmptyWhereIn() throws SQLException {
+        Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
+
+        assertThat(table.whereIn("name", Collections.emptyList()).unordered().listStrings(connection, "id"))
+                .isEmpty();
+
     }
 
     @Test
