@@ -234,6 +234,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .forEach(connection, row -> {
                     assertThat(row.getEnum(Level.class, m.column("status"))).isEqualTo(Level.INFO);
                     assertThat(row.getZonedDateTime(m.column("expires_at"))).isEqualTo(inTwoWeeks);
+                    assertThat(row.getOffsetDateTime(m.column("expires_at"))).isEqualTo(inTwoWeeks.toOffsetDateTime());
                     assertThat(row.getObject(m.column("expires_at")))
                             .isEqualTo(Timestamp.from(inTwoWeeks.toInstant()));
                     assertThat(row.getInstant(m.column("expires_at")))

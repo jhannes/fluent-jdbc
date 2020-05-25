@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
@@ -90,6 +91,11 @@ public class DatabaseRow {
         return instant != null ? instant.atZone(ZoneId.systemDefault()) : null;
     }
 
+    public OffsetDateTime getOffsetDateTime(String fieldName) throws SQLException {
+        Instant instant = getInstant(fieldName);
+        return instant != null ? OffsetDateTime.ofInstant(instant, ZoneId.systemDefault()) : null;
+    }
+
     public LocalDate getLocalDate(String fieldName) throws SQLException {
         Date date = rs.getDate(fieldName);
         return date != null ? date.toLocalDate() : null;
@@ -142,6 +148,11 @@ public class DatabaseRow {
     public ZonedDateTime getZonedDateTime(DatabaseColumnReference column) throws SQLException {
         Instant instant = getInstant(column);
         return instant != null ? instant.atZone(ZoneId.systemDefault()) : null;
+    }
+
+    public OffsetDateTime getOffsetDateTime(DatabaseColumnReference column) throws SQLException {
+        Instant instant = getInstant(column);
+        return instant != null ? OffsetDateTime.ofInstant(instant, ZoneId.systemDefault()) : null;
     }
 
     public LocalDate getLocalDate(DatabaseColumnReference column) throws SQLException {

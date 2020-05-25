@@ -10,11 +10,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.Random;
 import java.util.regex.Pattern;
 
-import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FluentJdbcContextDemonstrationTest {
 
@@ -163,8 +165,9 @@ public class FluentJdbcContextDemonstrationTest {
         tableContext.newSaveBuilder("id", id).setField("name", "another value").execute();
         assertThat(tableContext.where("id", id).singleInstant("updated_at"))
             .isAfter(updatedTime);
-        assertThat(tableContext.where("id", id).singleInstant("created_at"))
-            .isEqualTo(createdTime);
+        OffsetDateTime createdDateTime = tableContext.where("id", id)
+                .singleObject(row -> row.getOffsetDateTime("created_at"));
+        assertThat(createdDateTime).isEqualTo(OffsetDateTime.ofInstant(createdTime, ZoneId.systemDefault()));
     }
 
     @Test
