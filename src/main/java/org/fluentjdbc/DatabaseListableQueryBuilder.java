@@ -11,6 +11,8 @@ public interface DatabaseListableQueryBuilder {
 
     <T> List<T> list(Connection connection, RowMapper<T> mapper);
 
+    int getCount(Connection connection);
+
     default List<Long> listLongs(Connection connection, final String fieldName) {
         return list(connection, row -> row.getLong(fieldName));
     }

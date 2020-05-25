@@ -9,10 +9,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.List;
@@ -163,8 +161,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias o = organizations.alias("o");
 
-        List<String> result = m
-                .join(m.column("person_id"), p.column("id"))
+        List<String> result = m.join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"))
                 .whereIn(o.column("name").getQualifiedColumnName(), Arrays.asList("Army", "Boutique"))
                 .whereOptional(p.column("name").getQualifiedColumnName(), null)
@@ -174,6 +171,33 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                         row -> row.getString(o.column("name")) + " " + row.getString(p.column("name")));
         assertThat(result)
                 .containsExactly("Army Alice", "Boutique Alice", "Army Bob");
+    }
+
+    @Test
+    public void shouldCountJoinedRows() throws SQLException {
+        long alice = savePerson("Alice");
+        long bob = savePerson("Bob");
+
+        long army = saveOrganization("Army");
+        long boutique = saveOrganization("Boutique");
+
+        saveMembership(alice, army);
+        saveMembership(alice, boutique);
+
+        saveMembership(bob, army);
+
+        DatabaseTableAlias m = memberships.alias("m");
+        DatabaseTableAlias p = persons.alias("p");
+        DatabaseTableAlias o = organizations.alias("o");
+
+        assertThat(o.join(o.column("id"), m.column("organization_id"))
+                .join(m.column("person_id"), p.column("id"))
+                .where("name", "Army")
+                .getCount(connection)).isEqualTo(2);
+        assertThat(o.join(o.column("id"), m.column("organization_id"))
+                .join(m.column("person_id"), p.column("id"))
+                .where("name", "Boutique")
+                .getCount(connection)).isEqualTo(1);
     }
 
     @Test

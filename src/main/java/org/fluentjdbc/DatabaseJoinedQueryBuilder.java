@@ -137,6 +137,26 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         }
     }
 
+    @Override
+    public int getCount(Connection connection) {
+        long startTime = System.currentTimeMillis();
+        String query = "select count(*) " + fromClause() + whereClause() + orderByClause();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
+            bindParameters(stmt, parameters);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (!rs.next()) {
+                    throw new SQLException("Expected exactly one row returned from " + query);
+                }
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+        }
+    }
+
     public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
         long startTime = System.currentTimeMillis();
         String query = createSelectStatement();

@@ -9,6 +9,8 @@ public interface DbListableSelectContext<T extends DbListableSelectContext<T>> e
 
     <OBJECT> List<OBJECT> list(RowMapper<OBJECT> object);
 
+    int getCount();
+
     default List<String> listStrings(String fieldName) {
         return list(row -> row.getString(fieldName));
     }

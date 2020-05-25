@@ -88,6 +88,11 @@ public class DbSelectContext implements DbListableSelectContext<DbSelectContext>
         return queryBuilder.list(getConnection(), mapper);
     }
 
+    @Override
+    public int getCount() {
+        return queryBuilder.getCount(getConnection());
+    }
+
     public <T> T singleObject(RowMapper<T> mapper) {
         return queryBuilder.singleObject(getConnection(), mapper);
     }

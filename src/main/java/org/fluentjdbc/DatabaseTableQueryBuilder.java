@@ -30,6 +30,28 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         this.table = table;
     }
 
+    @Override
+    public int getCount(Connection connection) {
+        try {
+            long startTime = System.currentTimeMillis();
+            String query = "select count(*) " + fromClause()
+                    + (conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions))
+                    + (orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses));
+            logger.trace(query);
+            PreparedStatement stmt = connection.prepareStatement(query);
+            bindParameters(stmt);
+            ResultSet rs = stmt.executeQuery();
+            if (!rs.next()) {
+                throw new SQLException("Expected exactly one row from " + query);
+            }
+            int count = rs.getInt(1);
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+            return count;
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        }
+    }
+
     public <T> Stream<T> stream(Connection connection, RowMapper<T> mapper) {
         try {
             long startTime = System.currentTimeMillis();

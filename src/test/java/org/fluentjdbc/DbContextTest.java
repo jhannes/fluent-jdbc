@@ -207,6 +207,37 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldThrowOnDoubleStart() {
+        assertThatThrownBy(() -> dbContext.startConnection(dataSource))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Don't set twice in a thread!");
+    }
+
+    @Test
+    public void shouldThrowIfContextIsNotStarted() throws InterruptedException {
+        Thread thread = new Thread(() -> {
+            try {
+                dbContext.getThreadConnection();
+            } catch (Exception e) {
+                thrownException = e;
+            }
+        });
+        thread.start();
+        thread.join(5000);
+        assertThat(thrownException)
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("Call startConnection");
+    }
+
+    @Test
+    public void shouldSoftenException() throws SQLException {
+        DbTransaction tx = dbContext.ensureTransaction();
+        dbContext.getThreadConnection().close();
+        assertThatThrownBy(tx::close)
+                .isInstanceOf(SQLException.class);
+    }
+
+    @Test
     public void shouldRollbackTransaction() {
         try (DbTransaction tx = dbContext.ensureTransaction()) {
             tableContext.insert().setField("code", 1004).setField("name", "txTest").execute();
@@ -266,6 +297,14 @@ public class DbContextTest {
             .contains(id1.toString(), id2.toString(), id3.toString());
     }
 
+    @Test
+    public void shouldCountRows() {
+        tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "shouldCountRows").execute();
+        tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "shouldCountRows").execute();
+        tableContext.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "SomethingElse").execute();
+
+        assertThat(tableContext.where("name", "shouldCountRows").getCount()).isEqualTo(2);
+    }
 
     @Test
     public void shouldInsertWithExplicitKey() {

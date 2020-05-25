@@ -19,6 +19,11 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
     }
 
     @Override
+    public int getCount() {
+        return builder.getCount(dbContext.getThreadConnection());
+    }
+
+    @Override
     public <OBJECT> List<OBJECT> list(DatabaseTable.RowMapper<OBJECT> mapper) {
         return builder.list(dbContext.getThreadConnection(), mapper);
     }
