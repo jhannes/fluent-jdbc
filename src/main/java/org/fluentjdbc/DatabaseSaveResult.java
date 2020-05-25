@@ -20,6 +20,10 @@ public class DatabaseSaveResult<T> {
         return new DatabaseSaveResult<>(idValue, SaveStatus.INSERTED);
     }
 
+    public static <T> DatabaseSaveResult<T> deleted(@Nonnull T idValue) {
+        return new DatabaseSaveResult<>(idValue, SaveStatus.DELETED);
+    }
+
     public static <T> DatabaseSaveResult<T> unchanged(@Nonnull T idValue) {
         return new DatabaseSaveResult<>(idValue, SaveStatus.UNCHANGED);
     }
