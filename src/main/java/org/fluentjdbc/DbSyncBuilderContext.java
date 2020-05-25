@@ -118,7 +118,7 @@ public class DbSyncBuilderContext<T>  {
         return areEqual(ourRows.get(key), theirRows.get(key));
     }
 
-    private boolean areEqual(List<Object> a, List<Object> b) {
+    protected boolean areEqual(List<Object> a, List<Object> b) {
         if (a == null) {
             return b == null;
         } else if (a.size() != b.size()) {
@@ -132,7 +132,7 @@ public class DbSyncBuilderContext<T>  {
         return true;
     }
 
-    private boolean areEqual(Object o, Object o1) {
+    protected boolean areEqual(Object o, Object o1) {
         if (o instanceof BigDecimal) {
             if (!(o1 instanceof BigDecimal)) {
                 return false;

@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.util.Collection;
@@ -44,6 +45,8 @@ class DatabaseStatement {
             stmt.setTimestamp(index, (Timestamp) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof ZonedDateTime) {
             stmt.setTimestamp(index, (Timestamp) toDatabaseType(parameter, stmt.getConnection()));
+        } else if (parameter instanceof OffsetDateTime) {
+            stmt.setTimestamp(index, (Timestamp) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof LocalDate) {
             stmt.setDate(index, (Date) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof CharSequence) {
@@ -60,6 +63,8 @@ class DatabaseStatement {
             return Timestamp.from((Instant)parameter);
         } else if (parameter instanceof ZonedDateTime) {
             return Timestamp.from(Instant.from((ZonedDateTime)parameter));
+        } else if (parameter instanceof OffsetDateTime) {
+            return Timestamp.from(Instant.from((OffsetDateTime)parameter));
         } else if (parameter instanceof LocalDate) {
             return Date.valueOf((LocalDate)parameter);
         } else if (parameter instanceof UUID && isSqlServer(connection)) {

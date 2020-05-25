@@ -131,7 +131,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .setField("name", "oldName")
                 .execute(connection);
 
-        table.where("id", id).update().setField("name", "New name").execute(connection);
+        table.where("id", id).query().update().setField("name", "New name").execute(connection);
 
         assertThat(table.where("id", id).singleString(connection, "name")).get()
             .isEqualTo("New name");

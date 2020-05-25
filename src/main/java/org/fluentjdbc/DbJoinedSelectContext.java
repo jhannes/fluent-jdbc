@@ -76,11 +76,6 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
     }
 
     @Override
-    public DatabaseUpdateable update() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     @Nonnull
     public <OBJECT> Optional<OBJECT> singleObject(DatabaseTable.RowMapper<OBJECT> mapper) {
         return builder.singleObject(dbContext.getThreadConnection(), mapper);

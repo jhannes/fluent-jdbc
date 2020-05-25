@@ -223,11 +223,6 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions);
     }
 
-    @Override
-    public DatabaseUpdateable<?> update() {
-        throw new UnsupportedOperationException();
-    }
-
     private static class JoinedTable {
         private final DatabaseColumnReference a;
         private final DatabaseColumnReference b;

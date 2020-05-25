@@ -20,7 +20,6 @@ public class Product {
         private final UUID value;
     }
 
-
     @Getter
     @Setter
     private Id productId;

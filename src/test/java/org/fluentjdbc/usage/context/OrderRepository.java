@@ -16,6 +16,8 @@ public class OrderRepository implements Repository<Order, UUID> {
             "order_id ${UUID} primary key, " +
             "customer_name varchar(200) not null, " +
             "customer_email varchar(200) not null, " +
+            "loyalty_percentage numeric(10,5) not null, " +
+            "order_time ${DATETIME}, " +
             "updated_at ${DATETIME} not null, " +
             "created_at ${DATETIME} not null)";
 
@@ -26,12 +28,14 @@ public class OrderRepository implements Repository<Order, UUID> {
     }
 
     @Override
-    public DatabaseSaveResult.SaveStatus save(Order product) {
-        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("order_id", product.getOrderId())
-                .setField("customer_name", product.getCustomerName())
-                .setField("customer_email", product.getCustomerEmail())
+    public DatabaseSaveResult.SaveStatus save(Order order) {
+        DatabaseSaveResult<UUID> result = table.newSaveBuilderWithUUID("order_id", order.getOrderId())
+                .setField("customer_name", order.getCustomerName())
+                .setField("customer_email", order.getCustomerEmail())
+                .setField("order_time", order.getOrderTime())
+                .setField("loyalty_percentage", order.getLoyaltyPercentage())
                 .execute();
-        product.setOrderId(result.getId());
+        order.setOrderId(result.getId());
         return result.getSaveStatus();
     }
 
@@ -62,7 +66,7 @@ public class OrderRepository implements Repository<Order, UUID> {
             return query(context.where("customer_email", customerEmail));
         }
 
-        private Query query(DbSelectContext contex) {
+        private Query query(DbSelectContext context) {
             return this;
         }
     }
@@ -72,6 +76,8 @@ public class OrderRepository implements Repository<Order, UUID> {
         order.setOrderId(row.getUUID("order_id"));
         order.setCustomerName(row.getString("customer_name"));
         order.setCustomerEmail(row.getString("customer_email"));
+        order.setOrderTime(row.getOffsetDateTime("order_time"));
+        order.setLoyaltyPercentage(row.getDouble("loyalty_percentage"));
         return order;
     }
 }

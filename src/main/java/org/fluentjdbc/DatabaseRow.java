@@ -106,6 +106,11 @@ public class DatabaseRow {
         return result != null ? UUID.fromString(result) : null;
     }
 
+    public Double getDouble(String fieldName) throws SQLException {
+        double result = rs.getDouble(fieldName);
+        return !rs.wasNull() ? result : null;
+    }
+
     public <T extends Enum<T>> T getEnum(Class<T> enumClass, String fieldName) throws SQLException {
         String value = getString(fieldName);
         return value != null ? Enum.valueOf(enumClass, value) : null;

@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -24,7 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class UsageDemonstrationTest {
 
     private Random random = new Random();
-
 
     @Rule
     public final DbContextRule dbContext;
@@ -150,6 +150,8 @@ public class UsageDemonstrationTest {
                 + "@example" + random.nextInt() + pickOne(".net", ".com", ".org"));
         order.setCustomerName(pickOne("Alice", "Bob", "Charlie", "Diana")
                 + " " + pickOne("Adams", "Smith", "Jones", "Doe"));
+        order.setOrderTime(OffsetDateTime.now().truncatedTo(ChronoUnit.SECONDS));
+        order.setLoyaltyPercentage(0.25);
         return order;
     }
 
