@@ -3,6 +3,9 @@ package org.fluentjdbc;
 import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.util.ExceptionUtil;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -11,12 +14,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 public class DatabaseTableQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
@@ -125,10 +127,9 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         }
     }
 
-
-    @Nullable
+    @Nonnull
     @Override
-    public <T> T singleObject(Connection connection, RowMapper<T> mapper) {
+    public <T> Optional<T> singleObject(Connection connection, RowMapper<T> mapper) {
         long startTime = System.currentTimeMillis();
         String query = createSelectStatement();
         logger.trace(query);

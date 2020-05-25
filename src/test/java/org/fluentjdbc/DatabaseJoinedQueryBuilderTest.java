@@ -125,7 +125,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias g = persons.alias("granter");
 
-        String result = perm.where("name", "uniquePermName")
+        assertThat(perm.where("name", "uniquePermName")
                 .join(perm.column("membership_id"), m.column("id"))
                 .join(m.column("person_id"), p.column("id"))
                 .join(perm.column("granted_by"), g.column("id"))
@@ -133,9 +133,9 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                         "access_to=%s granted_by=%s",
                         r.getString(p.column("name")),
                         r.getString(g.column("name"))
-                ));
-
-        assertThat(result).isEqualTo("access_to=Jane granted_by=James");
+                )))
+                .get()
+                .isEqualTo("access_to=Jane granted_by=James");
     }
 
     @Test

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,26 +46,26 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
     public DatabaseSaveResult<T> execute(Connection connection) throws SQLException {
         T idValue = this.idValue;
         if (idValue != null) {
-            Boolean isSame = tableWhereId(this.idValue).singleObject(connection, row -> shouldSkipRow(row, connection));
-            if (isSame != null && !isSame) {
-                update(connection, idValue);
-                return DatabaseSaveResult.updated(idValue);
-            } else if (isSame == null) {
+            Optional<Boolean> isSame = tableWhereId(this.idValue).singleObject(connection, row -> shouldSkipRow(row, connection));
+            if (!isSame.isPresent()) {
                 insert(connection);
                 return DatabaseSaveResult.inserted(idValue);
+            } else if (!isSame.get()) {
+                update(connection, idValue);
+                return DatabaseSaveResult.updated(idValue);
             } else {
                 return DatabaseSaveResult.unchanged(idValue);
             }
         } else if (hasUniqueKey()) {
-            Boolean isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
+            Optional<Boolean> isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
                 DatabaseSaveBuilder.this.idValue = getId(row);
                 return shouldSkipRow(row, connection);
             });
             idValue = this.idValue;
-            if (idValue == null) {
+            if (!isSame.isPresent()) {
                 idValue = insert(connection);
                 return DatabaseSaveResult.inserted(idValue);
-            } else if (isSame != null && !isSame) {
+            } else if (!isSame.get()) {
                 update(connection, idValue);
                 return DatabaseSaveResult.updated(idValue);
             } else {

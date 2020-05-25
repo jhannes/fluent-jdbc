@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Random;
 
 import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
+import static org.fluentjdbc.FluentJdbcAsserts.assertThatOptional;
 
 public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
@@ -52,8 +53,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .execute(connection)
                 .getId();
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
-        assertThat(retrievedName).isEqualTo(savedName);
+        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo(savedName);
     }
 
     @Test
@@ -72,9 +72,8 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", updatedName)
                 .execute(connection);
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
-        assertThat(retrievedName).isEqualTo(updatedName);
-        assertThat(table.where("id", id).singleLong(connection, "code")).isEqualTo(543L);
+        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo(updatedName);
+        assertThat(table.where("id", id).singleLong(connection, "code")).get().isEqualTo(543L);
     }
 
     @Test
@@ -87,7 +86,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .execute(connection)
                 .getId();
 
-        assertThat(table.where("id", id).singleString(connection, "name"))
+        assertThat(table.where("id", id).singleString(connection, "name")).get()
             .isEqualTo(newRow);
     }
 
@@ -105,7 +104,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", updatedName)
                 .execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name"))
+        assertThat(table.where("id", id).singleString(connection, "name")).get()
             .isEqualTo(updatedName);
     }
 
@@ -121,9 +120,9 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .getId();
         Thread.sleep(10);
 
-        assertThat(table.where("id", id).singleInstant(connection, "created_at"))
+        assertThatOptional(table.where("id", id).singleInstant(connection, "created_at"))
             .isAfter(start).isBefore(Instant.now());
-        assertThat(table.where("id", id).singleInstant(connection, "updated_at"))
+        assertThatOptional(table.where("id", id).singleInstant(connection, "updated_at"))
             .isAfter(start).isBefore(Instant.now());
     }
 
@@ -135,14 +134,16 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", "demo row")
                 .execute(connection)
                 .getId();
-        Instant createdTime = table.where("id", id).singleInstant(connection, "updated_at");
-        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at");
+        Instant createdTime = table.where("id", id).singleInstant(connection, "updated_at")
+                .orElseThrow(IllegalArgumentException::new);
+        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at")
+                .orElseThrow(IllegalArgumentException::new);
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "another value").execute(connection);
-        assertThat(table.where("id", id).singleInstant(connection, "updated_at"))
+        assertThatOptional(table.where("id", id).singleInstant(connection, "updated_at"))
             .isAfter(updatedTime);
-        assertThat(table.where("id", id).singleInstant(connection, "created_at"))
+        assertThatOptional(table.where("id", id).singleInstant(connection, "created_at"))
             .isEqualTo(createdTime);
     }
 
@@ -154,12 +155,12 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", "original value")
                 .execute(connection)
                 .getId();
-        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at");
+        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at")
+                .orElseThrow(IllegalArgumentException::new);
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "original value").execute(connection);
-        assertThat(table.where("id", id).singleInstant(connection, "updated_at"))
+        assertThat(table.where("id", id).singleInstant(connection, "updated_at")).get()
             .isEqualTo(updatedTime);
     }
-
 }

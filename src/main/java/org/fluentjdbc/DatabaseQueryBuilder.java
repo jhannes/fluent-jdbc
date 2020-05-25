@@ -1,8 +1,9 @@
 package org.fluentjdbc;
 
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.time.Instant;
+import java.util.Optional;
 
 /**
  * Interface for consistent query operations in a fluent way
@@ -27,21 +28,21 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      *
      * @param connection Database connection
      * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, null otherwise
+     * @return the mapped row if one row is returned, Optional.empty otherwise
      * @throws IllegalStateException if more than one row was matched the the query
-     *
      */
-    <OBJECT> OBJECT singleObject(Connection connection, DatabaseTable.RowMapper<OBJECT> mapper);
+    @Nonnull
+    <OBJECT> Optional<OBJECT> singleObject(Connection connection, DatabaseTable.RowMapper<OBJECT> mapper);
 
     /**
      * Returns a string from the specified column name
      *
      * @param connection Database connection
-     * @return the mapped row if one row is returned, null otherwise
+     * @return the mapped row if one row is returned, Optional.empty otherwise
      * @throws IllegalStateException if more than one row was matched the the query
      */
-    @Nullable
-    default String singleString(Connection connection, String fieldName) {
+    @Nonnull
+    default Optional<String> singleString(Connection connection, String fieldName) {
         return singleObject(connection, row -> row.getString(fieldName));
     }
 
@@ -49,11 +50,11 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * Returns a long from the specified column name
      *
      * @param connection Database connection
-     * @return the mapped row if one row is returned, null otherwise
+     * @return the mapped row if one row is returned, Optional.empty otherwise
      * @throws IllegalStateException if more than one row was matched the the query
      */
-    @Nullable
-    default Number singleLong(Connection connection, final String fieldName) {
+    @Nonnull
+    default Optional<Number> singleLong(Connection connection, final String fieldName) {
         return singleObject(connection, (DatabaseTable.RowMapper<Number>) row -> row.getLong(fieldName));
     }
 
@@ -61,11 +62,11 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * Returns an instant from the specified column name
      *
      * @param connection Database connection
-     * @return the mapped row if one row is returned, null otherwise
+     * @return the mapped row if one row is returned, Optional.empty otherwise
      * @throws IllegalStateException if more than one row was matched the the query
      */
-    @Nullable
-    default Instant singleInstant(Connection connection, final String fieldName) {
+    @Nonnull
+    default Optional<Instant> singleInstant(Connection connection, final String fieldName) {
         return singleObject(connection, row -> row.getInstant(fieldName));
     }
 

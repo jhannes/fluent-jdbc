@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -75,7 +76,7 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return new DbSaveBuilderContext<>(this, saveBuilder);
     }
 
-    public <KEY,ENTITY> ENTITY cache(KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
+    public <KEY,ENTITY> Optional<ENTITY> cache(KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
         return DbContext.cache(getTable().getTableName(), key, retriever);
     }
 

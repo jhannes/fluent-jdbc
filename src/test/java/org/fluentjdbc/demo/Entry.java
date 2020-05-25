@@ -57,7 +57,8 @@ public class Entry {
     }
 
     public static Entry retrieve(Connection connection, Long id) {
-        return entriesTable.where("id", id).singleObject(connection, createRowMapper());
+        return entriesTable.where("id", id).singleObject(connection, createRowMapper())
+                .orElseThrow(() -> new IllegalArgumentException("Unknown id " + id));
     }
 
     private static RowMapper<Entry> createRowMapper() {

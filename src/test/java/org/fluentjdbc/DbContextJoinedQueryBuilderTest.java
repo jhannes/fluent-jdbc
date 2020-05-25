@@ -153,7 +153,7 @@ public class DbContextJoinedQueryBuilderTest {
         DbTableAliasContext p = persons.alias("p");
         DbTableAliasContext g = persons.alias("granter");
 
-        String result = perm.where("name", "uniquePermName")
+        assertThat(perm.where("name", "uniquePermName")
                 .join(perm.column("membership_id"), m.column("id"))
                 .join(m.column("person_id"), p.column("id"))
                 .join(perm.column("granted_by"), g.column("id"))
@@ -161,9 +161,9 @@ public class DbContextJoinedQueryBuilderTest {
                         "access_to=%s granted_by=%s",
                         r.getString(p.column("name")),
                         r.getString(g.column("name"))
-                ));
-
-        assertThat(result).isEqualTo("access_to=Jane granted_by=James");
+                )))
+                .get()
+                .isEqualTo("access_to=Jane granted_by=James");
     }
 
     @Test

@@ -1,14 +1,15 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.DatabaseTable.RowMapper;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
-
-import org.fluentjdbc.DatabaseTable.RowMapper;
-
-import javax.annotation.Nullable;
 
 public class DbSelectContext implements DbListableSelectContext<DbSelectContext> {
 
@@ -93,19 +94,27 @@ public class DbSelectContext implements DbListableSelectContext<DbSelectContext>
         return queryBuilder.getCount(getConnection());
     }
 
-    public <T> T singleObject(RowMapper<T> mapper) {
+    @Nonnull
+    @Override
+    public <T> Optional<T> singleObject(RowMapper<T> mapper) {
         return queryBuilder.singleObject(getConnection(), mapper);
     }
 
-    public String singleString(String fieldName) {
+    @Nonnull
+    @Override
+    public Optional<String> singleString(String fieldName) {
         return queryBuilder.singleString(getConnection(), fieldName);
     }
 
-    public Number singleLong(String fieldName) {
+    @Nonnull
+    @Override
+    public Optional<Number> singleLong(String fieldName) {
         return queryBuilder.singleLong(getConnection(), fieldName);
     }
 
-    public Instant singleInstant(String fieldName) {
+    @Nonnull
+    @Override
+    public Optional<Instant> singleInstant(String fieldName) {
         return queryBuilder.singleInstant(getConnection(), fieldName);
     }
 

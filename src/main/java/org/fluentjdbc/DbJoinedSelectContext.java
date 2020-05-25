@@ -1,8 +1,10 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSelectContext> {
     private final DbContext dbContext;
@@ -79,7 +81,8 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
     }
 
     @Override
-    public <OBJECT> OBJECT singleObject(DatabaseTable.RowMapper<OBJECT> mapper) {
+    @Nonnull
+    public <OBJECT> Optional<OBJECT> singleObject(DatabaseTable.RowMapper<OBJECT> mapper) {
         return builder.singleObject(dbContext.getThreadConnection(), mapper);
     }
 

@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import static org.assertj.core.api.Java6Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class RichDomainModelTest extends AbstractDatabaseTest {
 
@@ -54,7 +54,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
     public void shouldRetrieveSimpleObject() throws SQLException {
         TagType tagType = sampleTagType().save(connection);
 
-        assertThat(TagType.retrieve(connection, tagType.getId()))
+        assertThat(TagType.retrieve(connection, tagType.getId())).get()
             .isEqualToComparingFieldByField(tagType);
     }
 
@@ -136,7 +136,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
         TagType.saveAll(tagTypes, connection);
 
         for (TagType tagType : tagTypes) {
-            assertThat(TagType.retrieve(connection, tagType.getId()))
+            assertThat(TagType.retrieve(connection, tagType.getId())).get()
                 .isEqualToComparingFieldByField(tagType);
         }
 

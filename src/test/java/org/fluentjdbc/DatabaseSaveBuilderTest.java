@@ -63,8 +63,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .execute(connection)
                 .getId();
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
-        assertThat(retrievedName).isEqualTo(savedName);
+        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo(savedName);
     }
 
     @Test
@@ -83,8 +82,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .execute(connection);
         assertThat(result.getSaveStatus()).isEqualTo(UPDATED);
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
-        assertThat(retrievedName).isEqualTo("updated value");
+        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo("updated value");
 
         assertThat(table.where("id", id)
                 .orderBy("name")
@@ -127,7 +125,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .execute(connection);
         assertThat(result).isEqualTo(DatabaseSaveResult.updated(idOnInsert));
 
-        assertThat(table.where("id", idOnInsert).singleString(connection, "name"))
+        assertThat(table.where("id", idOnInsert).singleString(connection, "name")).get()
             .isEqualTo("new name");
     }
 
@@ -144,8 +142,8 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         UUID generatedKey = result.getId();
         assertThat(id).isEqualTo(generatedKey);
 
-        String retrievedName = table.where("id", id).singleString(connection, "name");
-        assertThat(retrievedName).isEqualTo(savedName);
+        assertThat(table.where("id", id).singleString(connection, "name"))
+                .get().isEqualTo(savedName);
     }
 
 }

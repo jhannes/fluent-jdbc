@@ -1,9 +1,11 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.DatabaseTable.RowMapper;
+
+import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.List;
-
-import org.fluentjdbc.DatabaseTable.RowMapper;
+import java.util.Optional;
 
 public interface DbListableSelectContext<T extends DbListableSelectContext<T>> extends DatabaseQueriable<T> {
 
@@ -19,17 +21,21 @@ public interface DbListableSelectContext<T extends DbListableSelectContext<T>> e
         return list(row -> row.getLong(fieldName));
     }
 
-    <OBJECT> OBJECT singleObject(RowMapper<OBJECT> mapper);
+    @Nonnull
+    <OBJECT> Optional<OBJECT> singleObject(RowMapper<OBJECT> mapper);
 
-    default String singleString(String fieldName) {
+    @Nonnull
+    default Optional<String> singleString(String fieldName) {
         return singleObject(row -> row.getString(fieldName));
     }
 
-    default Number singleLong(String fieldName) {
+    @Nonnull
+    default Optional<Number> singleLong(String fieldName) {
         return singleObject(row -> row.getLong(fieldName));
     }
 
-    default Instant singleInstant(String fieldName) {
+    @Nonnull
+    default Optional<Instant> singleInstant(String fieldName) {
         return singleObject(row -> row.getInstant(fieldName));
     }
 

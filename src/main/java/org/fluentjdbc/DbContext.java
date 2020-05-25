@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Optional;
 
 public class DbContext {
 
@@ -42,7 +43,7 @@ public class DbContext {
     }
 
     private static ThreadLocal<DbContextConnection> currentConnection = new ThreadLocal<>();
-    private static ThreadLocal<HashMap<String, HashMap<Object, Object>>> currentCache = new ThreadLocal<>();
+    private static ThreadLocal<HashMap<String, HashMap<Object, Optional<?>>>> currentCache = new ThreadLocal<>();
 
     void removeFromThread() {
         currentCache.get().clear();
@@ -50,14 +51,15 @@ public class DbContext {
         currentConnection.remove();
     }
 
-    public static <ENTITY, KEY> ENTITY cache(String tableName, KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
+    public static <ENTITY, KEY> Optional<ENTITY> cache(String tableName, KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
         if (!currentCache.get().containsKey(tableName)) {
             currentCache.get().put(tableName, new HashMap<>());
         }
         if (!currentCache.get().get(tableName).containsKey(key)) {
-            currentCache.get().get(tableName).put(key, retriever.retrieve(key));
+            Optional<ENTITY> value = retriever.retrieve(key);
+            currentCache.get().get(tableName).put(key, value);
         }
-        return (ENTITY) currentCache.get().get(tableName).get(key);
+        return (Optional<ENTITY>) currentCache.get().get(tableName).get(key);
     }
 
     private ThreadLocal<DbTransaction> currentTransaction = new ThreadLocal<>();

@@ -133,7 +133,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
         table.where("id", id).update().setField("name", "New name").execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name"))
+        assertThat(table.where("id", id).singleString(connection, "name")).get()
             .isEqualTo("New name");
     }
 
@@ -153,8 +153,8 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .setFieldIfPresent("comment", "newComment")
                 .execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name")).isEqualTo("oldName");
-        assertThat(table.where("id", id).singleString(connection, "comment")).isEqualTo("newComment");
+        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo("oldName");
+        assertThat(table.where("id", id).singleString(connection, "comment")).get().isEqualTo("newComment");
     }
 
 

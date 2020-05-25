@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -92,7 +93,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
     }
 
     @Override
-    public Product retrieve(Product.Id productId) {
+    public Optional<Product> retrieve(Product.Id productId) {
         return table.where("product_id", productId.getValue()).singleObject(this::toProduct);
     }
 

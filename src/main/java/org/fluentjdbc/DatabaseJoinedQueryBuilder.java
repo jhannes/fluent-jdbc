@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -13,6 +14,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
@@ -103,8 +105,9 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
                 joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
     }
 
+    @Nonnull
     @Override
-    public <T> T singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
+    public <T> Optional<T> singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
         long startTime = System.currentTimeMillis();
         String query = createSelectStatement();
         logger.trace(query);

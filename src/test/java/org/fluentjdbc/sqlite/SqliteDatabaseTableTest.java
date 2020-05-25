@@ -13,6 +13,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
 
     public SqliteDatabaseTableTest() {
@@ -28,7 +30,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
         Object id = table.newSaveBuilderNoGeneratedKeys("id", null)
             .setField("code", 20001)
             .setField("name", "test insert without primary key generation").execute(connection).getId();
-        FluentJdbcAsserts.assertThat(id).isNull();
+        assertThat(id).isNull();
 
         try (PreparedStatement statement = connection.prepareStatement("select last_insert_rowid()")) {
             try (ResultSet rs = statement.executeQuery()) {
@@ -37,7 +39,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
             }
         }
 
-        FluentJdbcAsserts.assertThat(table.where("id", id).singleString(connection, "name"))
+        assertThat(table.where("id", id).singleString(connection, "name")).get()
             .isEqualTo("test insert without primary key generation");
     }
 
@@ -48,9 +50,9 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
             .setField("name", "test insert with original id")
             .execute(connection)
             .getId();
-        FluentJdbcAsserts.assertThat(id).isEqualTo(21912L);
+        assertThat(id).isEqualTo(21912L);
 
-        FluentJdbcAsserts.assertThat(table.where("id", 21912L).singleString(connection, "name"))
+        assertThat(table.where("id", 21912L).singleString(connection, "name")).get()
             .isEqualTo("test insert with original id");
     }
 
@@ -73,7 +75,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
             .setField("name", "test after update")
             .execute(connection);
 
-        FluentJdbcAsserts.assertThat(table.where("id", id).singleString(connection, "name"))
+        assertThat(table.where("id", id).singleString(connection, "name")).get()
             .isEqualTo("test after update");
     }
 

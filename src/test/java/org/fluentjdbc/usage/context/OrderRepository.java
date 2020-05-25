@@ -7,7 +7,7 @@ import org.fluentjdbc.DbSelectContext;
 import org.fluentjdbc.DbTableContext;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -41,7 +41,7 @@ public class OrderRepository implements Repository<Order, UUID> {
     }
 
     @Override
-    public Order retrieve(UUID uuid) {
+    public Optional<Order> retrieve(UUID uuid) {
         return table.where("order_id", uuid).singleObject(this::toOrder);
     }
 

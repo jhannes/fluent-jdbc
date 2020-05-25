@@ -2,15 +2,16 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.DatabaseTable.RowMapper;
 
+import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.Optional;
 
 @ParametersAreNonnullByDefault
 public class DatabaseResult implements AutoCloseable {
@@ -53,16 +54,16 @@ public class DatabaseResult implements AutoCloseable {
         }
     }
 
-    @Nullable
-    public <T> T single(RowMapper<T> mapper) throws SQLException {
+    @Nonnull
+    public <T> Optional<T> single(RowMapper<T> mapper) throws SQLException {
         if (!next()) {
-            return null;
+            return Optional.empty();
         }
         T result = mapper.mapRow(createDatabaseRow(resultSet));
         if (next()) {
             throw new IllegalStateException("More than one row returned");
         }
-        return result;
+        return Optional.of(result);
     }
 
     protected DatabaseRow createDatabaseRow(ResultSet resultSet) throws SQLException {

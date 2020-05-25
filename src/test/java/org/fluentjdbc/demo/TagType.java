@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @ToString
@@ -69,7 +70,7 @@ public class TagType {
         return tagTypesTable.orderBy("name").list(connection, createRowMapper());
     }
 
-    public static TagType retrieve(Connection connection, @NonNull Long id) {
+    public static Optional<TagType> retrieve(Connection connection, @NonNull Long id) {
         return tagTypesTable.where("id", id)
                 .singleObject(connection, createRowMapper());
     }

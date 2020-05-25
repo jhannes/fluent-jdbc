@@ -1,5 +1,7 @@
 package org.fluentjdbc;
 
+import java.util.Optional;
+
 public interface RetrieveMethod<KEY, ENTITY> {
-    ENTITY retrieve(KEY key);
+    Optional<ENTITY> retrieve(KEY key);
 }

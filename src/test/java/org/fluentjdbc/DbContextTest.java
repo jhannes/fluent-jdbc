@@ -327,7 +327,7 @@ public class DbContextTest {
 
         tableContext.where("id", id).update().setField("name", "New name").execute();
 
-        assertThat(tableContext.where("id", id).singleString("name"))
+        assertThat(tableContext.where("id", id).singleString("name")).get()
             .isEqualTo("New name");
     }
 
@@ -339,19 +339,18 @@ public class DbContextTest {
                 .setField("name", "hello")
                 .execute();
 
-        String retrievedValue = tableContext.cache(id, i -> tableContext.where("id", i)
-                .singleObject(row -> row.getString("name")));
-        assertThat(retrievedValue).isEqualTo("hello");
+        assertThat(tableContext.cache(id,
+                i -> tableContext.where("id", i).singleObject(row -> row.getString("name"))
+        )).get().isEqualTo("hello");
 
         tableContext.where("id", id)
                 .update()
                 .setField("name", "updated")
                 .execute();
 
-        retrievedValue = tableContext.cache(id,
-                i -> tableContext.where("id", i)
-                    .singleObject(row -> row.getString("name")));
-        assertThat(retrievedValue).isEqualTo("hello");
+        assertThat(tableContext.cache(id,
+                i -> tableContext.where("id", i).singleObject(row -> row.getString("name"))
+        )).get().isEqualTo("hello");
     }
 
     @Test

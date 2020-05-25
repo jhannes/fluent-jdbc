@@ -75,7 +75,7 @@ public class UsageDemonstrationTest {
         Product product = sampleProduct();
         productRepository.save(product);
         assertThat(product).hasNoNullFieldsOrProperties();
-        assertThat(productRepository.retrieve(product.getProductId()))
+        assertThat(productRepository.retrieve(product.getProductId())).get()
                 .isEqualToComparingFieldByField(product);
     }
 
@@ -88,7 +88,7 @@ public class UsageDemonstrationTest {
         updatedProduct.setProductId(originalProduct.getProductId());
         productRepository.save(updatedProduct);
 
-        assertThat(productRepository.retrieve(originalProduct.getProductId()))
+        assertThat(productRepository.retrieve(originalProduct.getProductId())).get()
                 .isEqualToComparingFieldByField(updatedProduct);
     }
 
@@ -108,7 +108,7 @@ public class UsageDemonstrationTest {
         Order updatedOrder = sampleOrder();
         updatedOrder.setOrderId(originalOrder.getOrderId());
         orderRepository.save(updatedOrder);
-        assertThat(orderRepository.retrieve(originalOrder.getOrderId()))
+        assertThat(orderRepository.retrieve(originalOrder.getOrderId())).get()
                 .hasNoNullFieldsOrProperties()
                 .isEqualToComparingFieldByField(updatedOrder);
     }

@@ -75,8 +75,7 @@ public class FluentJdbcContextDemonstrationTest {
                 .execute()
                 .getId();
 
-        String retrievedName = tableContext.where("id", id).singleString("name");
-        assertThat(retrievedName).isEqualTo(savedName);
+        assertThat(tableContext.where("id", id).singleString("name")).get().isEqualTo(savedName);
     }
 
     @Test
@@ -95,9 +94,8 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", updatedName)
                 .execute();
 
-        String retrievedName = tableContext.where("id", id).singleString("name");
-        assertThat(retrievedName).isEqualTo(updatedName);
-        assertThat(tableContext.where("id", id).singleLong("code")).isEqualTo(543L);
+        assertThat(tableContext.where("id", id).singleString("name")).get().isEqualTo(updatedName);
+        assertThat(tableContext.where("id", id).singleLong("code")).get().isEqualTo(543L);
     }
 
     @Test
@@ -110,7 +108,7 @@ public class FluentJdbcContextDemonstrationTest {
                 .execute()
                 .getId();
 
-        assertThat(tableContext.where("id", id).singleString("name"))
+        assertThat(tableContext.where("id", id).singleString("name")).get()
             .isEqualTo(newRow);
     }
 
@@ -128,7 +126,7 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", updatedName)
                 .execute();
 
-        assertThat(tableContext.where("id", id).singleString("name"))
+        assertThat(tableContext.where("id", id).singleString("name")).get()
             .isEqualTo(updatedName);
     }
 
@@ -144,9 +142,9 @@ public class FluentJdbcContextDemonstrationTest {
                 .getId();
         Thread.sleep(10);
 
-        assertThat(tableContext.where("id", id).singleInstant("created_at"))
+        assertThat(tableContext.where("id", id).singleInstant("created_at").orElseThrow(IllegalArgumentException::new))
             .isAfter(start).isBefore(Instant.now());
-        assertThat(tableContext.where("id", id).singleInstant("updated_at"))
+        assertThat(tableContext.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new))
             .isAfter(start).isBefore(Instant.now());
     }
 
@@ -158,16 +156,15 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", "demo row")
                 .execute()
                 .getId();
-        Instant createdTime = tableContext.where("id", id).singleInstant("updated_at");
-        Instant updatedTime = tableContext.where("id", id).singleInstant("updated_at");
+        Instant createdTime = tableContext.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new);
+        Instant updatedTime = tableContext.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new);
         Thread.sleep(10);
 
         tableContext.newSaveBuilder("id", id).setField("name", "another value").execute();
-        assertThat(tableContext.where("id", id).singleInstant("updated_at"))
-            .isAfter(updatedTime);
-        OffsetDateTime createdDateTime = tableContext.where("id", id)
-                .singleObject(row -> row.getOffsetDateTime("created_at"));
-        assertThat(createdDateTime).isEqualTo(OffsetDateTime.ofInstant(createdTime, ZoneId.systemDefault()));
+        assertThat(tableContext.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new))
+                .isAfter(updatedTime);
+        assertThat(tableContext.where("id", id).singleObject(row -> row.getOffsetDateTime("created_at")).orElseThrow(IllegalArgumentException::new))
+                .isEqualTo(OffsetDateTime.ofInstant(createdTime, ZoneId.systemDefault()));
     }
 
     @Test
@@ -178,11 +175,11 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", "original value")
                 .execute()
                 .getId();
-        Instant updatedTime = tableContext.where("id", id).singleInstant("updated_at");
+        Instant updatedTime = tableContext.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new);
         Thread.sleep(10);
 
         tableContext.newSaveBuilder("id", id).setField("name", "original value").execute();
-        assertThat(tableContext.where("id", id).singleInstant("updated_at"))
+        assertThat(tableContext.where("id", id).singleInstant("updated_at")).get()
             .isEqualTo(updatedTime);
     }
 
