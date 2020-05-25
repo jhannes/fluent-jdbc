@@ -82,7 +82,7 @@ public class OrderRepository implements Repository<Order, UUID> {
     }
 
     @Override
-    public Order retrieve(UUID uuid) {
+    public Optional<Order> retrieve(UUID uuid) {
         return table.where("order_id", uuid).singleObject(this::toOrder);
     }
 
