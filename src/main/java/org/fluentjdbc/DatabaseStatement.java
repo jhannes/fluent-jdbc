@@ -97,12 +97,12 @@ class DatabaseStatement {
                 connection.getClass().getName().startsWith("com.microsoft.sqlserver.jdbc");
     }
 
-    protected void executeUpdate(String query, List<Object> parameters, Connection connection) {
+    protected int executeUpdate(String query, List<Object> parameters, Connection connection) {
         long startTime = System.currentTimeMillis();
         logger.trace(query);
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
-            stmt.executeUpdate();
+            return stmt.executeUpdate();
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {

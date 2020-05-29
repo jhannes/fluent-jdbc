@@ -37,8 +37,8 @@ public class DatabaseInsertBuilder extends DatabaseStatement implements Database
         return this;
     }
 
-    public void execute(Connection connection) {
-        executeUpdate(createInsertStatement(), parameters, connection);
+    public int execute(Connection connection) {
+        return executeUpdate(createInsertStatement(), parameters, connection);
     }
 
     String createInsertStatement() {

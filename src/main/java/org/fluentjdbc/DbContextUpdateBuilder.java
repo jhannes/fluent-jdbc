@@ -24,8 +24,8 @@ public class DbContextUpdateBuilder implements DatabaseUpdateable<DbContextUpdat
         return this;
     }
 
-    public void execute() {
-        updateBuilder.execute(tableContext.getConnection());
+    public int execute() {
+        return updateBuilder.execute(tableContext.getConnection());
     }
 
 

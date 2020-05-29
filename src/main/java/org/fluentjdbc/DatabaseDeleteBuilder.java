@@ -21,8 +21,8 @@ class DatabaseDeleteBuilder extends DatabaseStatement {
         return this;
     }
 
-    public void execute(Connection connection) {
-        executeUpdate(createDeleteStatement(tableName, whereConditions), whereParameters, connection);
+    public int execute(Connection connection) {
+        return executeUpdate(createDeleteStatement(tableName, whereConditions), whereParameters, connection);
     }
 
 }

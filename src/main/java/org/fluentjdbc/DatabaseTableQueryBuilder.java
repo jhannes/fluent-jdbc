@@ -94,6 +94,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
                     stmt.close();
                 }
 
+                @SuppressWarnings("deprecation")
                 @Override
                 protected void finalize() throws Throwable {
                     close();
@@ -212,8 +213,8 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     }
 
     @Override
-    public void delete(Connection connection) {
-        table.delete().setWhereFields(conditions, parameters).execute(connection);
+    public int delete(Connection connection) {
+        return table.delete().setWhereFields(conditions, parameters).execute(connection);
     }
 
     @Override

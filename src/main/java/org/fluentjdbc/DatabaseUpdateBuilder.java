@@ -40,14 +40,14 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
         return this;
     }
 
-    public void execute(Connection connection) {
+    public int execute(Connection connection) {
         if (updateFields.isEmpty()) {
-            return;
+            return 0;
         }
         List<Object> parameters = new ArrayList<>();
         parameters.addAll(updateValues);
         parameters.addAll(whereParameters);
-        executeUpdate(createUpdateStatement(tableName, updateFields, whereConditions), parameters, connection);
+        return executeUpdate(createUpdateStatement(tableName, updateFields, whereConditions), parameters, connection);
     }
 
 }

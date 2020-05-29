@@ -6,6 +6,6 @@ public interface DatabaseSimpleQueryBuilder extends DatabaseQueryBuilder<Databas
 
     DatabaseUpdateBuilder update();
 
-    void delete(Connection connection);
+    int delete(Connection connection);
 
 }

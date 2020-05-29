@@ -5,8 +5,6 @@ import java.util.Collection;
 
 import org.fluentjdbc.util.ExceptionUtil;
 
-import javax.annotation.Nullable;
-
 public class DbInsertContext implements DatabaseUpdateable<DbInsertContext> {
 
     public class DbInsertContextWithPk<T> {
@@ -55,7 +53,7 @@ public class DbInsertContext implements DatabaseUpdateable<DbInsertContext> {
         return this;
     }
 
-    public void execute() {
-        builder.execute(dbTableContext.getConnection());
+    public int execute() {
+        return builder.execute(dbTableContext.getConnection());
     }
 }
