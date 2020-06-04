@@ -88,9 +88,9 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
             .list(connection, row ->
                 String.format(
                     format,
-                    row.getString(permissions.column("name")),
-                    row.getString(ps.column("name")),
-                    row.getString(o.column("name"))
+                    row.table(permissions).getString("name"),
+                    row.table(ps).getString("name"),
+                    row.table(o).getString("name")
                 ));
 
         assertThat(result)
@@ -131,8 +131,8 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .join(perm.column("granted_by"), g.column("id"))
                 .singleObject(connection, r -> String.format(
                         "access_to=%s granted_by=%s",
-                        r.getString(p.column("name")),
-                        r.getString(g.column("name"))
+                        r.table(p).getString("name"),
+                        r.table(g).getString("name")
                 )))
                 .get()
                 .isEqualTo("access_to=Jane granted_by=James");
@@ -168,7 +168,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .orderBy(p.column("name"))
                 .orderBy(o.column("name"))
                 .list(connection,
-                        row -> row.getString(o.column("name")) + " " + row.getString(p.column("name")));
+                        row -> row.table(o).getString("name") + " " + row.table(p).getString("name"));
         assertThat(result)
                 .containsExactly("Army Alice", "Boutique Alice", "Army Bob");
     }
@@ -232,15 +232,15 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .join(m.column("id"), perm.column("membership_id"))
                 .where("id", alice)
                 .forEach(connection, row -> {
-                    assertThat(row.getEnum(Level.class, m.column("status"))).isEqualTo(Level.INFO);
-                    assertThat(row.getZonedDateTime(m.column("expires_at"))).isEqualTo(inTwoWeeks);
-                    assertThat(row.getOffsetDateTime(m.column("expires_at"))).isEqualTo(inTwoWeeks.toOffsetDateTime());
-                    assertThat(row.getObject(m.column("expires_at")))
+                    assertThat(row.table(m).getEnum(Level.class, "status")).isEqualTo(Level.INFO);
+                    assertThat(row.table(m).getZonedDateTime("expires_at")).isEqualTo(inTwoWeeks);
+                    assertThat(row.table(m).getOffsetDateTime("expires_at")).isEqualTo(inTwoWeeks.toOffsetDateTime());
+                    assertThat(row.table(m).getObject("expires_at"))
                             .isEqualTo(Timestamp.from(inTwoWeeks.toInstant()));
-                    assertThat(row.getInstant(m.column("expires_at")))
+                    assertThat(row.table(m).getInstant("expires_at"))
                             .isEqualTo(inTwoWeeks.toInstant());
-                    assertThat(row.getLocalDate(p.column("birth_date"))).isEqualTo(birthDate);
-                    assertThat(row.getBoolean(perm.column("is_admin"))).isEqualTo(true);
+                    assertThat(row.table(p).getLocalDate("birth_date")).isEqualTo(birthDate);
+                    assertThat(row.table(perm).getBoolean("is_admin")).isEqualTo(true);
                 });
     }
 
@@ -257,7 +257,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         assertThatThrownBy(() -> {
             p.join(p.column("id"), m.column("person_id"))
                     .join(m.column("organization_id"), o.column("id"))
-                    .list(connection, row -> row.getLocalDate(p.column("non_existing_column")));
+                    .list(connection, row -> row.table(p).getLocalDate("non_existing_column"));
         }).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("non_existing_column");
     }

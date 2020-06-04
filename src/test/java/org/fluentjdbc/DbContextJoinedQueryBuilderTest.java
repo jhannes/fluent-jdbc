@@ -35,13 +35,13 @@ public class DbContextJoinedQueryBuilderTest {
     @Rule
     public final DbContextRule dbContext = new DbContextRule(dataSource);
 
-    private DbTableContext organizations = dbContext.table("dbtest_organizations");
-    private DbTableContext persons = dbContext.table("dbtest_persons");
-    private DbTableContext memberships = dbContext.table("dbtest_memberships");
-    private DbTableContext permissions = dbContext.table("dbtest_permissions");
+    private final DbTableContext organizations = dbContext.table("dbtest_organizations");
+    private final DbTableContext persons = dbContext.table("dbtest_persons");
+    private final DbTableContext memberships = dbContext.table("dbtest_memberships");
+    private final DbTableContext permissions = dbContext.table("dbtest_permissions");
 
 
-    private Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
+    private final Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
 
     protected String preprocessCreateTable(String createTableStatement) {
         return createTableStatement
@@ -116,9 +116,9 @@ public class DbContextJoinedQueryBuilderTest {
             .list(row ->
                 String.format(
                     format,
-                    row.getString(permissions.column("name")),
-                    row.getString(ps.column("name")),
-                    row.getString(o.column("name"))
+                    row.table(permissions).getString("name"),
+                    row.table(ps).getString("name"),
+                    row.table(o).getString("name")
                 ));
 
         assertThat(result)
@@ -159,8 +159,8 @@ public class DbContextJoinedQueryBuilderTest {
                 .join(perm.column("granted_by"), g.column("id"))
                 .singleObject(r -> String.format(
                         "access_to=%s granted_by=%s",
-                        r.getString(p.column("name")),
-                        r.getString(g.column("name"))
+                        r.table(p).getString("name"),
+                        r.table(g).getString("name")
                 )))
                 .get()
                 .isEqualTo("access_to=Jane granted_by=James");
@@ -197,7 +197,7 @@ public class DbContextJoinedQueryBuilderTest {
                 .whereOptional(p.column("name").getQualifiedColumnName(), null)
                 .orderBy(p.column("name"))
                 .orderBy(o.column("name"))
-                .list(row -> row.getString(o.column("name")) + " " + row.getString(p.column("name")));
+                .list(row -> row.table(o).getString("name") + " " + row.table(p).getString("name"));
         assertThat(result)
                 .containsExactly("Army Alice", "Boutique Alice", "Army Bob");
     }
@@ -229,8 +229,8 @@ public class DbContextJoinedQueryBuilderTest {
                 .whereAll(Arrays.asList("id", "name"), Arrays.asList(personOneId, personOneName))
                 .orderBy(o.column("name"))
                 .forEach(row -> organizationsPerPerson
-                        .computeIfAbsent(row.getLong(p.column("id")), id -> new ArrayList<>())
-                        .add(row.getString(o.column("name"))));
+                        .computeIfAbsent(row.table(p).getLong("id"), id -> new ArrayList<>())
+                        .add(row.table(o).getString("name")));
         assertThat(organizationsPerPerson)
                 .containsEntry(personOneId, Arrays.asList(orgTwoName, orgOneName));
     }

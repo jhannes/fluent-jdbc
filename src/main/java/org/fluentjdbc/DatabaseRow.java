@@ -21,9 +21,9 @@ public class DatabaseRow {
 
     private final static Logger logger = LoggerFactory.getLogger(DatabaseRow.class);
 
-    private final ResultSet rs;
+    protected final ResultSet rs;
     private final Map<String, Integer> columnIndexes = new HashMap<>();
-    private Map<DatabaseColumnReference, Integer> columnMap;
+    protected Map<DatabaseColumnReference, Integer> columnMap;
 
     DatabaseRow(ResultSet rs, String tableName) throws SQLException {
         this.rs = rs;
@@ -81,8 +81,12 @@ public class DatabaseRow {
         return rs.getBoolean(fieldName);
     }
 
+    public Timestamp getTimestamp(String column) throws SQLException {
+        return rs.getTimestamp(getColumnIndex(column));
+    }
+
     public Instant getInstant(String column) throws SQLException {
-        Timestamp timestamp = rs.getTimestamp(getColumnIndex(column));
+        Timestamp timestamp = getTimestamp(column);
         return timestamp != null ? timestamp.toInstant() : null;
     }
 
@@ -123,63 +127,12 @@ public class DatabaseRow {
         return columnIndexes.get(fieldName.toUpperCase());
     }
 
-    public Object getObject(DatabaseColumnReference column) throws SQLException {
-        return rs.getObject(getColumnIndex(column));
+    public DatabaseRow table(DatabaseTableAlias alias) {
+        return new DatabaseRowForTable(alias, rs, columnMap);
     }
 
-    public String getString(DatabaseColumnReference column) throws SQLException {
-        return rs.getString(getColumnIndex(column));
-    }
-
-    public Long getLong(DatabaseColumnReference column) throws SQLException {
-        long result = rs.getLong(getColumnIndex(column));
-        return rs.wasNull() ? null : result;
-    }
-
-    public Integer getInt(DatabaseColumnReference column) throws SQLException {
-        int result = rs.getInt(getColumnIndex(column));
-        return rs.wasNull() ? null : result;
-    }
-
-    public boolean getBoolean(DatabaseColumnReference column) throws SQLException {
-        return rs.getBoolean(getColumnIndex(column));
-    }
-
-    public Instant getInstant(DatabaseColumnReference column) throws SQLException {
-        Timestamp timestamp = rs.getTimestamp(getColumnIndex(column));
-        return timestamp != null ? timestamp.toInstant() : null;
-    }
-
-    public ZonedDateTime getZonedDateTime(DatabaseColumnReference column) throws SQLException {
-        Instant instant = getInstant(column);
-        return instant != null ? instant.atZone(ZoneId.systemDefault()) : null;
-    }
-
-    public OffsetDateTime getOffsetDateTime(DatabaseColumnReference column) throws SQLException {
-        Instant instant = getInstant(column);
-        return instant != null ? OffsetDateTime.ofInstant(instant, ZoneId.systemDefault()) : null;
-    }
-
-    public LocalDate getLocalDate(DatabaseColumnReference column) throws SQLException {
-        Date date = rs.getDate(getColumnIndex(column));
-        return date != null ? date.toLocalDate() : null;
-    }
-
-    public UUID getUUID(DatabaseColumnReference column) throws SQLException {
-        String result = getString(column);
-        return result != null ? UUID.fromString(result) : null;
-    }
-
-    public <T extends Enum<T>> T getEnum(Class<T> enumClass, DatabaseColumnReference column) throws SQLException {
-        String value = getString(column);
-        return value != null ? Enum.valueOf(enumClass, value) : null;
-    }
-
-    private Integer getColumnIndex(DatabaseColumnReference column) {
-        if (!columnMap.containsKey(column)) {
-            throw new IllegalArgumentException("Column {" + column + "} is not present in " + columnMap.keySet());
-        }
-        return columnMap.get(column);
+    public DatabaseRow table(DbTableAliasContext alias) {
+        return table(alias.getTableAlias());
     }
 
 }
