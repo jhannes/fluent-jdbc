@@ -1,6 +1,7 @@
 package org.fluentjdbc.demo;
 
 import org.fluentjdbc.DatabaseResult;
+import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.util.ExceptionUtil;
 
 import java.sql.Connection;
@@ -40,17 +41,17 @@ public class EntryAggregate {
 
         String sql = "select * from entries e inner join entry_taggings et on e.id = et.entry_id inner join tags t on et.tag_id = t.id order by e.id";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
+            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
                 List<EntryAggregate> entries = new ArrayList<>();
+
                 EntryAggregate aggregate = null;
                 while (result.next()) {
-                    if (aggregate == null || !aggregate.getEntry().getId().equals(result.table("entries").getLong("id"))) {
-                        aggregate = new EntryAggregate(Entry.mapFromRow(result.table("entries")));
+                    DatabaseRow row = result.row();
+                    if (aggregate == null || !aggregate.getEntry().getId().equals(row.table("entries").getLong("id"))) {
+                        aggregate = new EntryAggregate(Entry.mapFromRow(row.table("entries")));
                         entries.add(aggregate);
                     }
-
-
-                    aggregate.getTags().add(Tag.createRowMapper().mapRow(result.table("tags")));
+                    aggregate.getTags().add(Tag.createRowMapper().mapRow(row.table("tags")));
                 }
                 return entries;
             }

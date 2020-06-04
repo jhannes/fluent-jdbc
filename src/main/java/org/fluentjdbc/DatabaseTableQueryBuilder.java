@@ -58,8 +58,8 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
             PreparedStatement stmt = connection.prepareStatement(query);
             bindParameters(stmt);
 
-            DatabaseResult result = new DatabaseResult(stmt.executeQuery());
-            return result.stream(mapper, query, stmt);
+            DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery());
+            return result.stream(mapper, query);
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }
@@ -83,7 +83,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt);
-            try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
+            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
                 return resultMapper.apply(result);
             }
         } catch (SQLException e) {

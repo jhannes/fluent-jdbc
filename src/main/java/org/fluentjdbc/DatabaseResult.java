@@ -9,6 +9,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,14 +26,32 @@ public class DatabaseResult implements AutoCloseable {
     private final static Logger logger = LoggerFactory.getLogger(DatabaseResult.class);
 
     public interface DatabaseResultMapper<T> {
+
         T apply(DatabaseResult result) throws SQLException;
     }
 
+    private final PreparedStatement statement;
     protected ResultSet resultSet;
-    private Map<String, DatabaseRow> tableRows = new HashMap<>();
+    protected final Map<String, Integer> columnIndexes = new HashMap<>();
+    protected final Map<String, Map<String, Integer>> tableColumnIndexes = new HashMap<>();
 
-    public DatabaseResult(ResultSet resultSet) {
+    public DatabaseResult(PreparedStatement statement, ResultSet resultSet) throws SQLException {
+        this.statement = statement;
         this.resultSet = resultSet;
+        ResultSetMetaData metaData = resultSet.getMetaData();
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            String columnName = metaData.getColumnName(i).toUpperCase();
+            String tableName = metaData.getTableName(i).toUpperCase();
+            if (!tableName.equals("")) {
+                tableColumnIndexes.computeIfAbsent(tableName, name -> new HashMap<>()).put(columnName, i);
+            }
+
+            if (!columnIndexes.containsKey(columnName)) {
+                columnIndexes.put(columnName, i);
+            } else {
+                logger.warn("Duplicate column " + columnName + " in query result");
+            }
+        }
     }
 
     @Override
@@ -44,25 +63,17 @@ public class DatabaseResult implements AutoCloseable {
         return resultSet.next();
     }
 
-    // TODO: This doesn't work on Android or SQL server
-    public DatabaseRow table(String tableName) throws SQLException {
-        if (!tableRows.containsKey(tableName)) {
-            tableRows.put(tableName, new DatabaseRow(resultSet, tableName));
-        }
-        return tableRows.get(tableName);
-    }
-
     public <T> List<T> list(RowMapper<T> mapper) throws SQLException {
         List<T> result = new ArrayList<>();
         while (next()) {
-            result.add(mapper.mapRow(createDatabaseRow()));
+            result.add(mapper.mapRow(row()));
         }
         return result;
     }
 
     public void forEach(DatabaseTable.RowConsumer consumer) throws SQLException {
         while (next()) {
-            consumer.apply(createDatabaseRow());
+            consumer.apply(row());
         }
     }
 
@@ -71,37 +82,35 @@ public class DatabaseResult implements AutoCloseable {
         if (!next()) {
             return Optional.empty();
         }
-        T result = mapper.mapRow(createDatabaseRow());
+        T result = mapper.mapRow(row());
         if (next()) {
             throw new IllegalStateException("More than one row returned");
         }
         return Optional.of(result);
     }
 
-    protected DatabaseRow createDatabaseRow() throws SQLException {
-        return new DatabaseRow(this.resultSet);
+    public DatabaseRow row() {
+        return new DatabaseRow(this.resultSet, this.columnIndexes, this.tableColumnIndexes);
     }
 
-    public <T> Stream<T> stream(RowMapper<T> mapper, String query, PreparedStatement stmt) throws SQLException {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(mapper, query, stmt), 0), false);
+    public <T> Stream<T> stream(RowMapper<T> mapper, String query) throws SQLException {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(mapper, query), 0), false);
     }
 
-    public <T> Iterator<T> iterator(RowMapper<T> mapper, String query, PreparedStatement stmt) throws SQLException {
-        return new Iterator<>(mapper, query, stmt);
+    public <T> Iterator<T> iterator(RowMapper<T> mapper, String query) throws SQLException {
+        return new Iterator<>(mapper, query);
     }
 
     class Iterator<T> implements java.util.Iterator<T> {
         private final RowMapper<T> mapper;
         private final long startTime;
         private final String query;
-        private final PreparedStatement stmt;
         private boolean hasNext;
 
-        public Iterator(RowMapper<T> mapper, String query, PreparedStatement stmt) throws SQLException {
+        public Iterator(RowMapper<T> mapper, String query) throws SQLException {
             this.mapper = mapper;
             this.startTime = System.currentTimeMillis();
             this.query = query;
-            this.stmt = stmt;
             hasNext = resultSet.next();
         }
 
@@ -113,7 +122,7 @@ public class DatabaseResult implements AutoCloseable {
         @Override
         public T next() {
             try {
-                T o = mapper.mapRow(createDatabaseRow());
+                T o = mapper.mapRow(row());
                 hasNext = resultSet.next();
                 if (!hasNext) {
                     logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()- startTime)/1000.0, query);
@@ -127,7 +136,7 @@ public class DatabaseResult implements AutoCloseable {
 
         protected void close() throws SQLException {
             resultSet.close();
-            stmt.close();
+            statement.close();
         }
 
         @SuppressWarnings("deprecation")

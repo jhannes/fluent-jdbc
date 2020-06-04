@@ -11,6 +11,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -129,7 +130,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
-            try (DatabaseResult result = createResult(stmt.executeQuery())) {
+            try (DatabaseResult result = createResult(stmt)) {
                 return resultMapper.apply(result);
             }
         } catch (SQLException e) {
@@ -160,37 +161,42 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     }
 
 
-    protected DatabaseResult createResult(ResultSet rs) throws SQLException {
-        Map<DatabaseColumnReference, Integer> columnMap = new LinkedHashMap<>();
+    protected DatabaseResult createResult(PreparedStatement statement) throws SQLException {
         List<DatabaseTableAlias> aliases = new ArrayList<>();
         aliases.add(table);
         joinedTables.stream().map(JoinedTable::getAlias).forEach(aliases::add);
+
+        Map<String, Map<String, Integer>> aliasColumnIndexes = new HashMap<>();
+        aliases.forEach(t -> aliasColumnIndexes.put(t.getAlias().toUpperCase(), new HashMap<>()));
         int index = 0;
 
+
+        ResultSet resultSet = statement.executeQuery();
         // Unfortunately, even though the database should know the alias for the each table, JDBC doesn't reveal it
-        ResultSetMetaData metaData = rs.getMetaData();
+        ResultSetMetaData metaData = resultSet.getMetaData();
         for (int i=1; i<=metaData.getColumnCount(); i++) {
             while (!metaData.getTableName(i).equalsIgnoreCase(aliases.get(index).getTableName())) {
                 index++;
                 if (index == aliases.size()) {
-                    throw new IllegalStateException("Failed to find table for column " + i + " (found " + columnMap + ") in " + aliases);
+                    throw new IllegalStateException("Failed to find table for column " + i + " (found " + aliasColumnIndexes + ") in " + aliases);
                 }
             }
-            DatabaseColumnReference column = aliases.get(index).column(metaData.getColumnName(i));
-            if (columnMap.containsKey(column)) {
+            String alias = aliases.get(index).getAlias().toUpperCase();
+            String columnName = metaData.getColumnName(i).toUpperCase();
+            if (aliasColumnIndexes.get(alias).containsKey(columnName)) {
                 if (aliases.get(++index).getTableName().equalsIgnoreCase(metaData.getTableName(i))) {
-                    column = aliases.get(index).column(metaData.getColumnName(i));
+                    alias = aliases.get(index).getAlias().toUpperCase();
                 } else {
-                    throw new IllegalStateException("Column twice in result " + column + ": " + columnMap);
+                    throw new IllegalStateException("Column twice in result " + alias + "." + columnName + ": " + aliasColumnIndexes);
                 }
             }
-            columnMap.put(column, i);
+            aliasColumnIndexes.get(alias).put(columnName, i);
         }
 
-        return new DatabaseResult(rs) {
+        return new DatabaseResult(statement, resultSet) {
             @Override
-            protected DatabaseRow createDatabaseRow() throws SQLException {
-                return new DatabaseRow(resultSet, columnMap);
+            public DatabaseRow row() {
+                return new DatabaseRow(resultSet, columnIndexes, aliasColumnIndexes);
             }
         };
     }

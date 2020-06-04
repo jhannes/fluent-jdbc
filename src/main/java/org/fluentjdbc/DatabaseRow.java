@@ -1,11 +1,7 @@
 package org.fluentjdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.sql.Date;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -13,62 +9,19 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class DatabaseRow {
 
-    private final static Logger logger = LoggerFactory.getLogger(DatabaseRow.class);
-
-    protected final ResultSet rs;
     private final Map<String, Integer> columnIndexes;
-    protected Map<DatabaseColumnReference, Integer> columnMap;
+    private Map<String, Map<String, Integer>> tableColumnIndexes;
+    protected final ResultSet rs;
 
-    DatabaseRow(ResultSet rs, String tableName) throws SQLException {
+    protected DatabaseRow(ResultSet rs, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> tableColumnIndexes) {
         this.rs = rs;
-
-        this.columnIndexes = new HashMap<>();
-        ResultSetMetaData metaData = rs.getMetaData();
-        for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            // TODO: This doesn't work on Android or SQL server
-            if (metaData.getTableName(i).isEmpty()) {
-                throw new IllegalStateException("getTableName not supported");
-            }
-            if (metaData.getTableName(i).equalsIgnoreCase(tableName)) {
-                columnIndexes.put(metaData.getColumnName(i).toUpperCase(), i);
-            }
-        }
-    }
-
-    public DatabaseRow(ResultSet rs) throws SQLException {
-        this.rs = rs;
-
-        this.columnIndexes = new HashMap<>();
-        ResultSetMetaData metaData = rs.getMetaData();
-        for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            String columnName = metaData.getColumnName(i).toUpperCase();
-            if (!columnIndexes.containsKey(columnName)) {
-                columnIndexes.put(columnName, i);
-            } else {
-                logger.warn("Duplicate column " + columnName + " in query result");
-            }
-        }
-    }
-
-    public DatabaseRow(ResultSet rs, Map<DatabaseColumnReference, Integer> columnMap) throws SQLException {
-        this.rs = rs;
-        this.columnMap = columnMap;
-        this.columnIndexes = new HashMap<>();
-        ResultSetMetaData metaData = rs.getMetaData();
-        for (int i = 1; i <= metaData.getColumnCount(); i++) {
-            String columnName = metaData.getColumnName(i).toUpperCase();
-            if (!columnIndexes.containsKey(columnName)) {
-                columnIndexes.put(columnName, i);
-            } else {
-                logger.warn("Duplicate column " + columnName + " in query result");
-            }
-        }
+        this.columnIndexes = columnIndexes;
+        this.tableColumnIndexes = tableColumnIndexes;
     }
 
     public Object getObject(String column) throws SQLException {
@@ -89,8 +42,8 @@ public class DatabaseRow {
         return rs.wasNull() ? null : result;
     }
 
-    public boolean getBoolean(String fieldName) throws SQLException {
-        return rs.getBoolean(fieldName);
+    public boolean getBoolean(String column) throws SQLException {
+        return rs.getBoolean(getColumnIndex(column));
     }
 
     public Timestamp getTimestamp(String column) throws SQLException {
@@ -112,8 +65,8 @@ public class DatabaseRow {
         return instant != null ? OffsetDateTime.ofInstant(instant, ZoneId.systemDefault()) : null;
     }
 
-    public LocalDate getLocalDate(String fieldName) throws SQLException {
-        Date date = rs.getDate(fieldName);
+    public LocalDate getLocalDate(String column) throws SQLException {
+        Date date = rs.getDate(getColumnIndex(column));
         return date != null ? date.toLocalDate() : null;
     }
 
@@ -122,8 +75,8 @@ public class DatabaseRow {
         return result != null ? UUID.fromString(result) : null;
     }
 
-    public Double getDouble(String fieldName) throws SQLException {
-        double result = rs.getDouble(fieldName);
+    public Double getDouble(String column) throws SQLException {
+        double result = rs.getDouble(getColumnIndex(column));
         return !rs.wasNull() ? result : null;
     }
 
@@ -132,19 +85,26 @@ public class DatabaseRow {
         return value != null ? Enum.valueOf(enumClass, value) : null;
     }
 
-    private Integer getColumnIndex(String fieldName) {
+    protected Integer getColumnIndex(String fieldName) {
         if (!columnIndexes.containsKey(fieldName.toUpperCase())) {
             throw new IllegalArgumentException("Column {" + fieldName + "} is not present in " + columnIndexes.keySet());
         }
         return columnIndexes.get(fieldName.toUpperCase());
     }
 
-    public DatabaseRow table(DatabaseTableAlias alias) throws SQLException {
-        return new DatabaseRowForTable(alias, rs, columnMap);
+    public DatabaseRow table(DatabaseTableAlias alias) {
+        return table(alias.getAlias());
     }
 
-    public DatabaseRow table(DbTableAliasContext alias) throws SQLException {
+    public DatabaseRow table(DbTableAliasContext alias) {
         return table(alias.getTableAlias());
     }
 
+    public DatabaseRow table(String table) {
+        Map<String, Integer> columnIndexes = tableColumnIndexes.get(table.toUpperCase());
+        if (columnIndexes == null) {
+            throw new IllegalArgumentException("Unknown alias " + table.toUpperCase() + " in " + tableColumnIndexes.keySet());
+        }
+        return new DatabaseRow(rs, tableColumnIndexes.get(table.toUpperCase()), tableColumnIndexes);
+    }
 }
