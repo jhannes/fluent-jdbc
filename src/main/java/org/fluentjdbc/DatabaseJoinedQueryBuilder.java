@@ -19,10 +19,10 @@ import java.util.stream.Collectors;
 
 public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
     private final DatabaseTableAlias table;
-    private List<JoinedTable> joinedTables = new ArrayList<>();
-    private List<String> conditions = new ArrayList<>();
-    private List<Object> parameters = new ArrayList<>();
-    private List<String> orderByClauses = new ArrayList<>();
+    private final List<JoinedTable> joinedTables = new ArrayList<>();
+    private final List<String> conditions = new ArrayList<>();
+    private final List<Object> parameters = new ArrayList<>();
+    private final List<String> orderByClauses = new ArrayList<>();
 
     public DatabaseJoinedQueryBuilder(DatabaseTableAlias table) {
         this.table = table;
@@ -108,30 +108,29 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     @Nonnull
     @Override
     public <T> Optional<T> singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = createResult(stmt.executeQuery())) {
-                return result.single(mapper);
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
-        }
+        return query(connection, result -> result.single(mapper));
     }
 
     @Override
     public <T> List<T> list(Connection connection, DatabaseTable.RowMapper<T> mapper) {
+        return query(connection, result -> result.list(mapper));
+    }
+
+    public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
+        query(connection, result -> {
+            result.forEach(consumer);
+            return null;
+        });
+    }
+
+    private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
         long startTime = System.currentTimeMillis();
         String query = createSelectStatement();
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
             try (DatabaseResult result = createResult(stmt.executeQuery())) {
-                return result.list(mapper);
+                return resultMapper.apply(result);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
@@ -160,21 +159,6 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         }
     }
 
-    public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = createResult(stmt.executeQuery())) {
-                result.forEach(consumer);
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
-        }
-    }
 
     protected DatabaseResult createResult(ResultSet rs) throws SQLException {
         Map<DatabaseColumnReference, Integer> columnMap = new LinkedHashMap<>();
@@ -189,7 +173,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
             while (!metaData.getTableName(i).equalsIgnoreCase(aliases.get(index).getTableName())) {
                 index++;
                 if (index == aliases.size()) {
-                    throw new IllegalStateException("Failed to find table for column " + i + " (found " + columnMap + ")");
+                    throw new IllegalStateException("Failed to find table for column " + i + " (found " + columnMap + ") in " + aliases);
                 }
             }
             DatabaseColumnReference column = aliases.get(index).column(metaData.getColumnName(i));

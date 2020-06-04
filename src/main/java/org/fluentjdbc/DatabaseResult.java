@@ -16,6 +16,10 @@ import java.util.Optional;
 @ParametersAreNonnullByDefault
 public class DatabaseResult implements AutoCloseable {
 
+    public interface DatabaseResultMapper<T> {
+        T apply(DatabaseResult result) throws SQLException;
+    }
+
     private ResultSet resultSet;
     private Map<String, DatabaseRow> tableRows = new HashMap<>();
 

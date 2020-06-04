@@ -23,10 +23,10 @@ import java.util.stream.StreamSupport;
 @ParametersAreNonnullByDefault
 public class DatabaseTableQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
 
-    private List<String> conditions = new ArrayList<>();
-    private List<Object> parameters = new ArrayList<>();
-    private List<String> orderByClauses = new ArrayList<>();
-    private DatabaseTable table;
+    private final List<String> conditions = new ArrayList<>();
+    private final List<Object> parameters = new ArrayList<>();
+    private final List<String> orderByClauses = new ArrayList<>();
+    private final DatabaseTable table;
 
     DatabaseTableQueryBuilder(DatabaseTable table) {
         this.table = table;
@@ -112,43 +112,36 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     }
 
     public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
+        query(connection, result -> {
+            result.forEach(consumer);
+            return null;
+        });
+    }
+
+    private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
         long startTime = System.currentTimeMillis();
         String query = createSelectStatement();
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt);
             try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
-                result.forEach(consumer);
+                return resultMapper.apply(result);
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
     @Nonnull
     @Override
     public <T> Optional<T> singleObject(Connection connection, RowMapper<T> mapper) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt);
-            try (DatabaseResult result = new DatabaseResult(stmt.executeQuery())) {
-                return result.single(mapper);
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
-        }
+        return query(connection, result -> result.single(mapper));
     }
 
-    private int bindParameters(PreparedStatement stmt) throws SQLException {
-        return bindParameters(stmt, parameters);
+    private void bindParameters(PreparedStatement stmt) throws SQLException {
+        bindParameters(stmt, parameters);
     }
 
     private String createSelectStatement() {
