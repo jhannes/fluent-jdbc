@@ -15,6 +15,7 @@ import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
@@ -31,6 +32,7 @@ public class UsageDemonstrationTest {
     private Map<String, String> replacements;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
+    private final OrderLineRepository orderLineRepository;
 
     public UsageDemonstrationTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -41,15 +43,18 @@ public class UsageDemonstrationTest {
         this.replacements = replacements;
         this.productRepository = new ProductRepository(dbContext);
         this.orderRepository = new OrderRepository(dbContext);
+        this.orderLineRepository = new OrderLineRepository(dbContext);
     }
 
     @Before
     public void createTables() throws SQLException {
         try (Statement statement = dbContext.getThreadConnection().createStatement()) {
+            dropTableIfExists(statement, "order_lines");
             dropTableIfExists(statement, "products");
             dropTableIfExists(statement, "orders");
             statement.executeUpdate(preprocessCreateTable(ProductRepository.CREATE_TABLE));
             statement.executeUpdate(preprocessCreateTable(OrderRepository.CREATE_TABLE));
+            statement.executeUpdate(preprocessCreateTable(OrderLineRepository.CREATE_TABLE));
         }
     }
 
@@ -134,6 +139,38 @@ public class UsageDemonstrationTest {
         assertThat(productRepository.query().stream())
                 .extracting(Product::getName)
                 .containsExactlyInAnyOrder(changedProduct.getName(), unchangedProduct.getName(), newProduct.getName());
+    }
+
+    @Test
+    public void shouldJoinTables() {
+        Product firstProduct = sampleProduct();
+        Product secondProduct = sampleProduct();
+        Product thirdProduct = sampleProduct();
+
+        productRepository.save(firstProduct);
+        productRepository.save(secondProduct);
+        productRepository.save(thirdProduct);
+
+        Order order = sampleOrder();
+        orderRepository.save(order);
+
+        orderLineRepository.save(new OrderLine(order, firstProduct, 10));
+        orderLineRepository.save(new OrderLine(order, secondProduct, 1));
+        orderLineRepository.save(new OrderLine(order, thirdProduct, 5));
+
+        assertThat(orderLineRepository.query()
+                .orderEmail(order.getCustomerEmail()).list()).extracting(OrderLine::getProductId)
+                .contains(firstProduct.getProductId(), secondProduct.getProductId());
+
+        List<OrderLineEntity> entities = orderLineRepository.query()
+                .orderEmail(order.getCustomerEmail())
+                .productIds(Arrays.asList(firstProduct.getProductId(), secondProduct.getProductId()))
+                .listEntities();
+
+        assertThat(entities).extracting(o -> o.getProduct().getName())
+                .contains(firstProduct.getName(), secondProduct.getName())
+                .doesNotContain(thirdProduct.getName());
+        assertThat(entities).extracting(o -> o.getOrder().getOrderId()).containsOnly(order.getOrderId());
     }
 
     protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {

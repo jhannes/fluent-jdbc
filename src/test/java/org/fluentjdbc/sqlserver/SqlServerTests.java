@@ -1,15 +1,14 @@
 package org.fluentjdbc.sqlserver;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
-import org.fluentjdbc.DatabaseSaveResult;
 import org.junit.Assume;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -95,6 +94,12 @@ public class SqlServerTests {
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
         public UsageDemonstrationTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
+        }
+
+        @Override
+        @Ignore
+        @Test
+        public void shouldJoinTables() {
         }
     }
 

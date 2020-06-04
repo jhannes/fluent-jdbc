@@ -6,7 +6,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 public interface Repository<T, ID> {
-    DatabaseSaveResult.SaveStatus save(T product);
+    DatabaseSaveResult.SaveStatus save(T row);
 
     Repository.Query<T> query();
 

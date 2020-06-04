@@ -46,7 +46,7 @@ public class OrderRepository implements Repository<Order, UUID> {
 
     @Override
     public Optional<Order> retrieve(UUID uuid) {
-        return table.where("order_id", uuid).singleObject(this::toOrder);
+        return table.where("order_id", uuid).singleObject(OrderRepository::toOrder);
     }
 
     public class Query implements Repository.Query<Order> {
@@ -59,7 +59,7 @@ public class OrderRepository implements Repository<Order, UUID> {
 
         @Override
         public Stream<Order> stream() {
-            return context.stream(row -> toOrder(row));
+            return context.stream(OrderRepository::toOrder);
         }
 
         public Query customerEmail(String customerEmail) {
@@ -71,7 +71,7 @@ public class OrderRepository implements Repository<Order, UUID> {
         }
     }
 
-    private Order toOrder(DatabaseRow row) throws SQLException {
+    static Order toOrder(DatabaseRow row) throws SQLException {
         Order order = new Order();
         order.setOrderId(row.getUUID("order_id"));
         order.setCustomerName(row.getString("customer_name"));

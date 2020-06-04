@@ -189,7 +189,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
 
         return new DatabaseResult(rs) {
             @Override
-            protected DatabaseRow createDatabaseRow(ResultSet resultSet) {
+            protected DatabaseRow createDatabaseRow() throws SQLException {
                 return new DatabaseRow(resultSet, columnMap);
             }
         };

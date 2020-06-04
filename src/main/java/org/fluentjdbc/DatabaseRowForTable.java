@@ -10,7 +10,7 @@ import java.util.Map;
 class DatabaseRowForTable extends DatabaseRow {
     private final DatabaseTableAlias alias;
 
-    public DatabaseRowForTable(DatabaseTableAlias alias, ResultSet rs, Map<DatabaseColumnReference, Integer> columnMap) {
+    public DatabaseRowForTable(DatabaseTableAlias alias, ResultSet rs, Map<DatabaseColumnReference, Integer> columnMap) throws SQLException {
         super(rs, columnMap);
         this.alias = alias;
     }

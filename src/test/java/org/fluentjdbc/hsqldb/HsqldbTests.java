@@ -48,6 +48,18 @@ public final class HsqldbTests {
         }
     }
 
+    public static class DatabaseJoinedQueryBuilderTest extends org.fluentjdbc.DatabaseJoinedQueryBuilderTest {
+        public DatabaseJoinedQueryBuilderTest() throws SQLException {
+            super(getConnection(), REPLACEMENTS);
+        }
+    }
+
+    public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
+        public DbContextJoinedQueryBuilderTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+    }
+
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
         public UsageDemonstrationTest() {
             super(getDataSource(), REPLACEMENTS);

@@ -32,7 +32,7 @@ public class SqliteTests {
         }
 
         @Override
-        public void shouldNotUpdateUnchangedRow() throws SQLException {
+        public void shouldNotUpdateUnchangedRow() {
             // Ignored because Sqlite doesn't have proper timestamps
         }
     }
@@ -69,6 +69,12 @@ public class SqliteTests {
         }
     }
 
+    public static class DatabaseJoinedQueryBuilderTest extends org.fluentjdbc.DatabaseJoinedQueryBuilderTest {
+        public DatabaseJoinedQueryBuilderTest() throws SQLException {
+            super(getConnection(), REPLACEMENTS);
+        }
+    }
+
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
         public UsageDemonstrationTest() {
             super(getDataSource(), REPLACEMENTS);
@@ -77,6 +83,12 @@ public class SqliteTests {
         @Override
         protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {
             // SQL Lite doesn't convert Timestamps correctly and so doesn't match the existing rows
+        }
+    }
+
+    public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
+        public DbContextJoinedQueryBuilderTest() {
+            super(getDataSource(), REPLACEMENTS);
         }
     }
 

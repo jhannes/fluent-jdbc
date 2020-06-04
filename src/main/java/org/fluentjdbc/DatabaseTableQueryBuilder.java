@@ -12,13 +12,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 @ParametersAreNonnullByDefault
 public class DatabaseTableQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
@@ -56,51 +53,13 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
 
     public <T> Stream<T> stream(Connection connection, RowMapper<T> mapper) {
         try {
-            long startTime = System.currentTimeMillis();
             String query = createSelectStatement();
             logger.trace(query);
             PreparedStatement stmt = connection.prepareStatement(query);
             bindParameters(stmt);
-            ResultSet rs = stmt.executeQuery();
 
-            Iterator<T> iterator = new Iterator<T>() {
-                private boolean hasNext;
-                {
-                    hasNext = rs.next();
-                }
-
-                @Override
-                public boolean hasNext() {
-                    return hasNext;
-                }
-
-                @Override
-                public T next() {
-                    try {
-                        T o = mapper.mapRow(new DatabaseRow(rs));
-                        hasNext = rs.next();
-                        if (!hasNext) {
-                            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
-                            close();
-                        }
-                        return o;
-                    } catch (SQLException e) {
-                        throw ExceptionUtil.softenCheckedException(e);
-                    }
-                }
-
-                protected void close() throws SQLException {
-                    rs.close();
-                    stmt.close();
-                }
-
-                @SuppressWarnings("deprecation")
-                @Override
-                protected void finalize() throws Throwable {
-                    close();
-                }
-            };
-            return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false);
+            DatabaseResult result = new DatabaseResult(stmt.executeQuery());
+            return result.stream(mapper, query, stmt);
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }

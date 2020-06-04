@@ -94,7 +94,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
 
     @Override
     public Optional<Product> retrieve(Product.Id productId) {
-        return table.where("product_id", productId.getValue()).singleObject(this::toProduct);
+        return table.where("product_id", productId.getValue()).singleObject(ProductRepository::toProduct);
     }
 
     @Override
@@ -111,11 +111,11 @@ public class ProductRepository implements Repository<Product, Product.Id> {
 
         @Override
         public Stream<Product> stream() {
-            return query.stream(ProductRepository.this::toProduct);
+            return query.stream(ProductRepository::toProduct);
         }
     }
 
-    private Product toProduct(DatabaseRow row) throws SQLException {
+    static Product toProduct(DatabaseRow row) throws SQLException {
         Product product = new Product();
         product.setProductId(new Product.Id(row.getUUID("product_id")));
         product.setName(row.getString("name"));

@@ -235,11 +235,10 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                     assertThat(row.table(m).getEnum(Level.class, "status")).isEqualTo(Level.INFO);
                     assertThat(row.table(m).getZonedDateTime("expires_at")).isEqualTo(inTwoWeeks);
                     assertThat(row.table(m).getOffsetDateTime("expires_at")).isEqualTo(inTwoWeeks.toOffsetDateTime());
-                    assertThat(row.table(m).getObject("expires_at"))
-                            .isEqualTo(Timestamp.from(inTwoWeeks.toInstant()));
                     assertThat(row.table(m).getInstant("expires_at"))
                             .isEqualTo(inTwoWeeks.toInstant());
                     assertThat(row.table(p).getLocalDate("birth_date")).isEqualTo(birthDate);
+                    assertThat(row.table(perm).getObject("name")).isEqualTo("uniquePermName");
                     assertThat(row.table(perm).getBoolean("is_admin")).isEqualTo(true);
                 });
     }

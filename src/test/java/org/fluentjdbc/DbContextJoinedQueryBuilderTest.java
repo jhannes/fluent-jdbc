@@ -24,24 +24,30 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DbContextJoinedQueryBuilderTest {
 
-    private final DataSource dataSource = createDataSource();
-
-    protected JdbcDataSource createDataSource() {
-        JdbcDataSource dataSource = new JdbcDataSource();
-        dataSource.setUrl("jdbc:h2:mem:dbcontext;DB_CLOSE_DELAY=-1");
-        return dataSource;
-    }
+    private final DataSource dataSource;
+    private final Map<String, String> replacements;
 
     @Rule
-    public final DbContextRule dbContext = new DbContextRule(dataSource);
+    public final DbContextRule dbContext;
 
-    private final DbTableContext organizations = dbContext.table("dbtest_organizations");
-    private final DbTableContext persons = dbContext.table("dbtest_persons");
-    private final DbTableContext memberships = dbContext.table("dbtest_memberships");
-    private final DbTableContext permissions = dbContext.table("dbtest_permissions");
+    private final DbTableContext organizations;
+    private final DbTableContext persons;
+    private final DbTableContext memberships;
+    private final DbTableContext permissions;
 
+    public DbContextJoinedQueryBuilderTest() {
+        this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
+    }
 
-    private final Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
+    protected DbContextJoinedQueryBuilderTest(DataSource dataSource, Map<String, String> replacements) {
+        this.dataSource = dataSource;
+        this.replacements = replacements;
+        this.dbContext = new DbContextRule(dataSource);
+        organizations = dbContext.table("dbtest_organizations");
+        persons = dbContext.table("dbtest_persons");
+        memberships = dbContext.table("dbtest_memberships");
+        permissions = dbContext.table("dbtest_permissions");
+    }
 
     protected String preprocessCreateTable(String createTableStatement) {
         return createTableStatement

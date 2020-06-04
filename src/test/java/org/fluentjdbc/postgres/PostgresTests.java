@@ -1,15 +1,12 @@
 package org.fluentjdbc.postgres;
 
-import org.fluentjdbc.usage.context.UsageDemonstrationTest;
 import org.junit.Assume;
 import org.postgresql.ds.PGSimpleDataSource;
-import org.postgresql.osgi.PGDataSourceFactory;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -51,6 +48,18 @@ public class PostgresTests {
     public static class BulkInsertTest extends org.fluentjdbc.BulkInsertTest {
         public BulkInsertTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
+        }
+    }
+
+    public static class DatabaseJoinedQueryBuilderTest extends org.fluentjdbc.DatabaseJoinedQueryBuilderTest {
+        public DatabaseJoinedQueryBuilderTest() throws SQLException {
+            super(getConnection(), REPLACEMENTS);
+        }
+    }
+
+    public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
+        public DbContextJoinedQueryBuilderTest() throws SQLException {
+            super(getDataSource(), REPLACEMENTS);
         }
     }
 

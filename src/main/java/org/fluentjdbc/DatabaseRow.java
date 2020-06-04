@@ -22,12 +22,13 @@ public class DatabaseRow {
     private final static Logger logger = LoggerFactory.getLogger(DatabaseRow.class);
 
     protected final ResultSet rs;
-    private final Map<String, Integer> columnIndexes = new HashMap<>();
+    private final Map<String, Integer> columnIndexes;
     protected Map<DatabaseColumnReference, Integer> columnMap;
 
     DatabaseRow(ResultSet rs, String tableName) throws SQLException {
         this.rs = rs;
 
+        this.columnIndexes = new HashMap<>();
         ResultSetMetaData metaData = rs.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             // TODO: This doesn't work on Android or SQL server
@@ -43,6 +44,7 @@ public class DatabaseRow {
     public DatabaseRow(ResultSet rs) throws SQLException {
         this.rs = rs;
 
+        this.columnIndexes = new HashMap<>();
         ResultSetMetaData metaData = rs.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             String columnName = metaData.getColumnName(i).toUpperCase();
@@ -54,9 +56,19 @@ public class DatabaseRow {
         }
     }
 
-    public DatabaseRow(ResultSet rs, Map<DatabaseColumnReference, Integer> columnMap) {
+    public DatabaseRow(ResultSet rs, Map<DatabaseColumnReference, Integer> columnMap) throws SQLException {
         this.rs = rs;
         this.columnMap = columnMap;
+        this.columnIndexes = new HashMap<>();
+        ResultSetMetaData metaData = rs.getMetaData();
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
+            String columnName = metaData.getColumnName(i).toUpperCase();
+            if (!columnIndexes.containsKey(columnName)) {
+                columnIndexes.put(columnName, i);
+            } else {
+                logger.warn("Duplicate column " + columnName + " in query result");
+            }
+        }
     }
 
     public Object getObject(String column) throws SQLException {
@@ -127,11 +139,11 @@ public class DatabaseRow {
         return columnIndexes.get(fieldName.toUpperCase());
     }
 
-    public DatabaseRow table(DatabaseTableAlias alias) {
+    public DatabaseRow table(DatabaseTableAlias alias) throws SQLException {
         return new DatabaseRowForTable(alias, rs, columnMap);
     }
 
-    public DatabaseRow table(DbTableAliasContext alias) {
+    public DatabaseRow table(DbTableAliasContext alias) throws SQLException {
         return table(alias.getTableAlias());
     }
 
