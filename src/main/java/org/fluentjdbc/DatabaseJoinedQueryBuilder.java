@@ -160,7 +160,6 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         }
     }
 
-
     protected DatabaseResult createResult(PreparedStatement statement) throws SQLException {
         List<DatabaseTableAlias> aliases = new ArrayList<>();
         aliases.add(table);

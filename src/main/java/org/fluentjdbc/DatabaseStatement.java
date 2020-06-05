@@ -71,8 +71,6 @@ class DatabaseStatement {
             return parameter.toString().toUpperCase();
         } else if (parameter instanceof Double) {
             return BigDecimal.valueOf(((Number) parameter).doubleValue());
-        } else if (parameter instanceof Temporal) {
-            return parameter.toString();
         } else if (parameter instanceof CharSequence) {
             return parameter.toString();
         } else if (parameter instanceof Enum<?>) {

@@ -307,6 +307,16 @@ public class DbContextTest {
     }
 
     @Test
+    public void orderRows() {
+        tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "C").execute();
+        tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "B").execute();
+        tableContext.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "A").execute();
+
+        assertThat(tableContext.orderedBy("name").listStrings("name"))
+                .containsExactly("A", "B", "C");
+    }
+
+    @Test
     public void shouldInsertWithExplicitKey() {
         Object id = tableContext.insert()
                 .setPrimaryKey("id", 453534643)

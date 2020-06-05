@@ -63,8 +63,7 @@ public class DatabaseInsertWithPkBuilder<T> extends DatabaseStatement {
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
@@ -73,7 +72,7 @@ public class DatabaseInsertWithPkBuilder<T> extends DatabaseStatement {
     private T getGeneratedKey(PreparedStatement stmt) throws SQLException {
         try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
             generatedKeys.next();
-            return (T)new Long(generatedKeys.getLong(1));
+            return (T) Long.valueOf(generatedKeys.getLong(1));
         }
     }
 

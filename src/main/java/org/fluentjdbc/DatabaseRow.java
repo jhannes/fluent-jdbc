@@ -15,7 +15,7 @@ import java.util.UUID;
 public class DatabaseRow {
 
     private final Map<String, Integer> columnIndexes;
-    private Map<String, Map<String, Integer>> tableColumnIndexes;
+    private final Map<String, Map<String, Integer>> tableColumnIndexes;
     protected final ResultSet rs;
 
     protected DatabaseRow(ResultSet rs, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> tableColumnIndexes) {
@@ -103,7 +103,7 @@ public class DatabaseRow {
     public DatabaseRow table(String table) {
         Map<String, Integer> columnIndexes = tableColumnIndexes.get(table.toUpperCase());
         if (columnIndexes == null) {
-            throw new IllegalArgumentException("Unknown alias " + table.toUpperCase() + " in " + tableColumnIndexes.keySet());
+            throw new IllegalArgumentException("Unknown table " + table.toUpperCase() + " in " + tableColumnIndexes.keySet());
         }
         return new DatabaseRow(rs, tableColumnIndexes.get(table.toUpperCase()), tableColumnIndexes);
     }
