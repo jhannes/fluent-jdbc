@@ -3,12 +3,12 @@ package org.fluentjdbc;
 import java.util.Objects;
 
 public class DatabaseTableAlias {
-    private final DatabaseTable table;
     private final String alias;
+    private String tableName;
 
-    public DatabaseTableAlias(DatabaseTable table, String alias) {
-        this.table = table;
+    public DatabaseTableAlias(String tableName, String alias) {
         this.alias = alias;
+        this.tableName = tableName;
     }
 
     public DatabaseJoinedQueryBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
@@ -20,7 +20,7 @@ public class DatabaseTableAlias {
     }
 
     public String getTableName() {
-        return table.getTableName();
+        return tableName;
     }
 
     public String getAlias() {
@@ -33,12 +33,12 @@ public class DatabaseTableAlias {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + table.getTableName() + " " + getAlias() + "]";
+        return getClass().getSimpleName() + "[" + tableName + " " + getAlias() + "]";
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(table.getTableName().toUpperCase(), alias.toUpperCase());
+        return Objects.hash(tableName.toUpperCase(), alias.toUpperCase());
     }
 
     public String getTableNameAndAlias() {

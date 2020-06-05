@@ -32,12 +32,18 @@ public class DatabaseResult implements AutoCloseable {
 
     private final PreparedStatement statement;
     protected ResultSet resultSet;
-    protected final Map<String, Integer> columnIndexes = new HashMap<>();
-    protected final Map<String, Map<String, Integer>> tableColumnIndexes = new HashMap<>();
+    protected final Map<String, Integer> columnIndexes;
+    protected final Map<String, Map<String, Integer>> tableColumnIndexes;
 
-    public DatabaseResult(PreparedStatement statement, ResultSet resultSet) throws SQLException {
+    public DatabaseResult(PreparedStatement statement, ResultSet resultSet, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> aliasColumnIndexes) {
         this.statement = statement;
         this.resultSet = resultSet;
+        this.columnIndexes = columnIndexes;
+        this.tableColumnIndexes = aliasColumnIndexes;
+    }
+
+    public DatabaseResult(PreparedStatement statement, ResultSet resultSet) throws SQLException {
+        this(statement, resultSet, new HashMap<>(), new HashMap<>());
         ResultSetMetaData metaData = resultSet.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             String columnName = metaData.getColumnName(i).toUpperCase();

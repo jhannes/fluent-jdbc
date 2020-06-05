@@ -12,7 +12,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -165,6 +164,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         aliases.add(table);
         joinedTables.stream().map(JoinedTable::getAlias).forEach(aliases::add);
 
+        Map<String, Integer> columnIndexes = new HashMap<>();
         Map<String, Map<String, Integer>> aliasColumnIndexes = new HashMap<>();
         aliases.forEach(t -> aliasColumnIndexes.put(t.getAlias().toUpperCase(), new HashMap<>()));
         int index = 0;
@@ -190,14 +190,10 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
                 }
             }
             aliasColumnIndexes.get(alias).put(columnName, i);
+            columnIndexes.putIfAbsent(columnName, i);
         }
 
-        return new DatabaseResult(statement, resultSet) {
-            @Override
-            public DatabaseRow row() {
-                return new DatabaseRow(resultSet, columnIndexes, aliasColumnIndexes);
-            }
-        };
+        return new DatabaseResult(statement, resultSet, columnIndexes, aliasColumnIndexes);
     }
 
     private String createSelectStatement() {

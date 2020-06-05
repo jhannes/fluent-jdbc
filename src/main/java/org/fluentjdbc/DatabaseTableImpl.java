@@ -28,7 +28,7 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public DatabaseTableAlias alias(String alias) {
-        return new DatabaseTableAlias(this, alias);
+        return new DatabaseTableAlias(tableName, alias);
     }
 
     @Override

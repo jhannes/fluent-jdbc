@@ -8,7 +8,7 @@ public class DbTableAliasContext  {
 
     public DbTableAliasContext(DbTableContext dbTableContext, String alias) {
         this.dbTableContext = dbTableContext;
-        this.alias = new DatabaseTableAlias(dbTableContext.getTable(), alias);
+        this.alias = dbTableContext.getTable().alias(alias);
     }
 
     public DatabaseColumnReference column(String columnName) {
@@ -27,7 +27,7 @@ public class DbTableAliasContext  {
         return select().whereExpression(alias.getAlias() + "." + fieldName + " = ?", value);
     }
 
-    protected DbJoinedSelectContext select() {
+    public DbJoinedSelectContext select() {
         return new DbJoinedSelectContext(this);
     }
 
