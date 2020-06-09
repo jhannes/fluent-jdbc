@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import java.math.BigDecimal;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -81,6 +82,10 @@ public class DatabaseRow {
     public Double getDouble(String column) throws SQLException {
         double result = rs.getDouble(getColumnIndex(column));
         return !rs.wasNull() ? result : null;
+    }
+
+    public BigDecimal getBigDecimal(String column) throws SQLException {
+        return rs.getBigDecimal(getColumnIndex(column));
     }
 
     public <T extends Enum<T>> T getEnum(Class<T> enumClass, String fieldName) throws SQLException {

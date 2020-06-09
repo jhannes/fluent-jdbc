@@ -55,7 +55,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      */
     @Nonnull
     default Optional<Number> singleLong(Connection connection, final String fieldName) {
-        return singleObject(connection, (DatabaseTable.RowMapper<Number>) row -> row.getLong(fieldName));
+        return singleObject(connection, row -> row.getLong(fieldName));
     }
 
     /**

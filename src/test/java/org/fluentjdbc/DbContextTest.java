@@ -2,7 +2,6 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
-import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,39 +13,32 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.regex.Pattern;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 
 public class DbContextTest {
 
     private final DataSource dataSource = createDataSource();
 
-    protected JdbcDataSource createDataSource() {
-        JdbcDataSource dataSource = new JdbcDataSource();
-        dataSource.setUrl("jdbc:h2:mem:dbcontext;DB_CLOSE_DELAY=-1");
-        return dataSource;
+    protected DataSource createDataSource() {
+        return H2TestDatabase.createDataSource();
     }
 
     @Rule
     public final DbContextRule dbContext = new DbContextRule(dataSource);
 
-    private DbTableContext tableContext;
+    private final DbTableContext tableContext;
 
-    private Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
+    private final Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
 
     public DbContextTest() {
         this.tableContext = dbContext.table("database_table_test_table");
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
-        return createTableStatement
-                .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
-                .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
-                .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
-                ;
+        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
     }
 
     protected void dropTableIfExists(Connection connection, String tableName) {
@@ -239,7 +231,7 @@ public class DbContextTest {
 
     @Test
     public void shouldRollbackTransaction() {
-        try (DbTransaction tx = dbContext.ensureTransaction()) {
+        try (DbTransaction ignored = dbContext.ensureTransaction()) {
             tableContext.insert().setField("code", 1004).setField("name", "txTest").execute();
             tableContext.insert().setField("code", 1005).setField("name", "txTest").execute();
         }
@@ -264,7 +256,7 @@ public class DbContextTest {
     public void shouldRollbackNestedTransaction() {
         try (DbTransaction tx = dbContext.ensureTransaction()) {
             tableContext.insert().setField("code", 1008).setField("name", "nestedTx").execute();
-            try (DbTransaction innerTx = dbContext.ensureTransaction()) {
+            try (DbTransaction ignored = dbContext.ensureTransaction()) {
                 tableContext.insert().setField("code", 1009).setField("name", "nestedTx").execute();
                 // Rollback by default
             }

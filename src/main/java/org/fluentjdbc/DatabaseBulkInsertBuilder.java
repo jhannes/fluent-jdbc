@@ -9,15 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 
 public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement implements DatabaseBulkUpdateable<T, DatabaseBulkInsertBuilder<T>> {
 
-    private DatabaseTable table;
-    private Iterable<T> objects;
+    private final DatabaseTable table;
+    private final Iterable<T> objects;
 
     private final List<String> updateFields = new ArrayList<>();
     private final List<Function<T, ?>> updateParameters = new ArrayList<>();
@@ -25,10 +23,6 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement implements D
     DatabaseBulkInsertBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;
         this.objects = objects;
-    }
-
-    DatabaseBulkInsertBuilder(DatabaseTable table, Stream<T> objects) {
-        this(table, objects.collect(Collectors.toList()));
     }
 
     @Override

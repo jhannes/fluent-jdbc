@@ -16,6 +16,10 @@ public class AbstractDatabaseTest {
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
+        return preprocessCreateTable(createTableStatement, replacements);
+    }
+
+    public static String preprocessCreateTable(String createTableStatement, Map<String, String> replacements) {
         return createTableStatement
                 .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
                 .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))

@@ -1,18 +1,18 @@
 package org.fluentjdbc;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class SynchronizeDataTest extends AbstractDatabaseTest {
 
@@ -21,23 +21,21 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
     }
 
     private static final String CREATE_TABLE =
-            "create table demo_table (id ${INTEGER_PK}, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
+            "create table sync_demo_table (id ${INTEGER_PK}, name varchar not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
 
     private Connection clientConnection;
     private Connection serverConnection;
 
-    private DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
+    private final DatabaseTable table = new DatabaseTableWithTimestamps("sync_demo_table");
 
     @Before
     public void openConnection() throws SQLException {
-        JdbcDataSource serverDataSource = new JdbcDataSource();
-        serverDataSource.setUrl("jdbc:h2:mem:" + getClass().getName() + "-server");
+        DataSource serverDataSource = H2TestDatabase.createDataSource();
         serverConnection = serverDataSource.getConnection();
 
         try(Statement stmt = serverConnection.createStatement()) {
             stmt.executeUpdate(preprocessCreateTable(CREATE_TABLE));
         }
-
 
         JdbcDataSource clientDataSource = new JdbcDataSource();
         clientDataSource.setUrl("jdbc:h2:mem:" + getClass().getName());

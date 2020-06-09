@@ -1,5 +1,6 @@
 package org.fluentjdbc.usage.context;
 
+import org.fluentjdbc.AbstractDatabaseTest;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
@@ -20,17 +21,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class UsageDemonstrationTest {
 
-    private Random random = new Random();
+    private final Random random = new Random();
 
     @Rule
     public final DbContextRule dbContext;
-    private Map<String, String> replacements;
+
+    private final Map<String, String> replacements;
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderLineRepository orderLineRepository;
@@ -238,12 +239,7 @@ public class UsageDemonstrationTest {
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
-        return createTableStatement
-                .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
-                .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
-                .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
-                .replaceAll(Pattern.quote("${BOOLEAN}"), replacements.get("BOOLEAN"))
-                ;
+        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
     }
 
 }

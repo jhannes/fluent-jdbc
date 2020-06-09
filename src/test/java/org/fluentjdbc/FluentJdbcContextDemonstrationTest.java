@@ -1,11 +1,11 @@
 package org.fluentjdbc;
 
 import org.fluentjdbc.h2.H2TestDatabase;
-import org.h2.jdbcx.JdbcDataSource;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -14,30 +14,26 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.Random;
-import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FluentJdbcContextDemonstrationTest {
 
-    private DbContext dbContext;
-    private DbTableContext tableContext;
-    private Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
+    private final DbContext dbContext;
+    private final DbTableContext tableContext;
+    private final Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
+    private final DataSource dataSource;
+
     private DbContextConnection connection;
-    private JdbcDataSource dataSource = new JdbcDataSource();
 
     public FluentJdbcContextDemonstrationTest() {
-        dataSource.setUrl("jdbc:h2:mem:dbcontext;DB_CLOSE_DELAY=-1");
+        dataSource = H2TestDatabase.createDataSource();
         this.dbContext = new DbContext();
         this.tableContext = dbContext.tableWithTimestamps("demo_table");
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
-        return createTableStatement
-                .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
-                .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
-                .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
-                ;
+        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
     }
 
     protected void dropTableIfExists(Connection connection, String tableName) {

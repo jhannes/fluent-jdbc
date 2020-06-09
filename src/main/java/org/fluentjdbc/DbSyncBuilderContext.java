@@ -115,10 +115,10 @@ public class DbSyncBuilderContext<T>  {
     }
 
     protected boolean valuesEqual(List<Object> key) {
-        return areEqual(ourRows.get(key), theirRows.get(key));
+        return areEqualLists(ourRows.get(key), theirRows.get(key));
     }
 
-    protected boolean areEqual(List<Object> a, List<Object> b) {
+    protected boolean areEqualLists(List<?> a, List<?> b) {
         if (a == null) {
             return b == null;
         } else if (a.size() != b.size()) {

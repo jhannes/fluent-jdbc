@@ -2,7 +2,6 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
-import org.h2.jdbcx.JdbcDataSource;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,7 +15,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -50,11 +48,7 @@ public class DbContextJoinedQueryBuilderTest {
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
-        return createTableStatement
-                .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
-                .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
-                .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
-                ;
+        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
     }
 
     protected void dropTableIfExists(Connection connection, String tableName) {
