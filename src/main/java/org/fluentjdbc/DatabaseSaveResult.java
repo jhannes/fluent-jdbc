@@ -1,31 +1,35 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class DatabaseSaveResult<T> {
     private final T idValue;
     private final SaveStatus saveStatus;
+    private List<String> updatedFields;
 
-    private DatabaseSaveResult(T idValue, SaveStatus saveStatus) {
+    private DatabaseSaveResult(T idValue, SaveStatus saveStatus, List<String> updatedFields) {
         this.idValue = idValue;
         this.saveStatus = saveStatus;
+        this.updatedFields = updatedFields;
     }
 
-    public static <T> DatabaseSaveResult<T> updated(@Nonnull T idValue) {
-        return new DatabaseSaveResult<>(idValue, SaveStatus.UPDATED);
+    public static <T> DatabaseSaveResult<T> updated(@Nonnull T idValue, List<String> updatedFields) {
+        return new DatabaseSaveResult<>(idValue, SaveStatus.UPDATED, updatedFields);
     }
 
     public static <T> DatabaseSaveResult<T> inserted(@Nonnull T idValue) {
-        return new DatabaseSaveResult<>(idValue, SaveStatus.INSERTED);
+        return new DatabaseSaveResult<>(idValue, SaveStatus.INSERTED, new ArrayList<>());
     }
 
     public static <T> DatabaseSaveResult<T> deleted(@Nonnull T idValue) {
-        return new DatabaseSaveResult<>(idValue, SaveStatus.DELETED);
+        return new DatabaseSaveResult<>(idValue, SaveStatus.DELETED, new ArrayList<>());
     }
 
     public static <T> DatabaseSaveResult<T> unchanged(@Nonnull T idValue) {
-        return new DatabaseSaveResult<>(idValue, SaveStatus.UNCHANGED);
+        return new DatabaseSaveResult<>(idValue, SaveStatus.UNCHANGED, new ArrayList<>());
     }
 
     public T getId() {
@@ -34,6 +38,10 @@ public class DatabaseSaveResult<T> {
 
     public SaveStatus getSaveStatus() {
         return saveStatus;
+    }
+
+    public List<String> getUpdatedFields() {
+        return updatedFields;
     }
 
     @Override

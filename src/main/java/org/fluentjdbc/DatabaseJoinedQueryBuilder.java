@@ -212,7 +212,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         private final DatabaseColumnReference a;
         private final DatabaseColumnReference b;
 
-        public JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b) {
+        private JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b) {
             this.a = a;
             this.b = b;
         }

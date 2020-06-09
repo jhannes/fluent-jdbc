@@ -9,6 +9,7 @@ import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbSelectContext;
 import org.fluentjdbc.DbTableContext;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -39,7 +40,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
             super(table, "product_id", id);
         }
 
-        @Nullable
+        @Nonnull
         @Override
         protected Product.Id insert(Connection connection) {
             Product.Id idValue = this.idValue;

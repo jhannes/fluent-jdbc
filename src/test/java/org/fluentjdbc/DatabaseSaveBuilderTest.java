@@ -11,8 +11,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.INSERTED;
@@ -123,7 +126,8 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .uniqueKey("code", 10001)
                 .setField("name", "new name")
                 .execute(connection);
-        assertThat(result).isEqualTo(DatabaseSaveResult.updated(idOnInsert));
+        assertThat(result).isEqualTo(DatabaseSaveResult.updated(idOnInsert, Collections.singletonList("name")));
+        assertThat(result.getUpdatedFields()).isEqualTo(Collections.singletonList("name"));
 
         assertThat(table.where("id", idOnInsert).singleString(connection, "name")).get()
             .isEqualTo("new name");

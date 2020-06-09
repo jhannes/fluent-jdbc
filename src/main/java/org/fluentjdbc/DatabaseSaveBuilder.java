@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -44,36 +45,34 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
 
     @Nonnull
     public DatabaseSaveResult<T> execute(Connection connection) throws SQLException {
-        T idValue = this.idValue;
-        if (idValue != null) {
-            Optional<Boolean> isSame = tableWhereId(this.idValue).singleObject(connection, row -> shouldSkipRow(row, connection));
-            if (!isSame.isPresent()) {
+        AtomicReference<T> idValueLocal = new AtomicReference<>(this.idValue);
+        if (idValueLocal.get() != null) {
+            Optional<List<String>> difference = tableWhereId(idValueLocal.get()).singleObject(connection, row -> differingFields(row, connection));
+            if (!difference.isPresent()) {
                 insert(connection);
-                return DatabaseSaveResult.inserted(idValue);
-            } else if (!isSame.get()) {
-                update(connection, idValue);
-                return DatabaseSaveResult.updated(idValue);
+                return DatabaseSaveResult.inserted(idValueLocal.get());
+            } else if (!difference.get().isEmpty()) {
+                update(connection, idValueLocal.get());
+                return DatabaseSaveResult.updated(idValueLocal.get(), difference.get());
             } else {
-                return DatabaseSaveResult.unchanged(idValue);
+                return DatabaseSaveResult.unchanged(idValueLocal.get());
             }
         } else if (hasUniqueKey()) {
-            Optional<Boolean> isSame = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
-                DatabaseSaveBuilder.this.idValue = getId(row);
-                return shouldSkipRow(row, connection);
+            Optional<List<String>> difference = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
+                idValueLocal.set(getId(row));
+                return differingFields(row, connection);
             });
-            idValue = this.idValue;
-            if (!isSame.isPresent()) {
-                idValue = insert(connection);
-                return DatabaseSaveResult.inserted(idValue);
-            } else if (!isSame.get()) {
-                update(connection, idValue);
-                return DatabaseSaveResult.updated(idValue);
+            if (!difference.isPresent()) {
+                idValueLocal.set(insert(connection));
+                return DatabaseSaveResult.inserted(idValueLocal.get());
+            } else if (!difference.get().isEmpty()) {
+                update(connection, idValueLocal.get());
+                return DatabaseSaveResult.updated(idValueLocal.get(), difference.get());
             } else {
-                return DatabaseSaveResult.unchanged(idValue);
+                return DatabaseSaveResult.unchanged(idValueLocal.get());
             }
         } else {
-            idValue = insert(connection);
-            return DatabaseSaveResult.inserted(idValue);
+            return DatabaseSaveResult.inserted(insert(connection));
         }
     }
 
@@ -81,16 +80,21 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         return table.where(idField, p);
     }
 
-    private boolean shouldSkipRow(DatabaseRow row, Connection connection) throws SQLException {
+    private List<String> differingFields(DatabaseRow row, Connection connection) throws SQLException {
+        List<String> difference = new ArrayList<>();
         for (int i = 0; i < fields.size(); i++) {
             String field = fields.get(i);
-            if (!dbValuesAreEqual(values.get(i), row.getObject(field), connection)) return false;
+            if (!dbValuesAreEqual(values.get(i), row.getObject(field), connection)) {
+                difference.add(field);
+            }
         }
         for (int i = 0; i < uniqueKeyFields.size(); i++) {
             String field = uniqueKeyFields.get(i);
-            if (!dbValuesAreEqual(uniqueKeyValues.get(i), row.getObject(field), connection)) return false;
+            if (!dbValuesAreEqual(uniqueKeyValues.get(i), row.getObject(field), connection)) {
+                difference.add(field);
+            }
         }
-        return true;
+        return difference;
     }
 
     private boolean hasUniqueKey() {

@@ -23,6 +23,4 @@ public class DatabaseSaveBuilderWithoutGeneratedKeys extends DatabaseSaveBuilder
             .execute(connection);
         return idValue;
     }
-
-
 }
