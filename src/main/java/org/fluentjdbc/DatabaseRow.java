@@ -10,18 +10,21 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 public class DatabaseRow {
 
     private final Map<String, Integer> columnIndexes;
     private final Map<String, Map<String, Integer>> tableColumnIndexes;
+    private final Map<DatabaseTableAlias, Integer> keys;
     protected final ResultSet rs;
 
-    protected DatabaseRow(ResultSet rs, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> tableColumnIndexes) {
+    protected DatabaseRow(ResultSet rs, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> tableColumnIndexes, Map<DatabaseTableAlias, Integer> keys) {
         this.rs = rs;
         this.columnIndexes = columnIndexes;
         this.tableColumnIndexes = tableColumnIndexes;
+        this.keys = keys;
     }
 
     public Object getObject(String column) throws SQLException {
@@ -92,11 +95,19 @@ public class DatabaseRow {
         return columnIndexes.get(fieldName.toUpperCase());
     }
 
-    public DatabaseRow table(DatabaseTableAlias alias) {
+    public <T> Optional<T> table(DatabaseTableAlias alias, DatabaseTable.RowMapper<T> function) throws SQLException {
+        DatabaseRow table = table(alias);
+        return table != null ? Optional.of(function.mapRow(table)) : Optional.empty();
+    }
+
+    public DatabaseRow table(DatabaseTableAlias alias) throws SQLException {
+        if (keys.containsKey(alias) && rs.getObject(keys.get(alias)) == null) {
+            return null;
+        }
         return table(alias.getAlias());
     }
 
-    public DatabaseRow table(DbTableAliasContext alias) {
+    public DatabaseRow table(DbTableAliasContext alias) throws SQLException {
         return table(alias.getTableAlias());
     }
 
@@ -105,6 +116,6 @@ public class DatabaseRow {
         if (columnIndexes == null) {
             throw new IllegalArgumentException("Unknown table " + table.toUpperCase() + " in " + tableColumnIndexes.keySet());
         }
-        return new DatabaseRow(rs, tableColumnIndexes.get(table.toUpperCase()), tableColumnIndexes);
+        return new DatabaseRow(rs, tableColumnIndexes.get(table.toUpperCase()), tableColumnIndexes, this.keys);
     }
 }

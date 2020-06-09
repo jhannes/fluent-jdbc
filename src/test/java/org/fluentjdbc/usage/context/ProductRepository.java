@@ -5,16 +5,21 @@ import org.fluentjdbc.DatabaseSaveBuilder;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DatabaseSimpleQueryBuilder;
 import org.fluentjdbc.DatabaseTable;
+import org.fluentjdbc.DatabaseTableAlias;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbSelectContext;
+import org.fluentjdbc.DbTableAliasContext;
 import org.fluentjdbc.DbTableContext;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -32,6 +37,20 @@ public class ProductRepository implements Repository<Product, Product.Id> {
                 .insertMissing()
                 .updateDiffering()
                 .getStatus();
+    }
+
+    public Collection<ProductSales> salesReport() {
+        DatabaseTableAlias linesAlias = new DatabaseTableAlias("order_lines", "l");
+        DbTableAliasContext productAlias = table.alias("p");
+        Map<Product.Id, ProductSales> report = new HashMap<>();
+        productAlias
+                .leftJoin(productAlias.column("product_id"), linesAlias.column("product_id"))
+                .forEach(row -> {
+                    Product product = toProduct(row.table(productAlias));
+                    ProductSales productSales = report.computeIfAbsent(product.getProductId(), ProductSales::new);
+                    row.table(linesAlias, OrderLineRepository::toOrderLine).ifPresent(productSales::addSale);
+                });
+        return report.values();
     }
 
     private static class DatabaseSaveBuilderWithId extends DatabaseSaveBuilder<Product.Id> {

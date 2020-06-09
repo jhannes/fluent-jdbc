@@ -64,7 +64,7 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     @Override
     public DatabaseJoinedQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
         if (parameters.isEmpty()) {
-            throw new IllegalArgumentException("Can't do " + fieldName + " IN (....) with empty list");
+            return whereExpression(fieldName + " <> " + fieldName);
         }
         whereExpression(fieldName + " IN (" + parameterString(parameters.size()) + ")");
         this.parameters.addAll(parameters);
@@ -96,7 +96,12 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     }
 
     public DatabaseJoinedQueryBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
-        joinedTables.add(new JoinedTable(a, b));
+        joinedTables.add(new JoinedTable(a, b, "inner join"));
+        return this;
+    }
+
+    public DatabaseJoinedQueryBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
+        joinedTables.add(new JoinedTable(a, b, "left join"));
         return this;
     }
 
@@ -169,7 +174,6 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         aliases.forEach(t -> aliasColumnIndexes.put(t.getAlias().toUpperCase(), new HashMap<>()));
         int index = 0;
 
-
         ResultSet resultSet = statement.executeQuery();
         // Unfortunately, even though the database should know the alias for the each table, JDBC doesn't reveal it
         ResultSetMetaData metaData = resultSet.getMetaData();
@@ -193,7 +197,14 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
             columnIndexes.putIfAbsent(columnName, i);
         }
 
-        return new DatabaseResult(statement, resultSet, columnIndexes, aliasColumnIndexes);
+        Map<DatabaseTableAlias, Integer> keys = new HashMap<>();
+        for (JoinedTable table : joinedTables) {
+            DatabaseColumnReference joinedTable = table.b;
+            String tableAlias = joinedTable.getTableAlias().getAlias().toUpperCase();
+            String columnAlias = joinedTable.getColumnName().toUpperCase();
+            keys.put(joinedTable.getTableAlias(), aliasColumnIndexes.get(tableAlias).get(columnAlias));
+        }
+        return new DatabaseResult(statement, resultSet, columnIndexes, aliasColumnIndexes, keys);
     }
 
     private String createSelectStatement() {
@@ -211,14 +222,16 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     private static class JoinedTable {
         private final DatabaseColumnReference a;
         private final DatabaseColumnReference b;
+        private final String join;
 
-        private JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b) {
+        private JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b, String join) {
             this.a = a;
             this.b = b;
+            this.join = join;
         }
 
         public String toSql() {
-            return "inner join " + b.getTableNameAndAlias() + " on " + a.getQualifiedColumnName() + " = " + b.getQualifiedColumnName();
+            return join + " " + b.getTableNameAndAlias() + " on " + a.getQualifiedColumnName() + " = " + b.getQualifiedColumnName();
         }
 
         @Override

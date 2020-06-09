@@ -96,10 +96,12 @@ public class SqlServerTests {
             super(getDataSource(), REPLACEMENTS);
         }
 
-        @Override
-        @Ignore
-        @Test
+        @Override @Ignore @Test
         public void shouldJoinTables() {
+        }
+
+        @Override @Ignore @Test
+        public void shouldPerformLeftJoin() {
         }
     }
 

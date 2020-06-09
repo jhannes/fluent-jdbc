@@ -27,4 +27,7 @@ public class DatabaseColumnReference {
         return alias.getTableNameAndAlias();
     }
 
+    public String getColumnName() {
+        return columnName;
+    }
 }

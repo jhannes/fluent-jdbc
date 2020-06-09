@@ -34,16 +34,18 @@ public class DatabaseResult implements AutoCloseable {
     protected ResultSet resultSet;
     protected final Map<String, Integer> columnIndexes;
     protected final Map<String, Map<String, Integer>> tableColumnIndexes;
+    private Map<DatabaseTableAlias, Integer> keys;
 
-    public DatabaseResult(PreparedStatement statement, ResultSet resultSet, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> aliasColumnIndexes) {
+    DatabaseResult(PreparedStatement statement, ResultSet resultSet, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> aliasColumnIndexes, Map<DatabaseTableAlias, Integer> keys) {
         this.statement = statement;
         this.resultSet = resultSet;
         this.columnIndexes = columnIndexes;
         this.tableColumnIndexes = aliasColumnIndexes;
+        this.keys = keys;
     }
 
     public DatabaseResult(PreparedStatement statement, ResultSet resultSet) throws SQLException {
-        this(statement, resultSet, new HashMap<>(), new HashMap<>());
+        this(statement, resultSet, new HashMap<>(), new HashMap<>(), new HashMap<>());
         ResultSetMetaData metaData = resultSet.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             String columnName = metaData.getColumnName(i).toUpperCase();
@@ -96,7 +98,7 @@ public class DatabaseResult implements AutoCloseable {
     }
 
     public DatabaseRow row() {
-        return new DatabaseRow(this.resultSet, this.columnIndexes, this.tableColumnIndexes);
+        return new DatabaseRow(this.resultSet, this.columnIndexes, this.tableColumnIndexes, this.keys);
     }
 
     public <T> Stream<T> stream(RowMapper<T> mapper, String query) throws SQLException {

@@ -8,10 +8,10 @@ import org.slf4j.event.Level;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -171,6 +171,13 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                         row -> row.table(o).getString("name") + " " + row.table(p).getString("name"));
         assertThat(result)
                 .containsExactly("Army Alice", "Boutique Alice", "Army Bob");
+        assertThat(m.join(m.column("person_id"), p.column("id"))
+                .join(m.column("organization_id"), o.column("id"))
+                .query()
+                .whereIn(o.column("name").getQualifiedColumnName(), new ArrayList<>())
+                .list(connection,
+                        row -> row.table(o).getString("name") + " " + row.table(p).getString("name"))
+        ).isEmpty();
     }
 
     @Test

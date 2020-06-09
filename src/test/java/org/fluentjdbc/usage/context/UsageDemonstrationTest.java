@@ -14,6 +14,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -171,6 +172,36 @@ public class UsageDemonstrationTest {
                 .contains(firstProduct.getName(), secondProduct.getName())
                 .doesNotContain(thirdProduct.getName());
         assertThat(entities).extracting(o -> o.getOrder().getOrderId()).containsOnly(order.getOrderId());
+    }
+
+    @Test
+    public void shouldPerformLeftJoin() {
+        Product firstProduct = sampleProduct();
+        Product secondProduct = sampleProduct();
+        Product thirdProduct = sampleProduct();
+
+        productRepository.save(firstProduct);
+        productRepository.save(secondProduct);
+        productRepository.save(thirdProduct);
+
+        Order firstOrder = sampleOrder();
+        Order secondOrder = sampleOrder();
+        orderRepository.save(firstOrder);
+        orderRepository.save(secondOrder);
+
+        orderLineRepository.save(new OrderLine(firstOrder, firstProduct, 10));
+        orderLineRepository.save(new OrderLine(firstOrder, secondProduct, 1));
+        orderLineRepository.save(new OrderLine(secondOrder, firstProduct, 5));
+
+        Collection<ProductSales> productSales = productRepository.salesReport();
+        assertThat(productSales)
+                .filteredOn(p -> p.getProductId().equals(firstProduct.getProductId()))
+                .extracting(ProductSales::getTotalQuantity)
+                .containsExactly(10+5);
+        assertThat(productSales)
+                .filteredOn(p -> p.getProductId().equals(thirdProduct.getProductId()))
+                .extracting(ProductSales::getTotalQuantity)
+                .containsExactly(0);
     }
 
     protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {

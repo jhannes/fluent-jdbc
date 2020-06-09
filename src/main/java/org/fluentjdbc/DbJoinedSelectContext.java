@@ -20,6 +20,11 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
         return this;
     }
 
+    public DbJoinedSelectContext leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
+        builder.leftJoin(a, b);
+        return this;
+    }
+
     @Override
     public int getCount() {
         return builder.getCount(dbContext.getThreadConnection());

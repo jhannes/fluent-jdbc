@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nullable;
+import java.util.Map;
 
 public class DbTableAliasContext  {
     private final DbTableContext dbTableContext;
@@ -19,6 +20,10 @@ public class DbTableAliasContext  {
         return select().join(a, b);
     }
 
+    public DbJoinedSelectContext leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
+        return select().leftJoin(a, b);
+    }
+
     public DatabaseTableAlias getTableAlias() {
         return alias;
     }
@@ -34,4 +39,5 @@ public class DbTableAliasContext  {
     public DbContext getDbContext() {
         return dbTableContext.getDbContext();
     }
+
 }
