@@ -128,6 +128,8 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .execute(connection);
         assertThat(result).isEqualTo(DatabaseSaveResult.updated(idOnInsert, Collections.singletonList("name")));
         assertThat(result.getUpdatedFields()).isEqualTo(Collections.singletonList("name"));
+        assertThat(result.toString()).contains(result.getId().toString());
+        assertThat(result.hashCode()).isEqualTo(DatabaseSaveResult.updated(result.getId(), null).hashCode());
 
         assertThat(table.where("id", idOnInsert).singleString(connection, "name")).get()
             .isEqualTo("new name");

@@ -28,7 +28,7 @@ public class DbSyncBuilderContextTest {
     private final DbTableContext table;
 
     private static final String CREATE_TABLE =
-            "create table sync_test (id ${UUID} primary key, name varchar not null, value DECIMAL, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
+            "create table sync_test (id ${UUID} primary key, name varchar(200) not null, value DECIMAL, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
 
     public DbSyncBuilderContextTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);

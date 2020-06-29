@@ -231,9 +231,10 @@ public class DbContextTest {
 
     @Test
     public void shouldRollbackTransaction() {
-        try (DbTransaction ignored = dbContext.ensureTransaction()) {
+        try (DbTransaction tx = dbContext.ensureTransaction()) {
             tableContext.insert().setField("code", 1004).setField("name", "txTest").execute();
             tableContext.insert().setField("code", 1005).setField("name", "txTest").execute();
+            tx.setRollback();
         }
         assertThat(tableContext.where("name", "txTest").listLongs("code")).isEmpty();
     }
@@ -256,9 +257,9 @@ public class DbContextTest {
     public void shouldRollbackNestedTransaction() {
         try (DbTransaction tx = dbContext.ensureTransaction()) {
             tableContext.insert().setField("code", 1008).setField("name", "nestedTx").execute();
-            try (DbTransaction ignored = dbContext.ensureTransaction()) {
+            try (DbTransaction innerTx = dbContext.ensureTransaction()) {
                 tableContext.insert().setField("code", 1009).setField("name", "nestedTx").execute();
-                // Rollback by default
+                innerTx.setRollback();
             }
             tx.setComplete();
         }
@@ -327,10 +328,14 @@ public class DbContextTest {
                 .setField("name", "oldName")
                 .execute();
 
-        tableContext.where("id", id).update().setField("name", "New name").execute();
+        tableContext.where("id", id).update()
+                .setFields(Arrays.asList("code"), Arrays.asList(1104))
+                .setField("name", "New name").execute();
 
         assertThat(tableContext.where("id", id).singleString("name")).get()
             .isEqualTo("New name");
+        assertThat(tableContext.where("id", id).singleLong("code")).get()
+            .isEqualTo(1104L);
     }
 
     @Test
@@ -369,6 +374,7 @@ public class DbContextTest {
                 .executeDelete();
         assertThat(tableContext.unordered().listLongs("id"))
             .doesNotContain(id);
+        assertThat(tableContext.query().where("id", id).singleLong("code")).isEmpty();
     }
 
     @Test

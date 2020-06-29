@@ -167,6 +167,25 @@ public class DbContextJoinedQueryBuilderTest {
     }
 
     @Test
+    public void shouldThrowExceptionOnUnknownTable() {
+        long alice = savePerson("Alice");
+        long army = saveOrganization("Army");
+        saveMembership(alice, army);
+
+        DbTableAliasContext m = memberships.alias("m");
+        DbTableAliasContext p = persons.alias("p");
+        DbTableAliasContext o = organizations.alias("o");
+
+        DbJoinedSelectContext context = m
+                .join(m.column("person_id"), p.column("id"))
+                .join(m.column("organization_id"), o.column("id"));
+
+        assertThatThrownBy(() -> context.list((row -> row.table("non_existing"))))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("NON_EXISTING");
+    }
+
+    @Test
     public void shouldOrderAndFilter() {
         long alice = savePerson("Alice");
         long bob = savePerson("Bob");

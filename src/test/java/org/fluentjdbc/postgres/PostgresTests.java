@@ -1,5 +1,6 @@
 package org.fluentjdbc.postgres;
 
+import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.postgresql.util.PSQLException;
@@ -58,13 +59,19 @@ public class PostgresTests {
     }
 
     public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
-        public DbContextJoinedQueryBuilderTest() throws SQLException {
+        public DbContextJoinedQueryBuilderTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+    }
+
+    public static class DbSyncBuilderContextTest extends org.fluentjdbc.DbSyncBuilderContextTest {
+        public DbSyncBuilderContextTest() {
             super(getDataSource(), REPLACEMENTS);
         }
     }
 
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
-        public UsageDemonstrationTest() throws SQLException {
+        public UsageDemonstrationTest() {
             super(getDataSource(), REPLACEMENTS);
         }
     }
@@ -73,7 +80,7 @@ public class PostgresTests {
         return getDataSource().getConnection();
     }
 
-    static DataSource getDataSource() throws SQLException {
+    static DataSource getDataSource() {
         PGSimpleDataSource dataSource = new PGSimpleDataSource();
         String username = System.getProperty("test.db.postgres.username", "fluentjdbc_test");
         dataSource.setUrl(System.getProperty("test.db.postgres.url", "jdbc:postgresql:" + username));
@@ -85,7 +92,9 @@ public class PostgresTests {
             if (e.getSQLState().equals(PSQLState.CONNECTION_UNABLE_TO_CONNECT.getState())) {
                 Assume.assumeNoException(e);
             }
-            throw e;
+            throw ExceptionUtil.softenCheckedException(e);
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
         }
         return dataSource;
     }
