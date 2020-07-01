@@ -30,6 +30,8 @@ public interface DatabaseTable extends DatabaseQueriable<DatabaseSimpleQueryBuil
 
     DatabaseSaveBuilder<Long> newSaveBuilder(String idColumn, @Nullable Long idValue);
 
+    DatabaseSaveBuilder<String> newSaveBuilderWithString(String idColumn, String idValue);
+
     /**
      * Use instead of {@link #newSaveBuilder} if the database driver does not
      * support RETURN_GENERATED_KEYS

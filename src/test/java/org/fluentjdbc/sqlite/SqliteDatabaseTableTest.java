@@ -3,7 +3,6 @@ package org.fluentjdbc.sqlite;
 import org.fluentjdbc.AbstractDatabaseTest;
 import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTableImpl;
-import org.fluentjdbc.FluentJdbcAsserts;
 import org.junit.Before;
 import org.junit.Test;
 

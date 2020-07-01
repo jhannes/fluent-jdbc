@@ -68,6 +68,10 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
         return save(table.newSaveBuilder(idColumn, idValue));
     }
 
+    public DbSaveBuilderContext<String> newSaveBuilderWithString(String idColumn, String idValue) {
+        return save(table.newSaveBuilderWithString(idColumn, idValue));
+    }
+
     public DbSaveBuilderContext<UUID> newSaveBuilderWithUUID(String field, UUID uuid) {
         return save(table.newSaveBuilderWithUUID(field, uuid));
     }

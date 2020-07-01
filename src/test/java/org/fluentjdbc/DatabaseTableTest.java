@@ -200,7 +200,6 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong(connection, "code"))
                 .isInstanceOf(IllegalStateException.class);
-
     }
 
 }

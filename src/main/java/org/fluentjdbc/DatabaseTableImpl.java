@@ -42,8 +42,13 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
+    public DatabaseSaveBuilder<String> newSaveBuilderWithString(String idField, String id) {
+        return new DatabaseSaveBuilderWithoutGeneratedKeys<>(this, idField, id);
+    }
+
+    @Override
     public DatabaseSaveBuilder<Long> newSaveBuilderNoGeneratedKeys(String idField, @Nullable Long id) {
-        return new DatabaseSaveBuilderWithoutGeneratedKeys(this, idField, id);
+        return new DatabaseSaveBuilderWithoutGeneratedKeys<>(this, idField, id);
     }
 
     @Override

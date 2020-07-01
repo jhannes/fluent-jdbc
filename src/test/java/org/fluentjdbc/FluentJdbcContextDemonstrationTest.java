@@ -16,11 +16,13 @@ import java.util.Map;
 import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class FluentJdbcContextDemonstrationTest {
 
     private final DbContext dbContext;
     private final DbTableContext tableContext;
+    private final DbTableContext tableWithStringKeyContext;
     private final Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
     private final DataSource dataSource;
 
@@ -30,6 +32,7 @@ public class FluentJdbcContextDemonstrationTest {
         dataSource = H2TestDatabase.createDataSource();
         this.dbContext = new DbContext();
         this.tableContext = dbContext.tableWithTimestamps("demo_table");
+        this.tableWithStringKeyContext = dbContext.tableWithTimestamps("demo_string_table");
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
@@ -48,8 +51,10 @@ public class FluentJdbcContextDemonstrationTest {
     public void createTable() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             dropTableIfExists(connection, "demo_table");
+            dropTableIfExists(connection, "demo_string_table");
             try(Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate(preprocessCreateTable("create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
+                stmt.executeUpdate(preprocessCreateTable("create table demo_string_table (id varchar(200) not null primary key, value integer not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
             }
         }
 
@@ -92,6 +97,40 @@ public class FluentJdbcContextDemonstrationTest {
 
         assertThat(tableContext.where("id", id).singleString("name")).get().isEqualTo(updatedName);
         assertThat(tableContext.where("id", id).singleLong("code")).get().isEqualTo(543L);
+    }
+
+    @Test
+    public void shouldInsertWithStringPrimaryKey() {
+        tableWithStringKeyContext.newSaveBuilderWithString("id", "abc")
+                .setField("value", 1234L)
+                .execute();
+
+        assertThat(tableWithStringKeyContext.where("id", "abc").listLongs("value"))
+                .containsOnly(1234L);
+    }
+
+    @Test
+    public void shouldUpdateWithStringPrimaryKey() {
+        tableWithStringKeyContext.newSaveBuilderWithString("id", "pqr")
+                .setField("value", 1234L)
+                .execute();
+        tableWithStringKeyContext.newSaveBuilderWithString("id", "pqr")
+                .setField("value", 9999L)
+                .execute();
+
+        assertThat(tableWithStringKeyContext.where("id", "pqr").listLongs("value"))
+                .containsOnly(9999L);
+    }
+
+    @Test
+    public void shouldRejectSaveWithStringPrimaryKeyNull() {
+        String id = null;
+        DbSaveBuilderContext<String> builder = tableWithStringKeyContext
+                .newSaveBuilderWithString("id", id)
+                .setField("value", 1234L);
+        assertThatThrownBy(builder::execute)
+            .isInstanceOf(SQLException.class)
+            .hasMessageContaining("NULL").hasMessageContaining("ID");
     }
 
     @Test
