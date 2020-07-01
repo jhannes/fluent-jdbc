@@ -5,16 +5,17 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 public class DatabaseInsertWithPkBuilder<T> extends DatabaseStatement {
 
     private DatabaseInsertBuilder insertBuilder;
+    private String idField;
     private T idValue;
 
-    public DatabaseInsertWithPkBuilder(DatabaseInsertBuilder insertBuilder, T idValue) {
+    public DatabaseInsertWithPkBuilder(DatabaseInsertBuilder insertBuilder, String idField, T idValue) {
         this.insertBuilder = insertBuilder;
+        this.idField = idField;
         this.idValue = idValue;
     }
 
@@ -58,7 +59,7 @@ public class DatabaseInsertWithPkBuilder<T> extends DatabaseStatement {
         long startTime = System.currentTimeMillis();
         String query = createInsertStatement();
         logger.trace(query);
-        try (PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+        try (PreparedStatement stmt = connection.prepareStatement(query, new String[] { idField })) {
             bindParameters(stmt, insertBuilder.getParameters());
             stmt.executeUpdate();
             return getGeneratedKey(stmt);

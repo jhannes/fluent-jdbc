@@ -67,7 +67,7 @@ class DatabaseStatement {
             return Timestamp.from(Instant.from((OffsetDateTime)parameter));
         } else if (parameter instanceof LocalDate) {
             return Date.valueOf((LocalDate)parameter);
-        } else if (parameter instanceof UUID && isSqlServer(connection)) {
+        } else if (parameter instanceof UUID && (isSqlServer(connection) || isOracle(connection))) {
             return parameter.toString().toUpperCase();
         } else if (parameter instanceof Double) {
             return BigDecimal.valueOf(((Number) parameter).doubleValue());
@@ -93,6 +93,10 @@ class DatabaseStatement {
     private static boolean isSqlServer(Connection connection) {
         return connection.getClass().getName().startsWith("net.sourceforge.jtds.jdbc") ||
                 connection.getClass().getName().startsWith("com.microsoft.sqlserver.jdbc");
+    }
+
+    private static boolean isOracle(Connection connection) {
+        return connection.getClass().getName().startsWith("oracle.jdbc");
     }
 
     protected int executeUpdate(String query, List<Object> parameters, Connection connection) {

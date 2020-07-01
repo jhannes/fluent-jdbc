@@ -86,6 +86,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc10</artifactId>
+            <version>19.7.0.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.logevents</groupId>
             <artifactId>logevents</artifactId>
             <version>0.1.26</version>

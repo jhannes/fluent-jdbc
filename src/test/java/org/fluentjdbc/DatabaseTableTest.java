@@ -36,7 +36,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     public void createTable() throws SQLException {
         dropTableIfExists(connection, "database_table_test_table");
         try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, comment varchar(100) null)"));
+            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, description varchar(100) null)"));
         }
     }
 
@@ -139,18 +139,18 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .setPrimaryKey("id", null)
                 .setField("code", 1004)
                 .setField("name", "oldName")
-                .setField("comment", "oldComment")
+                .setField("description", "oldComment")
                 .execute(connection);
 
         table.where("id", id).update().setFieldIfPresent("name", null).execute(connection);
 
         table.where("id", id).update()
                 .setFieldIfPresent("name", null)
-                .setFieldIfPresent("comment", "newComment")
+                .setFieldIfPresent("description", "newComment")
                 .execute(connection);
 
         assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo("oldName");
-        assertThat(table.where("id", id).singleString(connection, "comment")).get().isEqualTo("newComment");
+        assertThat(table.where("id", id).singleString(connection, "description")).get().isEqualTo("newComment");
     }
 
 

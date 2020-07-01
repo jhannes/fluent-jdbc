@@ -13,6 +13,7 @@ import java.util.Map;
 public class JtdsSqlServerTests {
 
     private static final Map<String, String> REPLACEMENTS = new HashMap<>();
+
     static {
         REPLACEMENTS.put("UUID", "uniqueidentifier");
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
@@ -91,7 +92,10 @@ public class JtdsSqlServerTests {
         }
     }
 
+    private static boolean databaseFailed;
+
     static Connection getConnection() throws SQLException {
+        Assume.assumeFalse(databaseFailed);
         String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
         String password = System.getProperty("test.db.sqlserver.password", username);
         String url = System.getProperty("test.db.sqlserver.url",
@@ -101,7 +105,8 @@ public class JtdsSqlServerTests {
             return DriverManager.getConnection(url, username, password);
         } catch (SQLException e) {
             if (e.getSQLState().equals("08S03")) {
-                Assume.assumeNoException(e);
+                databaseFailed = true;
+                Assume.assumeFalse("Database is unavailable", databaseFailed);
             }
             throw e;
         }

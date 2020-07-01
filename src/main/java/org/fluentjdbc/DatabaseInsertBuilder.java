@@ -50,7 +50,7 @@ public class DatabaseInsertBuilder extends DatabaseStatement implements Database
         if (idValue != null) {
             setField(idField, idValue);
         }
-        return new DatabaseInsertWithPkBuilder<>(this, idValue);
+        return new DatabaseInsertWithPkBuilder<>(this, idField, idValue);
     }
 
 }

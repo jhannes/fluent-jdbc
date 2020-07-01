@@ -60,7 +60,7 @@ public class DatabaseSaveResult<T> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "{idValue=" + idValue + ", saveStatus=" + saveStatus + '}';
+        return getClass().getSimpleName() + "{idValue=" + idValue + ", saveStatus=" + saveStatus + ", updatedFields=" + updatedFields + '}';
     }
 
     public enum SaveStatus {
