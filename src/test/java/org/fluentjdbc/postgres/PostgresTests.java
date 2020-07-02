@@ -2,7 +2,7 @@ package org.fluentjdbc.postgres;
 
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
-import org.postgresql.ds.PGSimpleDataSource;
+import org.postgresql.ds.PGPoolingDataSource;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
@@ -80,8 +80,16 @@ public class PostgresTests {
         return getDataSource().getConnection();
     }
 
+    private static boolean databaseFailed = false;
+
+    private static PGPoolingDataSource dataSource;
+
     static DataSource getDataSource() {
-        PGSimpleDataSource dataSource = new PGSimpleDataSource();
+        Assume.assumeFalse(databaseFailed);
+        if (dataSource != null) {
+            return dataSource;
+        }
+        dataSource = new PGPoolingDataSource();
         String username = System.getProperty("test.db.postgres.username", "fluentjdbc_test");
         dataSource.setUrl(System.getProperty("test.db.postgres.url", "jdbc:postgresql:" + username));
         dataSource.setUser(username);
@@ -90,6 +98,7 @@ public class PostgresTests {
             dataSource.getConnection().close();
         } catch (PSQLException e) {
             if (e.getSQLState().equals(PSQLState.CONNECTION_UNABLE_TO_CONNECT.getState())) {
+                databaseFailed = true;
                 Assume.assumeNoException(e);
             }
             throw ExceptionUtil.softenCheckedException(e);

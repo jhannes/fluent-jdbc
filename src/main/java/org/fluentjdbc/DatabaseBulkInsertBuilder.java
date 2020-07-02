@@ -43,7 +43,7 @@ public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement implements D
         }
     }
 
-    public DatabaseBulkInsertBuilderWithPk<T> generatePrimaryKeys(BiConsumer<T, Long> consumer) {
-        return new DatabaseBulkInsertBuilderWithPk<>(objects, table, updateFields, updateParameters, consumer);
+    public DatabaseBulkInsertBuilderWithPk<T> generatePrimaryKeys(String primaryKeyColumn, BiConsumer<T, Long> consumer) {
+        return new DatabaseBulkInsertBuilderWithPk<>(objects, table, updateFields, updateParameters, primaryKeyColumn, consumer);
     }
 }

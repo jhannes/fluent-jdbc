@@ -84,13 +84,13 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         List<String> difference = new ArrayList<>();
         for (int i = 0; i < fields.size(); i++) {
             String field = fields.get(i);
-            if (!dbValuesAreEqual(values.get(i), row.getObject(field), connection)) {
+            if (!dbValuesAreEqual(values.get(i), row, field, connection)) {
                 difference.add(field);
             }
         }
         for (int i = 0; i < uniqueKeyFields.size(); i++) {
             String field = uniqueKeyFields.get(i);
-            if (!dbValuesAreEqual(uniqueKeyValues.get(i), row.getObject(field), connection)) {
+            if (!dbValuesAreEqual(uniqueKeyValues.get(i), row, field, connection)) {
                 difference.add(field);
             }
         }

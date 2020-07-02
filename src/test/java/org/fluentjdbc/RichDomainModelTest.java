@@ -5,6 +5,7 @@ import org.fluentjdbc.demo.EntryAggregate;
 import org.fluentjdbc.demo.Tag;
 import org.fluentjdbc.demo.TagType;
 import org.fluentjdbc.h2.H2TestDatabase;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,6 +27,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
     public Connection connection;
     private Random random = new Random();
+    private boolean databaseSupportsResultsetMetadataTableName = true;
 
     public RichDomainModelTest() throws SQLException {
         this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
@@ -98,9 +100,15 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
             .contains(sizeTagType.getId());
     }
 
+    protected void databaseDoesNotSupportResultsetMetadataTableName() {
+        databaseSupportsResultsetMetadataTableName = false;
+    }
 
     @Test
     public void shouldGroupEntriesByTagTypes() throws SQLException {
+        Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
+                databaseSupportsResultsetMetadataTableName);
+
         TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
 

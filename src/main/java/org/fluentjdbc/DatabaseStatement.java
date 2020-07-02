@@ -138,7 +138,16 @@ class DatabaseStatement {
         return parameterString.toString();
     }
 
-    protected boolean dbValuesAreEqual(Object a, Object b, Connection connection) {
-        return Objects.equals(toDatabaseType(a, connection), toDatabaseType(b, connection));
+    protected boolean dbValuesAreEqual(Object value, DatabaseRow row, String field, Connection connection) throws SQLException {
+        Object canonicalValue = toDatabaseType(value, connection);
+        Object dbValue;
+        if (canonicalValue instanceof Timestamp) {
+            dbValue = row.getTimestamp(field);
+        } else if (canonicalValue instanceof Integer) {
+            dbValue = row.getInt(field);
+        } else {
+            dbValue = row.getObject(field);
+        }
+        return Objects.equals(canonicalValue, toDatabaseType(dbValue, connection));
     }
 }

@@ -32,12 +32,7 @@ public class SqlServerTests {
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
         public RichDomainModelTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
-        }
-
-        @Override
-        @Ignore
-        public void shouldGroupEntriesByTagTypes() {
-            // Ignore - relies on ResultTypeMetadata.getTableName, which is not supported
+            databaseDoesNotSupportResultsetMetadataTableName();
         }
 
         @Override
@@ -95,14 +90,7 @@ public class SqlServerTests {
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
         public UsageDemonstrationTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
-        }
-
-        @Override @Ignore @Test
-        public void shouldJoinTables() {
-        }
-
-        @Override @Ignore @Test
-        public void shouldPerformLeftJoin() {
+            databaseDoesNotSupportResultsetMetadataTableName();
         }
     }
 
@@ -112,9 +100,14 @@ public class SqlServerTests {
 
     private static boolean databaseFailed = false;
 
-    static DataSource getDataSource() throws SQLException {
+    private static SQLServerDataSource dataSource;
+
+    static synchronized DataSource getDataSource() throws SQLException {
         Assume.assumeFalse(databaseFailed);
-        SQLServerDataSource dataSource = new SQLServerDataSource();
+        if (dataSource != null) {
+            return dataSource;
+        }
+        dataSource = new SQLServerDataSource();
         String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
         dataSource.setURL(System.getProperty("test.db.sqlserver.url", "jdbc:sqlserver://localhost:1433;databaseName=" + username));
         dataSource.setUser(username);

@@ -62,7 +62,7 @@ public class TagType {
     public static void saveAll(List<TagType> tagTypes, Connection connection) {
         TagType.tagTypesTable.bulkInsert(tagTypes)
             .setField("name", TagType::getName)
-            .generatePrimaryKeys(TagType::setId)
+            .generatePrimaryKeys("id", TagType::setId)
             .execute(connection);
     }
 

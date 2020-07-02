@@ -28,7 +28,7 @@ public class DbSyncBuilderContextTest {
     private final DbTableContext table;
 
     private static final String CREATE_TABLE =
-            "create table sync_test (id ${UUID} primary key, name varchar(200) not null, value DECIMAL, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
+            "create table sync_test (id ${UUID} primary key, name varchar(200) not null, value DECIMAL(20,2), updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
 
     public DbSyncBuilderContextTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -62,11 +62,11 @@ public class DbSyncBuilderContextTest {
 
         sync(Collections.singletonList(object));
 
-        object.put("value", BigDecimal.valueOf(2.5));
+        object.put("value", BigDecimal.valueOf(2.25));
         sync(Collections.singletonList(object));
 
         assertThat(table.where("id", object.get("id")).singleObject(row -> row.getBigDecimal("value")))
-                .get().isEqualTo(BigDecimal.valueOf(2.5));
+                .get().isEqualTo(BigDecimal.valueOf(2.25));
     }
 
     @Test

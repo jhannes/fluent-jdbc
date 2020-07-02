@@ -1,5 +1,6 @@
 package org.fluentjdbc.oracle;
 
+import oracle.jdbc.pool.OracleConnectionPoolDataSource;
 import oracle.jdbc.pool.OracleDataSource;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.util.ExceptionUtil;
@@ -14,6 +15,15 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Not supported:
+ *
+ * <ul>
+ *     <li>DataRow.table() due to missing support for ResultTypeMetadata.getTableName</li>
+ *     <li>SaveBuilder may give wrong status due to unusual return values from ResultSet.getObject</li>
+ *     <li>DbSyncBuilderContext gives wrong status due to unusual return values from ResultSet.getObject</li>
+ * </ul>
+ */
 public class OracleTests {
 
     private static final Map<String, String> REPLACEMENTS = new HashMap<>();
@@ -28,33 +38,12 @@ public class OracleTests {
         public DatabaseSaveBuilderTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
         }
-
-        @Override
-        public void shouldUpdateRowOnKey() throws SQLException {
-            // Oracle uses BigDecimal for integer columns which messes with the comparison
-        }
-
-        @Override
-        public void shouldNotUpdateUnchangedRow() throws SQLException {
-            // ORACLE IMPLEMENTS CUSTOM TIMESTAMP CLASS WHICH MESSES WITH COMPARISON
-        }
     }
 
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
         public RichDomainModelTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
-        }
-
-        @Override
-        @Ignore
-        public void shouldGroupEntriesByTagTypes() {
-            // Ignore - relies on ResultTypeMetadata.getTableName, which is not supported
-        }
-
-        @Override
-        @Ignore
-        public void shouldBulkInsert() {
-            // Ignore - relies on the combination of addBatch and RETURN_GENERATED_KEYS
+            databaseDoesNotSupportResultsetMetadataTableName();
         }
     }
 
@@ -67,11 +56,6 @@ public class OracleTests {
     public static class DatabaseTableTest extends org.fluentjdbc.DatabaseTableTest {
         public DatabaseTableTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
-        }
-
-        @Override
-        public void shouldUpdateIfPresent() throws SQLException {
-            // Unknown problem (ORA-01747: invalid user.table.column, table.colum or column specification)
         }
     }
 
@@ -99,29 +83,17 @@ public class OracleTests {
         public DbSyncBuilderContextTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
         }
-
-        @Override
-        public void shouldUpdateBigDecimal() {
-            // Oracle treats DECIMAL columns as integers, rounding values
-        }
     }
 
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
         public UsageDemonstrationTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
-        }
-
-        @Override @Ignore @Test
-        public void shouldJoinTables() {
-        }
-
-        @Override @Ignore @Test
-        public void shouldPerformLeftJoin() {
+            databaseDoesNotSupportResultsetMetadataTableName();
         }
 
         @Override
         protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {
-            // SQL Lite doesn't convert Timestamps correctly and so doesn't match the existing rows
+            // Oracle doesn't convert Timestamps and integers correctly and so doesn't match the existing rows
         }
     }
 
@@ -131,9 +103,14 @@ public class OracleTests {
 
     private static boolean databaseFailed = false;
 
-    static DataSource getDataSource() throws SQLException {
+    private static OracleDataSource dataSource;
+
+    static synchronized DataSource getDataSource() throws SQLException {
         Assume.assumeFalse(databaseFailed);
-        OracleDataSource dataSource = new OracleDataSource();
+        if (dataSource != null) {
+            return dataSource;
+        }
+        dataSource = new OracleConnectionPoolDataSource();
         String username = System.getProperty("test.db.oracle.username", "fluentjdbc_test");
         dataSource.setURL(System.getProperty("test.db.postgres.url", "jdbc:oracle:thin:@localhost:1521:xe"));
         dataSource.setUser(username);

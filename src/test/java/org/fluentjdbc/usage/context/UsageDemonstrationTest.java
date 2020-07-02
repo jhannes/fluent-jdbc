@@ -4,6 +4,7 @@ import org.fluentjdbc.AbstractDatabaseTest;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,6 +36,7 @@ public class UsageDemonstrationTest {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderLineRepository orderLineRepository;
+    private boolean databaseSupportsResultsetMetadataTableName = true;
 
     public UsageDemonstrationTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -46,6 +48,10 @@ public class UsageDemonstrationTest {
         this.productRepository = new ProductRepository(dbContext);
         this.orderRepository = new OrderRepository(dbContext);
         this.orderLineRepository = new OrderLineRepository(dbContext);
+    }
+
+    protected void databaseDoesNotSupportResultsetMetadataTableName() {
+        databaseSupportsResultsetMetadataTableName = false;
     }
 
     @Before
@@ -145,6 +151,9 @@ public class UsageDemonstrationTest {
 
     @Test
     public void shouldJoinTables() {
+        Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
+                databaseSupportsResultsetMetadataTableName);
+
         Product firstProduct = sampleProduct();
         Product secondProduct = sampleProduct();
         Product thirdProduct = sampleProduct();
@@ -177,6 +186,9 @@ public class UsageDemonstrationTest {
 
     @Test
     public void shouldPerformLeftJoin() {
+        Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
+                databaseSupportsResultsetMetadataTableName);
+
         Product firstProduct = sampleProduct();
         Product secondProduct = sampleProduct();
         Product thirdProduct = sampleProduct();

@@ -30,13 +30,7 @@ public class JtdsSqlServerTests {
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
         public RichDomainModelTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
-        }
-
-        @Override
-        @Ignore
-        public void shouldGroupEntriesByTagTypes() {
-            //super.shouldGroupEntriesByTagTypes();
-            // Ignore - relies on ResultTypeMetadata.getTableName, which is not supported
+            databaseDoesNotSupportResultsetMetadataTableName();
         }
 
         @Override
