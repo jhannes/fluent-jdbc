@@ -9,15 +9,21 @@ Motivating code example:
 
 ```java
 
-DatabaseTable table = new DatabaseTableImpl("database_table_test_table");
-Object id = table.insert()
-    .setPrimaryKey("id", null)
-    .setField("code", 1002)
-    .setField("name", "insertTest")
-    .execute(connection);
+DbContext context = new DbContext();
 
-assertThat(table.where("name", "insertTest").orderBy("code").listLongs(connection, "code"))
-    .contains(1002L);
+DbTableContext table = context.table("database_test_table");
+DataSource dataSource = createDataSource();
+
+try (DbContextConnection ignored = context.startConnection(dataSource)) {
+    Object id = table.insert()
+        .setPrimaryKey("id", null)
+        .setField("code", 1002)
+        .setField("name", "insertTest")
+        .execute();
+
+    assertThat(table.where("name", "insertTest").orderBy("code").listLongs("code"))
+        .contains(1002L);
+}
 
 ```
 
