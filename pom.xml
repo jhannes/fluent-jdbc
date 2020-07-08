@@ -190,7 +190,7 @@
                 <version>2.5.3</version>
                 <configuration>
                     <releaseProfiles>release</releaseProfiles>
-                    <preparationGoals>javadoc:javadoc</preparationGoals>
+                    <preparationGoals>install javadoc:javadoc</preparationGoals>
                 </configuration>
             </plugin>
             <plugin>

@@ -1,14 +1,14 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jhannes/fluent-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jhannes/fluent-jdbc)
 [![Build Status](https://travis-ci.org/jhannes/fluent-jdbc.png)](https://travis-ci.org/jhannes/fluent-jdbc)
+[![Javadoc](https://img.shields.io/badge/javadoc-fluent--jdbc-blue)](https://jhannes.github.io/fluent-jdbc/apidocs/)
 [![Coverage Status](https://coveralls.io/repos/github/jhannes/fluent-jdbc/badge.svg?branch=master)](https://coveralls.io/github/jhannes/fluent-jdbc?branch=master)
 
 # fluent-jdbc
 Java database code without ORM in a pleasant and fluent style
 
-Motivating code example:
+Motivating code example, using [DbContext](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContext.html):
 
 ```java
-
 DbContext context = new DbContext();
 
 DbTableContext table = context.table("database_test_table");
@@ -27,6 +27,12 @@ try (DbContextConnection ignored = context.startConnection(dataSource)) {
 
 ```
 
+There are two ways of using fluent-jdbc: Either you pass around Connection-objects to execute and query methods
+on [DatabaseTable](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DatabaseTable.html),
+or you use [DbContext](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContext.html) to bind a connection
+to the thread. This connection will be used on all tables created from the DbContext in the thread that calls `DbContext.startConnection`.
+
+
 ## Central classes
 
 ![Class diagram](doc/classes.png)
@@ -34,7 +40,9 @@ try (DbContextConnection ignored = context.startConnection(dataSource)) {
 
 ## Full usage example
 
-[From UsageDemonstrationTest](https://github.com/jhannes/fluent-jdbc/blob/master/src/test/java/org/fluentjdbc/usage/context/UsageDemonstrationTest.java):
+This example shows how to create domain specific abstractions on top of fluent-jdbc. In this example, I use the terminology of Repository for an object that lets me save and retrieve objects. You are free to call this e.g. DAO if you prefer.
+
+[From UsageDemonstrationTest](https://github.com/jhannes/fluent-jdbc/blob/master/src/test/java/org/fluentjdbc/usage/context/):
 
 ```java
 public class UsageDemonstrationTest {
@@ -94,7 +102,7 @@ public class OrderRepository implements Repository<Order, UUID> {
 
     public class Query implements Repository.Query<Order> {
 
-        private DbSelectContext context;
+        private final DbSelectContext context;
 
         public Query(DbSelectContext context) {
             this.context = context;
@@ -109,7 +117,7 @@ public class OrderRepository implements Repository<Order, UUID> {
             return query(context.where("customer_email", customerEmail));
         }
 
-        private Query query(DbSelectContext contex) {
+        private Query query(DbSelectContext context) {
             return this;
         }
     }
