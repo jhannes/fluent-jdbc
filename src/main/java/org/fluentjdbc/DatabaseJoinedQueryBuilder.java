@@ -29,11 +29,19 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         this.table = table;
     }
 
+    /**
+     * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
+     * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
+     */
     @Override
     public DatabaseJoinedQueryBuilder unordered() {
         return this;
     }
 
+    /**
+     * Adds an <code>order by</code> clause to the query. Needed in order to list results
+     * in a predictable order.
+     */
     public DatabaseJoinedQueryBuilder orderBy(DatabaseColumnReference column) {
         return orderBy(column.getQualifiedColumnName());
     }
@@ -135,27 +143,49 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return this;
     }
 
-    protected String fromClause() {
-        return " from " + table.getTableNameAndAlias() + " " +
-                joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
-    }
-
+    /**
+     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * if more than one is returned, throws `IllegalStateException`
+     *
+     * @param connection Database connection
+     * @param mapper Function object to map a single returned row to a object
+     * @return the mapped row if one row is returned, Optional.empty otherwise
+     * @throws IllegalStateException if more than one row was matched the the query
+     */
     @Nonnull
     @Override
     public <T> Optional<T> singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
         return query(connection, result -> result.single(mapper));
     }
 
+    /**
+     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a stream. Example:
+     * <pre>
+     *     table.where("status", status).stream(connection, row -> row.table(joinedTable).getInstant("created_at"))
+     * </pre>
+     */
     @Override
     public <T> Stream<T> stream(Connection connection, DatabaseTable.RowMapper<T> mapper) {
         return list(connection, mapper).stream();
     }
 
+    /**
+     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a list. Example:
+     * <pre>
+     *     List&lt;Instant&gt; creationTimes = table.where("status", status)
+     *          .list(connection, row -> row.table(joinedTable).getInstant("created_at"))
+     * </pre>
+     */
     @Override
     public <T> List<T> list(Connection connection, DatabaseTable.RowMapper<T> mapper) {
         return query(connection, result -> result.list(mapper));
     }
 
+    /**
+     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
+     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     */
+    @Override
     public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
         query(connection, result -> {
             result.forEach(consumer);
@@ -163,22 +193,9 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         });
     }
 
-    private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = createResult(stmt)) {
-                return resultMapper.apply(result);
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
-        }
-    }
-
+    /**
+     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
+     */
     @Override
     public int getCount(Connection connection) {
         long startTime = System.currentTimeMillis();
@@ -250,8 +267,29 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
     }
 
+    protected String fromClause() {
+        return " from " + table.getTableNameAndAlias() + " " +
+                joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
+    }
+
     private String whereClause() {
         return conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions);
+    }
+
+    private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
+        long startTime = System.currentTimeMillis();
+        String query = createSelectStatement();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
+            bindParameters(stmt, parameters);
+            try (DatabaseResult result = createResult(stmt)) {
+                return resultMapper.apply(result);
+            }
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+        }
     }
 
     private static class JoinedTable {

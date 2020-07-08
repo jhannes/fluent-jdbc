@@ -33,6 +33,10 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
         this.tableName = tableName;
     }
 
+    /**
+     * Add the expressions to the <code>WHERE .... AND ...</code> clause and the where parameters
+     * to the parameterlist for the WHERE-clause
+     */
     DatabaseUpdateBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
         this.whereConditions.addAll(whereConditions);
         this.whereParameters.addAll(whereParameters);

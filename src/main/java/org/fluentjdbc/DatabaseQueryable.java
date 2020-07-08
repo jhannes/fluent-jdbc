@@ -59,5 +59,8 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
         return whereExpression(fieldName + " = ?", value);
     }
 
+    /**
+     * Returns or creates a query object to be used to add {@link #where(String, Object)} statements and operations
+     */
     T query();
 }

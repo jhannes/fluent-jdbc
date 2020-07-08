@@ -160,11 +160,37 @@ public class DatabaseTableImpl implements DatabaseTable {
         return new DatabaseInsertBuilder(tableName);
     }
 
+    /**
+     * Creates a {@link DatabaseBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void saveAll(List&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkInsert(tagTypes)
+     *             .setField("name", TagType::getName)
+     *             .generatePrimaryKeys("id", TagType::setId)
+     *             .execute(connection);
+     *     }
+     * </pre>
+     */
     @Override
     public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects) {
         return new DatabaseBulkInsertBuilder<>(this, objects);
     }
 
+    /**
+     * Creates a {@link DatabaseBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void saveAll(Stream&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkInsert(tagTypes)
+     *             .setField("name", TagType::getName)
+     *             .generatePrimaryKeys("id", TagType::setId)
+     *             .execute(connection);
+     *     }
+     * </pre>
+     */
     @Override
     public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects) {
         return bulkInsert(objects.collect(Collectors.toList()));
@@ -176,7 +202,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(List<T> objects) {
+    public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects) {
         return new DatabaseBulkUpdateBuilder<>(this, objects);
     }
 

@@ -27,21 +27,48 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
         return this;
     }
 
+    /**
+     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
+     */
     @Override
     public int getCount() {
         return builder.getCount(getConnection());
     }
 
+    /**
+     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a stream. Example:
+     *
+     * <pre>
+     *     t.join(t.column("id"), o.column("parent_id"))
+     *          .where("status", status)
+     *          .stream(row -> row.table(joinedTable).getInstant("created_at"))
+     * </pre>
+     */
     @Override
     public <OBJECT> Stream<OBJECT> stream(DatabaseTable.RowMapper<OBJECT> mapper) {
         return builder.stream(getConnection(), mapper);
     }
 
+    /**
+     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a list. Example:
+     *
+     * <pre>
+     *     DbTableAliasContext t = table.alias("t");
+     *     DbTableAliasContext o = otherTable.alias("o");
+     *     List&lt;Instant&gt; creationTimes = t.join(t.column("id"), o.column("parent_id"))
+     *          .where(t.column("name"), name)
+     *          .list(row -> row.table(o).getInstant("created_at"));
+     * </pre>
+     */
     @Override
     public <OBJECT> List<OBJECT> list(DatabaseTable.RowMapper<OBJECT> mapper) {
         return builder.list(getConnection(), mapper);
     }
 
+    /**
+     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
+     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     */
     @Override
     public void forEach(DatabaseTable.RowConsumer consumer) {
         builder.forEach(getConnection(), consumer);
@@ -104,27 +131,50 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
         return this;
     }
 
+    /**
+     * Returns or creates a query object to be used to add {@link #where(String, Object)} statements and operations
+     */
     @Override
     public DbJoinedSelectContext query() {
         return this;
     }
 
+    /**
+     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * if more than one is returned, throws `IllegalStateException`
+     *
+     * @param mapper Function object to map a single returned row to a object
+     * @return the mapped row if one row is returned, Optional.empty otherwise
+     * @throws IllegalStateException if more than one row was matched the the query
+     */
     @Override
     @Nonnull
     public <OBJECT> Optional<OBJECT> singleObject(DatabaseTable.RowMapper<OBJECT> mapper) {
         return builder.singleObject(getConnection(), mapper);
     }
 
+    /**
+     * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
+     * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
+     */
     public DbJoinedSelectContext unordered() {
         builder.unordered();
         return this;
     }
 
+    /**
+     * Adds an <code>order by</code> clause to the query. Needed in order to list results
+     * in a predictable order.
+     */
     public DbJoinedSelectContext orderBy(String orderByClause) {
         builder.orderBy(orderByClause);
         return this;
     }
 
+    /**
+     * Adds an <code>order by</code> clause to the query. Needed in order to list results
+     * in a predictable order.
+     */
     public DbJoinedSelectContext orderBy(DatabaseColumnReference column) {
         return orderBy(column.getQualifiedColumnName());
     }

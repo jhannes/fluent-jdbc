@@ -94,17 +94,45 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuil
      */
     DatabaseUpdateBuilder update();
 
+    /**
+     * Executes <code>DELETE FROM tableName</code>
+     */
+    DatabaseDeleteBuilder delete();
+
+    /**
+     * Creates a {@link DatabaseBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void saveAll(List&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkInsert(tagTypes)
+     *             .setField("name", TagType::getName)
+     *             .generatePrimaryKeys("id", TagType::setId)
+     *             .execute(connection);
+     *     }
+     * </pre>
+     *
+     */
     <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects);
 
+    /**
+     * Creates a {@link DatabaseBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void saveAll(Stream&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkInsert(tagTypes)
+     *             .setField("name", TagType::getName)
+     *             .generatePrimaryKeys("id", TagType::setId)
+     *             .execute(connection);
+     *     }
+     * </pre>
+     *
+     */
     <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects);
 
     <T> DatabaseBulkDeleteBuilder<T> bulkDelete(Iterable<T> objects);
 
-    <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(List<T> objects);
-
-    /**
-     * Executes <code>DELETE FROM tableName WHERE ....</code>
-     */
-    DatabaseDeleteBuilder delete();
+    <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects);
 
 }

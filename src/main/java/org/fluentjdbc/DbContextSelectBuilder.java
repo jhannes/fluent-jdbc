@@ -127,32 +127,65 @@ public class DbContextSelectBuilder implements DbListableSelectContext<DbContext
         return queryBuilder.delete(getConnection());
     }
 
+    /**
+     * Execute the query and map each return value over the {@link RowMapper} function to return a stream. Example:
+     * <pre>
+     *     table.where("status", status).stream(row -> row.getInstant("created_at"))
+     * </pre>
+     */
     public <T> Stream<T> stream(RowMapper<T> mapper) {
         return queryBuilder.stream(getConnection(), mapper);
     }
 
+    /**
+     * Execute the query and map each return value over the {@link RowMapper} function to return a list. Example:
+     * <pre>
+     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -> row.getInstant("created_at"))
+     * </pre>
+     */
     @Override
     public <T> List<T> list(RowMapper<T> mapper) {
         return queryBuilder.list(getConnection(), mapper);
     }
 
+    /**
+     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
+     */
     @Override
     public int getCount() {
         return queryBuilder.getCount(getConnection());
     }
 
+    /**
+     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * if more than one is returned, throws `IllegalStateException`
+     *
+     * @param mapper Function object to map a single returned row to a object
+     * @return the mapped row if one row is returned, Optional.empty otherwise
+     * @throws IllegalStateException if more than one row was matched the the query
+     */
     @Nonnull
     @Override
     public <T> Optional<T> singleObject(RowMapper<T> mapper) {
         return queryBuilder.singleObject(getConnection(), mapper);
     }
 
+    /**
+     * Returns a string from the specified column name
+     *
+     * @return the mapped row if one row is returned, Optional.empty otherwise
+     * @throws IllegalStateException if more than one row was matched the the query
+     */
     @Nonnull
     @Override
     public Optional<String> singleString(String fieldName) {
         return queryBuilder.singleString(getConnection(), fieldName);
     }
 
+    /**
+     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
+     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     */
     @Override
     public void forEach(DatabaseTable.RowConsumer row) {
         queryBuilder.forEach(getConnection(), row);

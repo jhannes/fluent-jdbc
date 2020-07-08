@@ -27,6 +27,19 @@ public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
             .setField("created_at", now);
     }
 
+    /**
+     * Creates a {@link DatabaseBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * for a list of objects and automatically add <code>created_at</code> and <code>updated_at</code> values. Example:
+     *
+     * <pre>
+     *     public void saveAll(List&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkInsert(tagTypes)
+     *             .setField("name", TagType::getName)
+     *             .generatePrimaryKeys("id", TagType::setId)
+     *             .execute(connection);
+     *     }
+     * </pre>
+     */
     @Override
     public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects) {
         return super.bulkInsert(objects)
@@ -35,7 +48,7 @@ public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
     }
 
     @Override
-    public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(List<T> objects) {
+    public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects) {
         return super.bulkUpdate(objects).setField("updated_at", t -> Instant.now());
     }
 

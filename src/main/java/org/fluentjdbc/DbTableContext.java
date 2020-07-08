@@ -38,7 +38,12 @@ public class DbTableContext implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     /**
-     * Creates a {@link DbContextInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * Creates a {@link DbContextInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement. Example:
+     *
+     * <pre>
+     *     table.insert().setField("id", id).setField("name", name).execute();
+     * </pre>
+     *
      */
     public DbContextInsertBuilder insert() {
         return new DbContextInsertBuilder(this);
@@ -174,10 +179,36 @@ public class DbTableContext implements DatabaseQueryable<DbContextSelectBuilder>
         return new DbSyncBuilderContext<>(this, entities);
     }
 
+    /**
+     * Creates a {@link DbBulkInsertContext} object to fluently generate a <code>INSERT ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void saveAll(List&lt;TagType&gt; tagTypes) {
+     *         tagTypesTable.bulkInsert(tagTypes)
+     *             .setField("name", TagType::getName)
+     *             .generatePrimaryKeys("id", TagType::setId)
+     *             .execute();
+     *     }
+     * </pre>
+     */
     public <T> DbBulkInsertContext<T> bulkInsert(Stream<T> objects) {
         return bulkInsert(objects.collect(Collectors.toList()));
     }
 
+    /**
+     * Creates a {@link DbBulkInsertContext} object to fluently generate a <code>INSERT ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void saveAll(List&lt;TagType&gt; tagTypes) {
+     *         tagTypesTable.bulkInsert(tagTypes)
+     *             .setField("name", TagType::getName)
+     *             .generatePrimaryKeys("id", TagType::setId)
+     *             .execute();
+     *     }
+     * </pre>
+     */
     public <T> DbBulkInsertContext<T> bulkInsert(Iterable<T> objects) {
         return new DbBulkInsertContext<>(this, table.bulkInsert(objects));
     }

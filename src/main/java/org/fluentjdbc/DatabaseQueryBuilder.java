@@ -23,7 +23,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
     DatabaseListableQueryBuilder orderBy(String orderByClause);
 
     /**
-     * If the query returns no rows, returns `null`, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection

@@ -72,7 +72,7 @@ public class UsageDemonstrationTest {
 ```
 
 ```java
-public class OrderRepository implements Repository<Order, UUID> {
+import org.fluentjdbc.DbContextSelectBuilder;public class OrderRepository implements Repository<Order, UUID> {
 
     private final DbTableContext table;
 
@@ -102,10 +102,10 @@ public class OrderRepository implements Repository<Order, UUID> {
 
     public class Query implements Repository.Query<Order> {
 
-        private final DbSelectContext context;
+        private final DbContextSelectBuilder selectBuilder;
 
-        public Query(DbSelectContext context) {
-            this.context = context;
+        public Query(DbContextSelectBuilder selectBuilder) {
+            this.context = selectBuilder;
         }
 
         @Override
@@ -117,7 +117,7 @@ public class OrderRepository implements Repository<Order, UUID> {
             return query(context.where("customer_email", customerEmail));
         }
 
-        private Query query(DbSelectContext context) {
+        private Query query(DbContextSelectBuilder context) {
             return this;
         }
     }
