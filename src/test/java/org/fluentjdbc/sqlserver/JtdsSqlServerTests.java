@@ -93,12 +93,12 @@ public class JtdsSqlServerTests {
         String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
         String password = System.getProperty("test.db.sqlserver.password", username);
         String url = System.getProperty("test.db.sqlserver.url",
-                "jdbc:jtds:sqlserver://localhost:1433;databaseName=" + username);
+                "jdbc:jtds:sqlserver://localhost:1433;databaseName=" + username + ";loginTimeout=" + 2);
 
         try {
             return DriverManager.getConnection(url, username, password);
         } catch (SQLException e) {
-            if (e.getSQLState().equals("08S03")) {
+            if (e.getSQLState().equals("08S03") || e.getSQLState().equals("08S01") || e.getSQLState().equals("HYT01")) {
                 databaseFailed = true;
                 Assume.assumeFalse("Database is unavailable", databaseFailed);
             }

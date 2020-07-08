@@ -109,15 +109,16 @@ public class SqlServerTests {
         }
         dataSource = new SQLServerDataSource();
         String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
+        dataSource.setLoginTimeout(2);
         dataSource.setURL(System.getProperty("test.db.sqlserver.url", "jdbc:sqlserver://localhost:1433;databaseName=" + username));
         dataSource.setUser(username);
         dataSource.setPassword(System.getProperty("test.db.sqlserver.password", username));
         try {
             dataSource.getConnection().close();
         } catch (SQLException e) {
-            if (e.getSQLState().equals("08S03")) {
+            if (e.getSQLState().equals("08S03") || e.getSQLState().equals("08S01")) {
                 databaseFailed = true;
-                Assume.assumeFalse("Database is unavailable", databaseFailed);
+                Assume.assumeFalse("Database is unavailable: " + e, databaseFailed);
             }
             throw e;
         }
