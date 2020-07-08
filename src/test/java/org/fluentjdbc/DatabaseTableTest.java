@@ -153,6 +153,17 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         assertThat(table.where("id", id).singleString(connection, "description")).get().isEqualTo("newComment");
     }
 
+    @Test
+    public void shouldSpecifyCustomExpressions() throws SQLException {
+        Long id = table.insert().setPrimaryKey("id", (Long)null)
+                .setField("code", 2)
+                .setField("name", "test")
+                .setField("description", null)
+                .execute(connection);
+
+        assertThat(table.whereExpression("description is null").unordered().listLongs(connection, "id"))
+                .contains(id);
+    }
 
     @Test
     public void shouldDelete() throws SQLException {
