@@ -3,7 +3,6 @@ package org.fluentjdbc.sqlserver;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import org.junit.Assume;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -32,7 +31,7 @@ public class SqlServerTests {
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
         public RichDomainModelTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
-            databaseDoesNotSupportResultsetMetadataTableName();
+            databaseDoesNotSupportResultSetMetadataTableName();
         }
 
         @Override
@@ -90,7 +89,7 @@ public class SqlServerTests {
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
         public UsageDemonstrationTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
-            databaseDoesNotSupportResultsetMetadataTableName();
+            databaseDoesNotSupportResultSetMetadataTableName();
         }
     }
 
@@ -118,7 +117,7 @@ public class SqlServerTests {
         } catch (SQLException e) {
             if (e.getSQLState().equals("08S03") || e.getSQLState().equals("08S01")) {
                 databaseFailed = true;
-                Assume.assumeFalse("Database is unavailable: " + e, databaseFailed);
+                Assume.assumeFalse("Database is unavailable: " + e, true);
             }
             throw e;
         }

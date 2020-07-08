@@ -7,8 +7,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Generate <code>UPDATE</code> insert statements by collecting field names and parameters. Support
+ * autogeneration of primary keys. Example:
+ *
+ * <pre>
+ * int count = table
+ *      .where("id", id)
+ *      .update()
+ *      .setField("name", "Something")
+ *      .setField("code", 102)
+ *      .execute(connection);
+ * </pre>
+ */
 @ParametersAreNonnullByDefault
-public class DatabaseUpdateBuilder extends DatabaseStatement implements DatabaseUpdateable<DatabaseUpdateBuilder> {
+public class DatabaseUpdateBuilder extends DatabaseStatement implements DatabaseUpdatable<DatabaseUpdateBuilder> {
 
     private final String tableName;
     private final List<String> whereConditions = new ArrayList<>();
@@ -26,6 +39,9 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
         return this;
     }
 
+    /**
+     * Calls {@link #setField(String, Object)} for each fieldName and parameter
+     */
     @Override
     public DatabaseUpdateBuilder setFields(Collection<String> fields, Collection<?> values) {
         this.updateFields.addAll(fields);
@@ -33,6 +49,9 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
         return this;
     }
 
+    /**
+     * Adds fieldName to <code>UPDATE ... SET fieldName = ?</code> and parameter to the list of parameters
+     */
     @Override
     public DatabaseUpdateBuilder setField(String field, @Nullable Object value) {
         this.updateFields.add(field);
@@ -40,6 +59,9 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
         return this;
     }
 
+    /**
+     * Will {@link #createUpdateStatement(String, List, List)}, set parameters and execute to database
+     */
     public int execute(Connection connection) {
         if (updateFields.isEmpty()) {
             return 0;

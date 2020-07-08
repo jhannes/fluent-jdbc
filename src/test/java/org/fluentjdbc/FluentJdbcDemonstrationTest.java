@@ -17,9 +17,9 @@ import static org.fluentjdbc.FluentJdbcAsserts.assertThatOptional;
 
 public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
-    private DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
+    private final DatabaseTable table = new DatabaseTableWithTimestamps("demo_table");
 
-    protected Connection connection;
+    protected final Connection connection;
 
     public FluentJdbcDemonstrationTest() throws SQLException {
         this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);

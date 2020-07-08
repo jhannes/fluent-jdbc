@@ -44,7 +44,7 @@ public class TagType {
     @Getter @Setter
     private AccessLevel accessLevel;
 
-    public static DatabaseTable tagTypesTable = new DatabaseTableImpl("tag_types");
+    public static final DatabaseTable tagTypesTable = new DatabaseTableImpl("tag_types");
 
     public TagType save(Connection connection) throws SQLException {
         this.id = TagType.tagTypesTable

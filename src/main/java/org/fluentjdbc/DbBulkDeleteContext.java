@@ -2,7 +2,7 @@ package org.fluentjdbc;
 
 import java.util.function.Function;
 
-public class DbBulkDeleteContext<T> implements DatabaseBulkQueriable<T, DbBulkDeleteContext<T>> {
+public class DbBulkDeleteContext<T> implements DatabaseBulkQueryable<T, DbBulkDeleteContext<T>> {
     private final DbTableContext tableContext;
     private final DatabaseBulkDeleteBuilder<T> builder;
 

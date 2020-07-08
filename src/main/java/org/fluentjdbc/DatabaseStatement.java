@@ -16,7 +16,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
-import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -26,12 +25,20 @@ import java.util.stream.Collectors;
 
 @ParametersAreNonnullByDefault
 class DatabaseStatement {
-    protected static Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
+    protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
 
+    /**
+     * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
+     * convert each one
+     */
     protected int bindParameters(PreparedStatement stmt, List<Object> parameters) throws SQLException {
         return bindParameters(stmt, parameters, 1);
     }
 
+    /**
+     * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
+     * convert each one
+     */
     protected int bindParameters(PreparedStatement stmt, List<Object> parameters, int start) throws SQLException {
         int index = start;
         for (Object parameter : parameters) {
@@ -40,6 +47,11 @@ class DatabaseStatement {
         return index;
     }
 
+    /**
+     * Calls the correct {@link PreparedStatement} <code>setXXX</code> method based on the type of the parameter.
+     * Supports {@link Instant}, {@link ZonedDateTime}, {@link OffsetDateTime}, {@link LocalDate}, {@link String},
+     * {@link Enum}, {@link UUID}, {@link Double}
+     */
     protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof Instant) {
             stmt.setTimestamp(index, (Timestamp) toDatabaseType(parameter, stmt.getConnection()));
@@ -58,6 +70,11 @@ class DatabaseStatement {
         }
     }
 
+    /**
+     * Converts parameter to canonical database type.
+     * Supports {@link Instant}, {@link ZonedDateTime}, {@link OffsetDateTime}, {@link LocalDate}, {@link String},
+     * {@link Enum}, {@link UUID}, {@link Double}
+     */
     public static Object toDatabaseType(@Nullable Object parameter, Connection connection) {
         if (parameter instanceof Instant) {
             return Timestamp.from((Instant)parameter);
@@ -99,6 +116,11 @@ class DatabaseStatement {
         return connection.getClass().getName().startsWith("oracle.jdbc");
     }
 
+    /**
+     * Calls {@link Connection#prepareStatement(String)} with the statement,
+     * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
+     * and executes the statement
+     */
     protected int executeUpdate(String query, List<Object> parameters, Connection connection) {
         long startTime = System.currentTimeMillis();
         logger.trace(query);
@@ -113,6 +135,10 @@ class DatabaseStatement {
         }
     }
 
+    /**
+     * Creates String for
+     * <code>INSERT INTO tableName (fieldName, fieldName, ...) VALUES (?, ?, ...)</code>
+     */
     protected String createInsertSql(String tableName, Collection<String> fieldNames) {
         return "insert into " + tableName +
                 " (" + String.join(",", fieldNames)
@@ -120,10 +146,18 @@ class DatabaseStatement {
                 + parameterString(fieldNames.size()) + ")";
     }
 
+    /**
+     * Creates String for
+     * <code>DELETE FROM tableName WHERE whereCondition AND whereCondition</code>
+     */
     protected String createDeleteStatement(String tableName, List<String> whereConditions) {
         return "delete from " + tableName + " where "  + String.join(" and ", whereConditions);
     }
 
+    /**
+     * Creates String for
+     * <code>UPDATE tableName SET updateField = ?, updateField = ? WHERE whereCondition AND whereCondition</code>
+     */
     protected String createUpdateStatement(String tableName, List<String> updateFields, List<String> whereConditions) {
         return "update " + tableName
             + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))

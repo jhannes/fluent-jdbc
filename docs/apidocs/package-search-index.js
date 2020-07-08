@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","url":"allpackages-index.html"},{"l":"org.fluentjdbc"},{"l":"org.fluentjdbc.opt.junit"},{"l":"org.fluentjdbc.util"}]

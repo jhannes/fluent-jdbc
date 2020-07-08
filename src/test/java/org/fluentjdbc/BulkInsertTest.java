@@ -15,9 +15,9 @@ import java.util.Map;
 
 public class BulkInsertTest extends AbstractDatabaseTest {
 
-    private Connection connection;
+    private final Connection connection;
 
-    private DatabaseTable demoTable = new DatabaseTableWithTimestamps("bulk_insert_table");
+    private final DatabaseTable demoTable = new DatabaseTableWithTimestamps("bulk_insert_table");
 
 
     public BulkInsertTest() throws SQLException {

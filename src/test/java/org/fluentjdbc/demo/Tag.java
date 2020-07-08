@@ -31,7 +31,7 @@ public class Tag {
     @Getter
     private final long tagTypeId;
 
-    public static DatabaseTable tagsTable = new DatabaseTableImpl("tags");
+    public static final DatabaseTable tagsTable = new DatabaseTableImpl("tags");
 
     public Tag(String name, TagType tagType) {
         this(name, tagType.getId());

@@ -13,15 +13,15 @@ import java.util.stream.Stream;
 
 public class DbSyncBuilderContext<T>  {
     private final DbTableContext table;
-    private EnumMap<DatabaseSaveResult.SaveStatus, Integer> status = new EnumMap<>(DatabaseSaveResult.SaveStatus.class);
+    private final EnumMap<DatabaseSaveResult.SaveStatus, Integer> status = new EnumMap<>(DatabaseSaveResult.SaveStatus.class);
     private final List<T> theirObjects;
     private boolean isCached = false;
     private Map<List<Object>, List<Object>> ourRows;
     private Map<List<Object>, List<Object>> theirRows;
-    private List<String> uniqueFields = new ArrayList<>();
-    private List<Function<T, Object>> uniqueValueFunctions = new ArrayList<>();
-    private List<String> updatedFields = new ArrayList<>();
-    private List<Function<T, Object>> updatedValueFunctions = new ArrayList<>();
+    private final List<String> uniqueFields = new ArrayList<>();
+    private final List<Function<T, Object>> uniqueValueFunctions = new ArrayList<>();
+    private final List<String> updatedFields = new ArrayList<>();
+    private final List<Function<T, Object>> updatedValueFunctions = new ArrayList<>();
 
     public DbSyncBuilderContext(DbTableContext table, List<T> theirObjects) {
         this.table = table;

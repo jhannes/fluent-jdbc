@@ -25,9 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class RichDomainModelTest extends AbstractDatabaseTest {
 
-    public Connection connection;
-    private Random random = new Random();
-    private boolean databaseSupportsResultsetMetadataTableName = true;
+    public final Connection connection;
+    private final Random random = new Random();
+    private boolean databaseSupportsResultSetMetadataTableName = true;
 
     public RichDomainModelTest() throws SQLException {
         this(H2TestDatabase.createConnection(), H2TestDatabase.REPLACEMENTS);
@@ -100,14 +100,14 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
             .contains(sizeTagType.getId());
     }
 
-    protected void databaseDoesNotSupportResultsetMetadataTableName() {
-        databaseSupportsResultsetMetadataTableName = false;
+    protected void databaseDoesNotSupportResultSetMetadataTableName() {
+        databaseSupportsResultSetMetadataTableName = false;
     }
 
     @Test
     public void shouldGroupEntriesByTagTypes() throws SQLException {
         Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
-                databaseSupportsResultsetMetadataTableName);
+                databaseSupportsResultSetMetadataTableName);
 
         TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);

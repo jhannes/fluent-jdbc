@@ -36,7 +36,7 @@ public class UsageDemonstrationTest {
     private final ProductRepository productRepository;
     private final OrderRepository orderRepository;
     private final OrderLineRepository orderLineRepository;
-    private boolean databaseSupportsResultsetMetadataTableName = true;
+    private boolean databaseSupportsResultSetMetadataTableName = true;
 
     public UsageDemonstrationTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -50,8 +50,8 @@ public class UsageDemonstrationTest {
         this.orderLineRepository = new OrderLineRepository(dbContext);
     }
 
-    protected void databaseDoesNotSupportResultsetMetadataTableName() {
-        databaseSupportsResultsetMetadataTableName = false;
+    protected void databaseDoesNotSupportResultSetMetadataTableName() {
+        databaseSupportsResultSetMetadataTableName = false;
     }
 
     @Before
@@ -152,7 +152,7 @@ public class UsageDemonstrationTest {
     @Test
     public void shouldJoinTables() {
         Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
-                databaseSupportsResultsetMetadataTableName);
+                databaseSupportsResultSetMetadataTableName);
 
         Product firstProduct = sampleProduct();
         Product secondProduct = sampleProduct();
@@ -187,7 +187,7 @@ public class UsageDemonstrationTest {
     @Test
     public void shouldPerformLeftJoin() {
         Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
-                databaseSupportsResultsetMetadataTableName);
+                databaseSupportsResultSetMetadataTableName);
 
         Product firstProduct = sampleProduct();
         Product secondProduct = sampleProduct();

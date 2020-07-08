@@ -30,7 +30,7 @@ public class JtdsSqlServerTests {
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
         public RichDomainModelTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
-            databaseDoesNotSupportResultsetMetadataTableName();
+            databaseDoesNotSupportResultSetMetadataTableName();
         }
 
         @Override
@@ -86,7 +86,7 @@ public class JtdsSqlServerTests {
         }
     }
 
-    private static boolean databaseFailed;
+    private static boolean databaseFailed = false;
 
     static Connection getConnection() throws SQLException {
         Assume.assumeFalse(databaseFailed);
@@ -100,7 +100,7 @@ public class JtdsSqlServerTests {
         } catch (SQLException e) {
             if (e.getSQLState().equals("08S03") || e.getSQLState().equals("08S01") || e.getSQLState().equals("HYT01")) {
                 databaseFailed = true;
-                Assume.assumeFalse("Database is unavailable", databaseFailed);
+                Assume.assumeFalse("Database is unavailable: " + e, true);
             }
             throw e;
         }

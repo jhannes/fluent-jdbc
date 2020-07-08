@@ -34,7 +34,7 @@ public class DatabaseResult implements AutoCloseable {
     protected ResultSet resultSet;
     protected final Map<String, Integer> columnIndexes;
     protected final Map<String, Map<String, Integer>> tableColumnIndexes;
-    private Map<DatabaseTableAlias, Integer> keys;
+    private final Map<DatabaseTableAlias, Integer> keys;
 
     DatabaseResult(PreparedStatement statement, ResultSet resultSet, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> aliasColumnIndexes, Map<DatabaseTableAlias, Integer> keys) {
         this.statement = statement;

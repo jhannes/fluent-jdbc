@@ -10,7 +10,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DbContextConnectionTest {
 
-    private Connection connectionMock = Mockito.mock(Connection.class);
+    private final Connection connectionMock = Mockito.mock(Connection.class);
 
     @Test
     public void shouldThrowWhenConnectionFails() {

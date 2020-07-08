@@ -21,10 +21,10 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
 
-    private DatabaseTable organizations = new DatabaseTableImpl("dbtest_organizations");
-    private DatabaseTable persons = new DatabaseTableImpl("dbtest_persons");
-    private DatabaseTable memberships = new DatabaseTableImpl("dbtest_memberships");
-    private DatabaseTable permissions = new DatabaseTableImpl("dbtest_permissions");
+    private final DatabaseTable organizations = new DatabaseTableImpl("dbtest_organizations");
+    private final DatabaseTable persons = new DatabaseTableImpl("dbtest_persons");
+    private final DatabaseTable memberships = new DatabaseTableImpl("dbtest_memberships");
+    private final DatabaseTable permissions = new DatabaseTableImpl("dbtest_permissions");
 
     protected final Connection connection;
 

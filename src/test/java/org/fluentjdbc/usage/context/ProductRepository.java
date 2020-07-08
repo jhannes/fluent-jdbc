@@ -7,7 +7,7 @@ import org.fluentjdbc.DatabaseSimpleQueryBuilder;
 import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTableAlias;
 import org.fluentjdbc.DbContext;
-import org.fluentjdbc.DbSelectContext;
+import org.fluentjdbc.DbContextSelectBuilder;
 import org.fluentjdbc.DbTableAliasContext;
 import org.fluentjdbc.DbTableContext;
 
@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 
 public class ProductRepository implements Repository<Product, Product.Id> {
     public EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncProducts(List<Product> products) {
-        return table.synch(products)
+        return table.sync(products)
                 .unique("product_id", p -> p.getProductId().getValue())
                 .field("name", Product::getName)
                 .field("category", Product::getCategory)
@@ -94,7 +94,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
             "launched_at ${DATETIME}, " +
             "updated_at ${DATETIME} not null, " +
             "created_at ${DATETIME} not null)";
-    private DbTableContext table;
+    private final DbTableContext table;
 
     public ProductRepository(DbContext dbContext) {
         table = dbContext.tableWithTimestamps("products");
@@ -122,10 +122,10 @@ public class ProductRepository implements Repository<Product, Product.Id> {
         return new Query(table.query());
     }
 
-    public class Query implements Repository.Query<Product> {
-        private DbSelectContext query;
+    public static class Query implements Repository.Query<Product> {
+        private final DbContextSelectBuilder query;
 
-        public Query(DbSelectContext query) {
+        public Query(DbContextSelectBuilder query) {
             this.query = query;
         }
 

@@ -6,7 +6,7 @@ import java.util.List;
 
 class DatabaseDeleteBuilder extends DatabaseStatement {
 
-    private String tableName;
+    private final String tableName;
 
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Object> whereParameters = new ArrayList<>();

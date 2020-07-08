@@ -1,7 +1,6 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nullable;
-import java.util.Map;
 
 public class DbTableAliasContext  {
     private final DbTableContext dbTableContext;

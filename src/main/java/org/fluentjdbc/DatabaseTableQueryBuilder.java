@@ -17,6 +17,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Generate <code>SELECT</code> statements by collecting <code>WHERE</code> expressions and parameters.Example:
+ *
+ * <pre>
+ *  List&lt;Person&gt; result = table
+ *     .where("firstName", firstName)
+ *     .whereExpression("lastName like ?", "joh%")
+ *     .whereIn("status", statuses)
+ *     .orderBy("lastName")
+ *     .list(connection, row -&gt; new Person(row));
+ * </pre>
+ */
 @ParametersAreNonnullByDefault
 public class DatabaseTableQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
 
@@ -51,6 +63,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         }
     }
 
+    @Override
     public <T> Stream<T> stream(Connection connection, RowMapper<T> mapper) {
         try {
             String query = createSelectStatement();
@@ -113,12 +126,20 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         return " from " + table.getTableName();
     }
 
+    /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
+     */
     @Override
     public DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
         if (value == null) return this;
         return where(fieldName, value);
     }
 
+    /**
+     * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
+     * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
+     * resulting in no rows being returned.
+     */
     public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
         if (parameters.isEmpty()) {
             return whereExpression(fieldName + " <> " + fieldName);
@@ -128,12 +149,20 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         return this;
     }
 
+    /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     */
     public DatabaseSimpleQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
         whereExpression(expression);
         this.parameters.addAll(parameters);
         return this;
     }
 
+    /**
+     * Adds the expression to the WHERE-clause and the value to the parameter list. E.g.
+     * <code>whereExpression("created_at &gt; ?", earliestDate)</code>
+     */
     @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
         whereExpression(expression);
@@ -141,12 +170,18 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         return this;
     }
 
+    /**
+     * Adds the expression to the WHERE-clause
+     */
     @Override
     public DatabaseSimpleQueryBuilder whereExpression(String expression) {
         conditions.add(expression);
         return this;
     }
 
+    /**
+     * For each field adds "<code>WHERE fieldName = value</code>" to the query
+     */
     public DatabaseSimpleQueryBuilder whereAll(List<String> fields, List<Object> values) {
         for (int i = 0; i < fields.size(); i++) {
             where(fields.get(i), values.get(i));
@@ -154,29 +189,45 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         return this;
     }
 
+    /**
+     * Creates a {@link DatabaseUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
+     */
     @Override
     public DatabaseUpdateBuilder update() {
         return table.update().setWhereFields(conditions, parameters);
     }
 
-    @Override
-    public DatabaseSimpleQueryBuilder query() {
-        return this;
-    }
-
+    /**
+     * Executes <code>DELETE FROM tableName WHERE ....</code>
+     */
     @Override
     public int delete(Connection connection) {
         return table.delete().setWhereFields(conditions, parameters).execute(connection);
     }
 
+    /**
+     * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
+     */
     @Override
     public DatabaseListableQueryBuilder orderBy(String orderByClause) {
         orderByClauses.add(orderByClause);
         return this;
     }
 
+    /**
+     * If you haven't called {@link #orderBy}, the results of {@link #list(Connection, RowMapper)}
+     * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
+     */
     @Override
     public DatabaseListableQueryBuilder unordered() {
+        return this;
+    }
+
+    /**
+     * Returns this. Needed to make {@link DatabaseTableQueryBuilder} interchangeable with {@link DatabaseTable}
+     */
+    @Override
+    public DatabaseSimpleQueryBuilder query() {
         return this;
     }
 

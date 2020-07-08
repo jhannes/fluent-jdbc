@@ -9,9 +9,9 @@ import java.util.List;
 
 public class DatabaseInsertWithPkBuilder<T> extends DatabaseStatement {
 
-    private DatabaseInsertBuilder insertBuilder;
-    private String idField;
-    private T idValue;
+    private final DatabaseInsertBuilder insertBuilder;
+    private final String idField;
+    private final T idValue;
 
     public DatabaseInsertWithPkBuilder(DatabaseInsertBuilder insertBuilder, String idField, T idValue) {
         this.insertBuilder = insertBuilder;

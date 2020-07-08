@@ -28,9 +28,9 @@ public class Entry {
     @Getter
     private final String name;
 
-    public static DatabaseTable entryTaggingsTable = new DatabaseTableImpl("entry_taggings");
+    public static final DatabaseTable entryTaggingsTable = new DatabaseTableImpl("entry_taggings");
 
-    public static DatabaseTable entriesTable = new DatabaseTableImpl("entries");
+    public static final DatabaseTable entriesTable = new DatabaseTableImpl("entries");
 
     public static Entry mapFromRow(DatabaseRow row) throws SQLException {
         Entry entry = new Entry(row.getString("name"));

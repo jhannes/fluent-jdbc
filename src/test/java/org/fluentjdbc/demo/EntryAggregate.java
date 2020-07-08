@@ -19,10 +19,10 @@ import lombok.ToString;
 public class EntryAggregate {
 
     @Getter
-    private Entry entry;
+    private final Entry entry;
 
     @Getter
-    private List<Tag> tags = new ArrayList<>();
+    private final List<Tag> tags = new ArrayList<>();
 
     public EntryAggregate(Entry entry) {
         this.entry = entry;

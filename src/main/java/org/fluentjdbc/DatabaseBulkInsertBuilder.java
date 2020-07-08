@@ -12,7 +12,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 
-public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement implements DatabaseBulkUpdateable<T, DatabaseBulkInsertBuilder<T>> {
+public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement implements DatabaseBulkUpdatable<T, DatabaseBulkInsertBuilder<T>> {
 
     private final DatabaseTable table;
     private final Iterable<T> objects;

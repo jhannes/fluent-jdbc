@@ -63,8 +63,8 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
     }
 
     public class QueryImpl implements Query<OrderLine> {
-        private DbJoinedSelectContext context;
-        DbTableAliasContext linesAlias = table.alias("l");
+        private final DbJoinedSelectContext context;
+        final DbTableAliasContext linesAlias = table.alias("l");
 
         public QueryImpl() {
             this.context = new DbJoinedSelectContext(linesAlias);

@@ -4,7 +4,7 @@ import java.util.Objects;
 
 public class DatabaseTableAlias {
     private final String alias;
-    private String tableName;
+    private final String tableName;
 
     public DatabaseTableAlias(String tableName, String alias) {
         this.alias = alias;

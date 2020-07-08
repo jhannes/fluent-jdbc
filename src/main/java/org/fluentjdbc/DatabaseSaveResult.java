@@ -8,7 +8,7 @@ import java.util.Objects;
 public class DatabaseSaveResult<T> {
     private final T idValue;
     private final SaveStatus saveStatus;
-    private List<String> updatedFields;
+    private final List<String> updatedFields;
 
     private DatabaseSaveResult(T idValue, SaveStatus saveStatus, List<String> updatedFields) {
         this.idValue = idValue;

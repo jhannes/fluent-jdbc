@@ -3,10 +3,10 @@ package org.fluentjdbc;
 import java.util.List;
 import java.util.function.Function;
 
-public class DbBulkInsertContext<T> implements DatabaseBulkUpdateable<T, DbBulkInsertContext<T>> {
+public class DbBulkInsertContext<T> implements DatabaseBulkUpdatable<T, DbBulkInsertContext<T>> {
 
     private final DbTableContext tableContext;
-    private DatabaseBulkInsertBuilder<T> builder;
+    private final DatabaseBulkInsertBuilder<T> builder;
 
     public DbBulkInsertContext(DbTableContext tableContext, DatabaseBulkInsertBuilder<T> builder) {
         this.tableContext = tableContext;

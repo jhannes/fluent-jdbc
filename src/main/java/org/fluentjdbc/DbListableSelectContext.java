@@ -6,8 +6,11 @@ import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-public interface DbListableSelectContext<T extends DbListableSelectContext<T>> extends DatabaseQueriable<T> {
+public interface DbListableSelectContext<T extends DbListableSelectContext<T>> extends DatabaseQueryable<T> {
+
+    <OBJECT> Stream<OBJECT> stream(RowMapper<OBJECT> mapper);
 
     <OBJECT> List<OBJECT> list(RowMapper<OBJECT> object);
 

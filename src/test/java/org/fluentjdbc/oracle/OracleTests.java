@@ -6,7 +6,6 @@ import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
 import org.junit.Ignore;
-import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -43,7 +42,7 @@ public class OracleTests {
     public static class RichDomainModelTest extends org.fluentjdbc.RichDomainModelTest {
         public RichDomainModelTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
-            databaseDoesNotSupportResultsetMetadataTableName();
+            databaseDoesNotSupportResultSetMetadataTableName();
         }
     }
 
@@ -88,7 +87,7 @@ public class OracleTests {
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
         public UsageDemonstrationTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
-            databaseDoesNotSupportResultsetMetadataTableName();
+            databaseDoesNotSupportResultSetMetadataTableName();
         }
 
         @Override
@@ -101,7 +100,7 @@ public class OracleTests {
         return getDataSource().getConnection();
     }
 
-    private static boolean databaseFailed = false;
+    private static boolean databaseFailed;
 
     private static OracleDataSource dataSource;
 
@@ -120,7 +119,7 @@ public class OracleTests {
         } catch (SQLException e) {
             if (e.getSQLState().equals("08006")) {
                 databaseFailed = true;
-                Assume.assumeFalse("Database is unavailable", databaseFailed);
+                Assume.assumeFalse("Database is unavailable: " + e, true);
             }
             throw ExceptionUtil.softenCheckedException(e);
         }

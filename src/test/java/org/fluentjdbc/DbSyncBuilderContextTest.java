@@ -84,7 +84,7 @@ public class DbSyncBuilderContextTest {
     @Test
     public void internalMissingRowsAreEqual() {
         List<Map<String, Object>> entities = Collections.singletonList(createObject("test", BigDecimal.ONE));
-        DbSyncBuilderContext<Map<String, Object>> syncContext = table.synch(entities).cacheExisting();
+        DbSyncBuilderContext<Map<String, Object>> syncContext = table.sync(entities).cacheExisting();
 
         assertThat(syncContext.areEqual(null, entities)).isFalse();
         assertThat(syncContext.areEqual(entities, null)).isFalse();
@@ -101,7 +101,7 @@ public class DbSyncBuilderContextTest {
     }
 
     public void sync(List<Map<String, Object>> entities) {
-        table.synch(entities)
+        table.sync(entities)
                 .unique("id", o -> o.get("id"))
                 .field("name", o -> o.get("name"))
                 .field("value", o -> o.get("value"))

@@ -3,7 +3,7 @@ package org.fluentjdbc.usage.context;
 import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DbContext;
-import org.fluentjdbc.DbSelectContext;
+import org.fluentjdbc.DbContextSelectBuilder;
 import org.fluentjdbc.DbTableContext;
 
 import java.sql.SQLException;
@@ -49,11 +49,11 @@ public class OrderRepository implements Repository<Order, UUID> {
         return table.where("order_id", uuid).singleObject(OrderRepository::toOrder);
     }
 
-    public class Query implements Repository.Query<Order> {
+    public static class Query implements Repository.Query<Order> {
 
-        private DbSelectContext context;
+        private final DbContextSelectBuilder context;
 
-        public Query(DbSelectContext context) {
+        public Query(DbContextSelectBuilder context) {
             this.context = context;
         }
 
@@ -66,7 +66,7 @@ public class OrderRepository implements Repository<Order, UUID> {
             return query(context.where("customer_email", customerEmail));
         }
 
-        private Query query(DbSelectContext context) {
+        private Query query(DbContextSelectBuilder context) {
             return this;
         }
     }

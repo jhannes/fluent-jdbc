@@ -141,15 +141,15 @@ public class DbContextTest {
     @Test
     public void shouldSeparateConnectionPerDbContext() {
         DbContext rolledBackContext = new DbContext();
-        DbContext commitedContext = new DbContext();
+        DbContext committedContext = new DbContext();
         try (DbContextConnection ignored = rolledBackContext.startConnection(dataSource)) {
             DbTableContext tableContext = rolledBackContext.table("database_table_test_table");
             try (DbTransaction dbTransaction = rolledBackContext.ensureTransaction()) {
                 tableContext.insert().setField("code", 2000).execute();
                 dbTransaction.setRollback();
 
-                try (DbContextConnection ignored2 = commitedContext.startConnection(dataSource)) {
-                    DbTableContext committedTableContext = commitedContext.table("database_table_test_table");
+                try (DbContextConnection ignored2 = committedContext.startConnection(dataSource)) {
+                    DbTableContext committedTableContext = committedContext.table("database_table_test_table");
                     try (DbTransaction committedTransaction = rolledBackContext.ensureTransaction()) {
                         committedTableContext.insert().setField("code", 3000).execute();
                         committedTransaction.setComplete();

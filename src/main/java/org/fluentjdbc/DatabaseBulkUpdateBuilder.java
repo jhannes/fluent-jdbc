@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class DatabaseBulkUpdateBuilder<T> extends DatabaseStatement
-        implements DatabaseBulkQueriable<T, DatabaseBulkUpdateBuilder<T>>, DatabaseBulkUpdateable<T, DatabaseBulkUpdateBuilder<T>> {
+        implements DatabaseBulkQueryable<T, DatabaseBulkUpdateBuilder<T>>, DatabaseBulkUpdatable<T, DatabaseBulkUpdateBuilder<T>> {
 
     private final DatabaseTable table;
     private final List<T> objects;

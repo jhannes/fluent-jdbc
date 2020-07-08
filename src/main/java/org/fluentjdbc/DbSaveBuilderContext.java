@@ -6,8 +6,8 @@ import org.fluentjdbc.util.ExceptionUtil;
 
 public class DbSaveBuilderContext<T> {
 
-    private DbTableContext tableContext;
-    private DatabaseSaveBuilder<T> saveBuilder;
+    private final DbTableContext tableContext;
+    private final DatabaseSaveBuilder<T> saveBuilder;
 
     public DbSaveBuilderContext(DbTableContext tableContext, DatabaseSaveBuilder<T> saveBuilder) {
         this.tableContext = tableContext;

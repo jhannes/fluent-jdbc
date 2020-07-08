@@ -11,7 +11,7 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 public class DatabaseBulkDeleteBuilder<T> extends DatabaseStatement
-        implements DatabaseBulkQueriable<T, DatabaseBulkDeleteBuilder<T>> {
+        implements DatabaseBulkQueryable<T, DatabaseBulkDeleteBuilder<T>> {
 
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Function<T, ?>> whereParameters = new ArrayList<>();

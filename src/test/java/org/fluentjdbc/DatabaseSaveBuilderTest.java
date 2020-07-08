@@ -11,11 +11,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.INSERTED;
@@ -23,9 +21,9 @@ import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.UPDATED;
 
 public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
-    private DatabaseTable table = new DatabaseTableWithTimestamps("uuid_table");
+    private final DatabaseTable table = new DatabaseTableWithTimestamps("uuid_table");
 
-    private Connection connection;
+    private final Connection connection;
 
     public DatabaseSaveBuilderTest() throws SQLException {
         this(createConnection(), H2TestDatabase.REPLACEMENTS);

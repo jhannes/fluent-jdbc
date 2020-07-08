@@ -1,6 +1,6 @@
 @startuml
 
-interface DatabaseQueriable<T extends DatabaseQueriable> {
+interface DatabaseQueryable<T extends DatabaseQueryable> {
     whereExpression : T
     whereExpression : T
     whereOptional : T
@@ -8,7 +8,7 @@ interface DatabaseQueriable<T extends DatabaseQueriable> {
     where : T
 }
 
-interface DatabaseQueryBuilder<T> extends DatabaseQueriable {
+interface DatabaseQueryBuilder<T> extends DatabaseQueryable {
     unordered() : DatabaseListableQueryBuilder
     orderedBy() : DatabaseListableQueryBuilder
 
@@ -23,7 +23,7 @@ interface DatabaseSimpleQueryBuilder<T> extends DatabaseQueryBuilder {
     delete()
 }
 
-interface DatabaseTable extends DatabaseQueriable {
+interface DatabaseTable extends DatabaseQueryable {
    unordered() : DatabaseListableQueryBuilder
    orderedBy() : DatabaseListableQueryBuilder
 
@@ -63,14 +63,14 @@ class DatabaseTableWithTimestamps extends DatabaseTableImpl {
 
 package dbcontext {
 
-    interface DbListableSelectContext extends DatabaseQueriable {
+    interface DbListableSelectContext extends DatabaseQueryable {
         list() : List<T>
         listStrings() : List<String>
         listLongs() : List<Long>
         listInstants() : List<Instant>
     }
 
-    class DbTableContext implements DatabaseQueriable {
+    class DbTableContext implements DatabaseQueryable {
     }
 
     class DbSelectContext implements DbListableSelectContext {

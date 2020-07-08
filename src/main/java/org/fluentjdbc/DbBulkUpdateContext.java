@@ -3,7 +3,7 @@ package org.fluentjdbc;
 import java.util.function.Function;
 
 public class DbBulkUpdateContext<T> implements
-        DatabaseBulkQueriable<T, DbBulkUpdateContext<T>>, DatabaseBulkUpdateable<T, DbBulkUpdateContext<T>> {
+        DatabaseBulkQueryable<T, DbBulkUpdateContext<T>>, DatabaseBulkUpdatable<T, DbBulkUpdateContext<T>> {
 
     private final DbTableContext tableContext;
     private final DatabaseBulkUpdateBuilder<T> builder;

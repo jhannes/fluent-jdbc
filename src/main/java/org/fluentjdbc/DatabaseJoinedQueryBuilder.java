@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
     private final DatabaseTableAlias table;
@@ -37,17 +38,28 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return orderBy(column.getQualifiedColumnName());
     }
 
+    /**
+     * Adds an <code>order by</code> clause to the query. Needed in order to list results
+     * in a predictable order.
+     */
     @Override
     public DatabaseJoinedQueryBuilder orderBy(String orderByClause) {
         orderByClauses.add(orderByClause);
         return this;
     }
 
+    /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query
+     */
     @Override
     public DatabaseJoinedQueryBuilder where(String fieldName, @Nullable Object value) {
         return whereExpression(table.getAlias() + "." + fieldName + " = ?", value);
     }
 
+    /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     */
     @Override
     public DatabaseJoinedQueryBuilder whereExpression(String expression, Object parameter) {
         whereExpression(expression);
@@ -55,12 +67,21 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return this;
     }
 
+    /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     */
     public DatabaseJoinedQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
         whereExpression(expression);
         this.parameters.addAll(parameters);
         return this;
     }
 
+    /**
+     * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
+     * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
+     * resulting in no rows being returned.
+     */
     @Override
     public DatabaseJoinedQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
         if (parameters.isEmpty()) {
@@ -71,18 +92,27 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return this;
     }
 
+    /**
+     * Adds the expression to the WHERE-clause
+     */
     @Override
     public DatabaseJoinedQueryBuilder whereExpression(String expression) {
         conditions.add(expression);
         return this;
     }
 
+    /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
+     */
     @Override
     public DatabaseJoinedQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
         if (value == null) return this;
         return where(fieldName, value);
     }
 
+    /**
+     * For each field adds "<code>WHERE fieldName = value</code>" to the query
+     */
     @Override
     public DatabaseJoinedQueryBuilder whereAll(List<String> fields, List<Object> values) {
         fields.stream().map(s -> table.getAlias() + "." + s + " = ?").forEach(this.conditions::add);
@@ -114,6 +144,11 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
     @Override
     public <T> Optional<T> singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
         return query(connection, result -> result.single(mapper));
+    }
+
+    @Override
+    public <T> Stream<T> stream(Connection connection, DatabaseTable.RowMapper<T> mapper) {
+        return list(connection, mapper).stream();
     }
 
     @Override

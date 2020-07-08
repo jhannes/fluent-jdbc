@@ -20,7 +20,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
         super(SqliteTests.REPLACEMENTS);
     }
 
-    private DatabaseTable table = new DatabaseTableImpl("demo_table");
+    private final DatabaseTable table = new DatabaseTableImpl("demo_table");
 
     private Connection connection;
 

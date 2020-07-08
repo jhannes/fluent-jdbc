@@ -14,16 +14,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
 
-    protected List<String> uniqueKeyFields = new ArrayList<>();
-    protected List<Object> uniqueKeyValues = new ArrayList<>();
+    protected final List<String> uniqueKeyFields = new ArrayList<>();
+    protected final List<Object> uniqueKeyValues = new ArrayList<>();
 
-    protected List<String> fields = new ArrayList<>();
-    protected List<Object> values = new ArrayList<>();
+    protected final List<String> fields = new ArrayList<>();
+    protected final List<Object> values = new ArrayList<>();
 
     protected final DatabaseTable table;
-    protected String idField;
+    protected final String idField;
 
-    @Nullable protected T idValue;
+    @Nullable protected final T idValue;
 
     protected DatabaseSaveBuilder(DatabaseTable table, String idField, @Nullable T id) {
         this.table = table;

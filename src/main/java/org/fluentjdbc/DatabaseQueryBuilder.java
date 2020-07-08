@@ -8,17 +8,17 @@ import java.util.Optional;
 /**
  * Interface for consistent query operations in a fluent way
  */
-public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends DatabaseQueriable<T> {
+public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends DatabaseQueryable<T> {
 
     /**
      * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
-     * will be unpredicable. Call <code>unordered()</code> if you are okay with this.
+     * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     DatabaseListableQueryBuilder unordered();
 
     /**
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
-     * in a predicatable order.
+     * in a predictable order.
      */
     DatabaseListableQueryBuilder orderBy(String orderByClause);
 

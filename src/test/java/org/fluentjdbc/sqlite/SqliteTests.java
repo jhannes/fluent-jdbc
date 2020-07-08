@@ -3,14 +3,12 @@ package org.fluentjdbc.sqlite;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.fluentjdbc.DatabaseSaveResult;
-import org.hsqldb.jdbc.JDBCDataSource;
 import org.junit.Test;
 import org.sqlite.SQLiteDataSource;
 
