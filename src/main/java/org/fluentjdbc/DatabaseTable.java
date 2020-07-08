@@ -5,6 +5,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 /**
@@ -127,12 +128,38 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuil
      *             .execute(connection);
      *     }
      * </pre>
-     *
      */
     <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects);
 
+    /**
+     * Creates a {@link DatabaseBulkDeleteBuilder} object to fluently generate a <code>DELETE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <p>Example:</p>
+     *
+     * <pre>
+     *     public void deleteAll(List&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkDelete(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .execute(connection);
+     *     }
+     * </pre>
+     */
     <T> DatabaseBulkDeleteBuilder<T> bulkDelete(Iterable<T> objects);
 
+    /**
+     * Creates a {@link DatabaseBulkUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void updateAll(List&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkUpdate(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .setField("name", TagType::getName)
+     *              .execute(connection);
+     *     }
+     * </pre>
+     */
     <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects);
 
 }

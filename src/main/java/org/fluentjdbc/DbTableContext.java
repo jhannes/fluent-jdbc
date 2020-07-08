@@ -213,18 +213,72 @@ public class DbTableContext implements DatabaseQueryable<DbContextSelectBuilder>
         return new DbBulkInsertContext<>(this, table.bulkInsert(objects));
     }
 
+    /**
+     * Creates a {@link DbBulkDeleteContext} object to fluently generate a <code>DELETE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <p>Example:</p>
+     *
+     * <pre>
+     *     public void deleteAll(Stream&lt;TagType&gt; tagTypes) {
+     *         tagTypesTable.bulkDelete(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .execute();
+     *     }
+     * </pre>
+     */
     public <T> DbBulkDeleteContext<T> bulkDelete(Stream<T> objects) {
         return bulkDelete(objects.collect(Collectors.toList()));
     }
 
+    /**
+     * Creates a {@link DbBulkDeleteContext} object to fluently generate a <code>DELETE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <p>Example:</p>
+     *
+     * <pre>
+     *     public void deleteAll(List&lt;TagType&gt; tagTypes) {
+     *         tagTypesTable.bulkDelete(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .execute();
+     *     }
+     * </pre>
+     */
     public <T> DbBulkDeleteContext<T> bulkDelete(Iterable<T> objects) {
         return new DbBulkDeleteContext<>(this, table.bulkDelete(objects));
     }
 
+    /**
+     * Creates a {@link DbBulkUpdateContext} object to fluently generate a <code>UPDATE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void updateAll(Stream&lt;TagType&gt; tagTypes) {
+     *         tagTypesTable.bulkUpdate(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .setField("name", TagType::getName)
+     *              .execute();
+     *     }
+     * </pre>
+     */
     public <T> DbBulkUpdateContext<T> bulkUpdate(Stream<T> objects) {
         return bulkUpdate(objects.collect(Collectors.toList()));
     }
 
+    /**
+     * Creates a {@link DbBulkUpdateContext} object to fluently generate a <code>UPDATE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void updateAll(List&lt;TagType&gt; tagTypes) {
+     *         tagTypesTable.bulkUpdate(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .setField("name", TagType::getName)
+     *              .execute();
+     *     }
+     * </pre>
+     */
     private <T> DbBulkUpdateContext<T> bulkUpdate(List<T> objects) {
         return new DbBulkUpdateContext<>(this, table.bulkUpdate(objects));
     }

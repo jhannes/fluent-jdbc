@@ -196,6 +196,20 @@ public class DatabaseTableImpl implements DatabaseTable {
         return bulkInsert(objects.collect(Collectors.toList()));
     }
 
+    /**
+     * Creates a {@link DatabaseBulkDeleteBuilder} object to fluently generate a <code>DELETE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <p>Example:</p>
+     *
+     * <pre>
+     *     public void deleteAll(List&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkDelete(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .execute(connection);
+     *     }
+     * </pre>
+     */
     @Override
     public <T> DatabaseBulkDeleteBuilder<T> bulkDelete(Iterable<T> objects) {
         return new DatabaseBulkDeleteBuilder<>(this, objects);
