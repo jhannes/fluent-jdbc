@@ -81,7 +81,7 @@ public class DbTableContext implements DatabaseQueriable<DbSelectContext> {
     }
 
     public <KEY,ENTITY> Optional<ENTITY> cache(KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
-        return DbContext.cache(getTable().getTableName(), key, retriever);
+        return dbContext.cache(getTable().getTableName(), key, retriever);
     }
 
     public DbTableAliasContext alias(String alias) {

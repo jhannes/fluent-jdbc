@@ -10,6 +10,10 @@ import java.util.Optional;
 
 public class DbContext {
 
+    private final ThreadLocal<TopLevelDbContextConnection> currentConnection = new ThreadLocal<>();
+    private final ThreadLocal<HashMap<String, HashMap<Object, Optional<?>>>> currentCache = new ThreadLocal<>();
+    private final ThreadLocal<DbTransaction> currentTransaction = new ThreadLocal<>();
+
     public DbTableContext table(DatabaseTable table) {
         return new DbTableContext(table, this);
     }
@@ -28,9 +32,9 @@ public class DbContext {
 
     public DbContextConnection startConnection(ConnectionSupplier connectionSupplier) {
         if (currentConnection.get() != null) {
-            throw new IllegalStateException("Don't set twice in a thread!");
+            return () -> { };
         }
-        currentConnection.set(new DbContextConnection(connectionSupplier, this));
+        currentConnection.set(new TopLevelDbContextConnection(connectionSupplier, this));
         currentCache.set(new HashMap<>());
         return currentConnection.get();
     }
@@ -42,16 +46,13 @@ public class DbContext {
         return currentConnection.get().getConnection();
     }
 
-    private static ThreadLocal<DbContextConnection> currentConnection = new ThreadLocal<>();
-    private static ThreadLocal<HashMap<String, HashMap<Object, Optional<?>>>> currentCache = new ThreadLocal<>();
-
     void removeFromThread() {
         currentCache.get().clear();
         currentCache.remove();
         currentConnection.remove();
     }
 
-    public static <ENTITY, KEY> Optional<ENTITY> cache(String tableName, KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
+    public <ENTITY, KEY> Optional<ENTITY> cache(String tableName, KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
         if (!currentCache.get().containsKey(tableName)) {
             currentCache.get().put(tableName, new HashMap<>());
         }
@@ -61,8 +62,6 @@ public class DbContext {
         }
         return (Optional<ENTITY>) currentCache.get().get(tableName).get(key);
     }
-
-    private ThreadLocal<DbTransaction> currentTransaction = new ThreadLocal<>();
 
     public DbTransaction ensureTransaction() {
         if (currentTransaction.get() != null) {
@@ -79,7 +78,7 @@ public class DbContext {
 
     private static class NestedTransactionContext implements DbTransaction {
         private boolean complete = false;
-        private DbTransaction outerTransaction;
+        private final DbTransaction outerTransaction;
 
         public NestedTransactionContext(DbTransaction outerTransaction) {
             this.outerTransaction = outerTransaction;
@@ -131,5 +130,41 @@ public class DbContext {
                 throw ExceptionUtil.softenCheckedException(e);
             }
         }
+    }
+
+    static class TopLevelDbContextConnection implements DbContextConnection {
+
+        private ConnectionSupplier connectionSupplier;
+        private Connection connection;
+        private DbContext context;
+
+        TopLevelDbContextConnection(ConnectionSupplier connectionSupplier, DbContext context) {
+            this.connectionSupplier = connectionSupplier;
+            this.context = context;
+        }
+
+        @Override
+        public void close() {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException e) {
+                    throw ExceptionUtil.softenCheckedException(e);
+                }
+            }
+            context.removeFromThread();
+        }
+
+        Connection getConnection() {
+            if (connection == null) {
+                try {
+                    connection = connectionSupplier.getConnection();
+                } catch (SQLException e) {
+                    throw ExceptionUtil.softenCheckedException(e);
+                }
+            }
+            return connection;
+        }
+
     }
 }

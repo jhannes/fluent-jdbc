@@ -54,7 +54,7 @@ public class DbContextTest {
         try (Connection connection = dataSource.getConnection()) {
             dropTableIfExists(connection, "database_table_test_table");
             try(Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null)"));
+                stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null)"));
             }
         }
     }
@@ -121,12 +121,14 @@ public class DbContextTest {
     @Test
     public void shouldBeAbleToManuallyCommit() throws InterruptedException {
         final Thread thread = new Thread(() -> {
-            try (DbContextConnection dbContextConnection = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
-                tableContext.insert()
-                        .setField("code", 1001)
-                        .setField("name", "insertTest")
-                        .execute();
-                dbContextConnection.commitTransaction();
+            try (DbContextConnection ignored = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
+                try (DbTransaction tx = dbContext.ensureTransaction()) {
+                    tableContext.insert()
+                            .setField("code", 1001)
+                            .setField("name", "insertTest")
+                            .execute();
+                    tx.setComplete();
+                }
             }
         });
         thread.start();
@@ -135,6 +137,44 @@ public class DbContextTest {
         assertThat(tableContext.where("name", "insertTest").unordered().listLongs("code"))
                 .containsExactly(1001L);
     }
+
+    @Test
+    public void shouldSeparateConnectionPerDbContext() {
+        DbContext rolledBackContext = new DbContext();
+        DbContext commitedContext = new DbContext();
+        try (DbContextConnection ignored = rolledBackContext.startConnection(dataSource)) {
+            DbTableContext tableContext = rolledBackContext.table("database_table_test_table");
+            try (DbTransaction dbTransaction = rolledBackContext.ensureTransaction()) {
+                tableContext.insert().setField("code", 2000).execute();
+                dbTransaction.setRollback();
+
+                try (DbContextConnection ignored2 = commitedContext.startConnection(dataSource)) {
+                    DbTableContext committedTableContext = commitedContext.table("database_table_test_table");
+                    try (DbTransaction committedTransaction = rolledBackContext.ensureTransaction()) {
+                        committedTableContext.insert().setField("code", 3000).execute();
+                        committedTransaction.setComplete();
+                    }
+                }
+            }
+        }
+        assertThat(tableContext.query().listLongs("code"))
+                .contains(3000L)
+                .doesNotContain(2000L);
+    }
+    
+    @Test
+    public void shouldNestContexts() {
+        try (DbContextConnection ignored = dbContext.startConnection(dataSource)) {
+            tableContext.insert().setField("code", 1).execute();
+            try (DbContextConnection ignored2 = dbContext.startConnection(dataSource)) {
+                tableContext.insert().setField("code", 2).execute();
+            }
+            tableContext.insert().setField("code", 3).execute();
+        }
+
+        assertThat(tableContext.query().listLongs("code")).contains(1L, 2L, 3L);
+    }
+    
 
     private ConnectionSupplier getConnectionWithoutAutoCommit() {
         return () -> {
@@ -149,9 +189,11 @@ public class DbContextTest {
     @Test
     public void shouldThrowOnCommitWhenAutocommitIsTrue() throws InterruptedException {
         final Thread thread = new Thread(() -> {
-            try (DbContextConnection dbContextConnection = dbContext.startConnection(getConnectionWithAutoCommit())) {
-                tableContext.insert().setField("code", 1001).execute();
-                dbContextConnection.commitTransaction();
+            try (DbContextConnection ignore = dbContext.startConnection(getConnectionWithAutoCommit())) {
+                try (DbTransaction tx = dbContext.ensureTransaction()) {
+                    tableContext.insert().setField("name", "test").execute();
+                    tx.setComplete();
+                }
             } catch (Exception e) {
                 thrownException = e;
             }
@@ -196,13 +238,6 @@ public class DbContextTest {
         }
         assertThat(tableContext.where("name", "commitTest").listLongs("code"))
                 .contains(1003L);
-    }
-
-    @Test
-    public void shouldThrowOnDoubleStart() {
-        assertThatThrownBy(() -> dbContext.startConnection(dataSource))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Don't set twice in a thread!");
     }
 
     @Test
