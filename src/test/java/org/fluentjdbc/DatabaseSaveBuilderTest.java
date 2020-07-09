@@ -110,6 +110,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .setField("expired_at", now)
                 .execute(connection);
         assertThat(result).isEqualTo(DatabaseSaveResult.unchanged(firstId));
+        assertThat(result.isChanged()).isFalse();
     }
 
     @Test
@@ -143,6 +144,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .setField("name", savedName)
                 .execute(connection);
         assertThat(result.getSaveStatus()).isEqualTo(INSERTED);
+        assertThat(result.isChanged()).isTrue();
         UUID generatedKey = result.getId();
         assertThat(id).isEqualTo(generatedKey);
 

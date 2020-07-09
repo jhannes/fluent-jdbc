@@ -16,6 +16,10 @@ public class DatabaseSaveResult<T> {
         this.updatedFields = updatedFields;
     }
 
+    public boolean isChanged() {
+        return saveStatus != SaveStatus.UNCHANGED;
+    }
+
     public static <T> DatabaseSaveResult<T> updated(@Nonnull T idValue, List<String> updatedFields) {
         return new DatabaseSaveResult<>(idValue, SaveStatus.UPDATED, updatedFields);
     }
