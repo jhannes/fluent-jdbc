@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import static org.fluentjdbc.DatabaseStatement.addBatch;
+import static org.fluentjdbc.DatabaseStatement.createUpdateStatement;
+
 /**
  * Fluently generate a <code>UPDATE ...</code> statement for a list of objects. Create with a list of object
  * and use {@link #setField(String, Function)} to pass in a function that will be called for each object
@@ -27,8 +30,10 @@ import java.util.stream.IntStream;
  *     }
  * </pre>
  */
-public class DatabaseBulkUpdateBuilder<T> extends DatabaseStatement
-        implements DatabaseBulkQueryable<T, DatabaseBulkUpdateBuilder<T>>, DatabaseBulkUpdatable<T, DatabaseBulkUpdateBuilder<T>> {
+public class DatabaseBulkUpdateBuilder<T> implements
+        DatabaseBulkQueryable<T, DatabaseBulkUpdateBuilder<T>>,
+        DatabaseBulkUpdatable<T, DatabaseBulkUpdateBuilder<T>>
+{
 
     private final DatabaseTable table;
     private final Iterable<T> objects;

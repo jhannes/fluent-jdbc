@@ -102,10 +102,10 @@ public class DbContextJoinedQueryBuilderTest {
         savePermission(membershipId3, applicationName);
         savePermission(membershipId4, applicationName2);
 
-        DbTableAliasContext memberships = this.memberships.alias("m");
-        DbTableAliasContext permissions = this.permissions.alias("p");
-        DbTableAliasContext ps = persons.alias("ps");
-        DbTableAliasContext o = organizations.alias("o");
+        DbContextTableAlias memberships = this.memberships.alias("m");
+        DbContextTableAlias permissions = this.permissions.alias("p");
+        DbContextTableAlias ps = persons.alias("ps");
+        DbContextTableAlias o = organizations.alias("o");
         List<String> result = permissions
             .join(permissions.column("membership_id"), memberships.column("id"))
             .join(memberships.column("person_id"), ps.column("id"))
@@ -148,10 +148,10 @@ public class DbContextJoinedQueryBuilderTest {
                 .setField("granted_by", personTwoId)
                 .execute();
 
-        DbTableAliasContext perm = permissions.alias("perm");
-        DbTableAliasContext m = memberships.alias("m");
-        DbTableAliasContext p = persons.alias("p");
-        DbTableAliasContext g = persons.alias("granter");
+        DbContextTableAlias perm = permissions.alias("perm");
+        DbContextTableAlias m = memberships.alias("m");
+        DbContextTableAlias p = persons.alias("p");
+        DbContextTableAlias g = persons.alias("granter");
 
         assertThat(perm.where("name", "uniquePermName")
                 .join(perm.column("membership_id"), m.column("id"))
@@ -172,11 +172,11 @@ public class DbContextJoinedQueryBuilderTest {
         long army = saveOrganization("Army");
         saveMembership(alice, army);
 
-        DbTableAliasContext m = memberships.alias("m");
-        DbTableAliasContext p = persons.alias("p");
-        DbTableAliasContext o = organizations.alias("o");
+        DbContextTableAlias m = memberships.alias("m");
+        DbContextTableAlias p = persons.alias("p");
+        DbContextTableAlias o = organizations.alias("o");
 
-        DbJoinedSelectContext context = m
+        DbContextJoinedSelectBuilder context = m
                 .join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"));
 
@@ -204,9 +204,9 @@ public class DbContextJoinedQueryBuilderTest {
 
         saveMembership(charlene, combine);
 
-        DbTableAliasContext m = memberships.alias("m");
-        DbTableAliasContext p = persons.alias("p");
-        DbTableAliasContext o = organizations.alias("o");
+        DbContextTableAlias m = memberships.alias("m");
+        DbContextTableAlias p = persons.alias("p");
+        DbContextTableAlias o = organizations.alias("o");
 
         List<String> result = m
                 .join(m.column("person_id"), p.column("id"))
@@ -238,9 +238,9 @@ public class DbContextJoinedQueryBuilderTest {
         saveMembership(personTwoId, orgOneId);
         saveMembership(personTwoId, orgTwoId);
 
-        DbTableAliasContext p = persons.alias("p");
-        DbTableAliasContext m = this.memberships.alias("m");
-        DbTableAliasContext o = organizations.alias("o");
+        DbContextTableAlias p = persons.alias("p");
+        DbContextTableAlias m = this.memberships.alias("m");
+        DbContextTableAlias o = organizations.alias("o");
 
         Map<Long, List<String>> organizationsPerPerson = new HashMap<>();
         p.join(p.column("id"), m.column("person_id"))
@@ -256,10 +256,10 @@ public class DbContextJoinedQueryBuilderTest {
 
     @Test
     public void shouldFailOnMisplacedExpression() {
-        DbTableAliasContext p = persons.alias("p");
-        DbTableAliasContext m = this.memberships.alias("m");
+        DbContextTableAlias p = persons.alias("p");
+        DbContextTableAlias m = this.memberships.alias("m");
 
-        DbJoinedSelectContext selectContext = p
+        DbContextJoinedSelectBuilder selectContext = p
                 .join(p.column("id"), m.column("person_id"))
                 .whereExpression("p.non_existing is null");
 

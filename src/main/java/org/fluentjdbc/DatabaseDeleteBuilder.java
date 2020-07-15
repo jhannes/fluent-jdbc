@@ -4,7 +4,20 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 
-class DatabaseDeleteBuilder extends DatabaseStatement {
+import static org.fluentjdbc.DatabaseStatement.createDeleteStatement;
+import static org.fluentjdbc.DatabaseStatement.executeUpdate;
+
+/**
+ * Generate <code>DELETE</code> statements by collecting field names and parameters. Example:
+ *
+ * <pre>
+ * int count = table
+ *      .where("id", id)
+ *      .delete()
+ *      .execute(connection);
+ * </pre>
+ */
+class DatabaseDeleteBuilder {
 
     private final String tableName;
 
@@ -15,14 +28,25 @@ class DatabaseDeleteBuilder extends DatabaseStatement {
         this.tableName = tableName;
     }
 
+    /**
+     * Add the expressions to the <code>WHERE .... AND ...</code> clause and the where parameters
+     * to the parameterlist for the WHERE-clause
+     */
     DatabaseDeleteBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
         this.whereConditions.addAll(whereConditions);
         this.whereParameters.addAll(whereParameters);
         return this;
     }
 
+    /**
+     * Will {@link DatabaseStatement#createUpdateStatement(String, List, List)}, set parameters and execute to database
+     */
     public int execute(Connection connection) {
-        return executeUpdate(createDeleteStatement(tableName, whereConditions), whereParameters, connection);
+        return executeUpdate(
+                createDeleteStatement(tableName, whereConditions),
+                whereParameters,
+                connection
+        );
     }
 
 }

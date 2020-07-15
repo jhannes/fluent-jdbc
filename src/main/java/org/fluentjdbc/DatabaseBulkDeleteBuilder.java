@@ -10,6 +10,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import static org.fluentjdbc.DatabaseStatement.addBatch;
+import static org.fluentjdbc.DatabaseStatement.createDeleteStatement;
+
 /**
  * Fluently generate a <code>DELETE ... WHERE ...</code> statement for a list of objects.
  * Create with a list of object and use {@link #where(String, Function)} to add a function
@@ -25,8 +28,7 @@ import java.util.stream.IntStream;
  *     }
  * </pre>
  */
-public class DatabaseBulkDeleteBuilder<T> extends DatabaseStatement
-        implements DatabaseBulkQueryable<T, DatabaseBulkDeleteBuilder<T>> {
+public class DatabaseBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, DatabaseBulkDeleteBuilder<T>> {
 
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Function<T, ?>> whereParameters = new ArrayList<>();

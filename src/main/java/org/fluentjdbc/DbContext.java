@@ -17,7 +17,7 @@ import java.util.Optional;
  * <pre>
  * DbContext context = new DbContext();
  *
- * DbTableContext table = context.table("database_test_table");
+ * {@link DbTableContext} table = context.table("database_test_table");
  * DataSource dataSource = createDataSource();
  *
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {
@@ -34,6 +34,15 @@ import java.util.Optional;
  *
  */
 public class DbContext {
+
+    /**
+     * A {@link java.util.function.Supplier} for {@link Connection} objects. Like {@link java.util.function.Supplier},
+     * but can throw {@link SQLException}. Used as an alternative to a {@link DataSource}
+     */
+    @FunctionalInterface
+    public interface ConnectionSupplier {
+        Connection getConnection() throws SQLException;
+    }
 
     private final ThreadLocal<TopLevelDbContextConnection> currentConnection = new ThreadLocal<>();
     private final ThreadLocal<HashMap<String, HashMap<Object, Optional<?>>>> currentCache = new ThreadLocal<>();
@@ -80,6 +89,12 @@ public class DbContext {
         return startConnection(dataSource::getConnection);
     }
 
+    /**
+     * Gets a connection from {@link ConnectionSupplier} and assigns it to the the current thread.
+     * Associates the cache with the current thread as well
+     * 
+     * @see #startConnection(DataSource)
+     */
     public DbContextConnection startConnection(ConnectionSupplier connectionSupplier) {
         if (currentConnection.get() != null) {
             return () -> { };
@@ -89,6 +104,10 @@ public class DbContext {
         return currentConnection.get();
     }
 
+    /**
+     * Returns the connection associated with the current thread or throws exception if
+     * {@link #startConnection(DataSource)} has not been called yet
+     */
     public Connection getThreadConnection() {
         if (currentConnection.get() == null) {
             throw new IllegalStateException("Call startConnection first");
@@ -117,6 +136,10 @@ public class DbContext {
         return (Optional<ENTITY>) currentCache.get().get(tableName).get(key);
     }
 
+    /**
+     * Turns off auto-commit for the current thread until the {@link DbTransaction} is closed. Returns
+     * a {@link DbTransaction} object which can be used to control commit and rollback. Can be nested
+     */
     public DbTransaction ensureTransaction() {
         if (currentTransaction.get() != null) {
             return new NestedTransactionContext(currentTransaction.get());
@@ -220,5 +243,14 @@ public class DbContext {
             return connection;
         }
 
+    }
+
+    /**
+     * Functional interface used to populate the query. Called on when a retrieved value is not in
+     * the cache. Like {@link java.util.function.Function}, but returns {@link Optional}
+     */
+    @FunctionalInterface
+    public interface RetrieveMethod<KEY, ENTITY> {
+        Optional<ENTITY> retrieve(KEY key);
     }
 }

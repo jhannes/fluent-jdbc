@@ -32,7 +32,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
-    <OBJECT> Optional<OBJECT> singleObject(Connection connection, DatabaseTable.RowMapper<OBJECT> mapper);
+    <OBJECT> Optional<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
      * Returns a string from the specified column name

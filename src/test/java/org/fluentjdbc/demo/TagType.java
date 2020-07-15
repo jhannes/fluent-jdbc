@@ -5,8 +5,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.fluentjdbc.DatabaseResult;
 import org.fluentjdbc.DatabaseTable;
-import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.DatabaseTableImpl;
 
 import java.sql.Connection;
@@ -75,7 +75,7 @@ public class TagType {
                 .singleObject(connection, createRowMapper());
     }
 
-    private static RowMapper<TagType> createRowMapper() {
+    private static DatabaseResult.RowMapper<TagType> createRowMapper() {
         return row -> {
             TagType tagType = new TagType(row.getString("name"));
             tagType.setId(row.getLong("id"));

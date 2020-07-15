@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static org.fluentjdbc.DatabaseStatement.createUpdateStatement;
+import static org.fluentjdbc.DatabaseStatement.executeUpdate;
+
 /**
- * Generate <code>UPDATE</code> insert statements by collecting field names and parameters. Support
- * autogeneration of primary keys. Example:
+ * Generate <code>UPDATE</code> statements by collecting field names and parameters. Example:
  *
  * <pre>
  * int count = table
@@ -21,7 +23,7 @@ import java.util.List;
  * </pre>
  */
 @ParametersAreNonnullByDefault
-public class DatabaseUpdateBuilder extends DatabaseStatement implements DatabaseUpdatable<DatabaseUpdateBuilder> {
+public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBuilder> {
 
     private final String tableName;
     private final List<String> whereConditions = new ArrayList<>();
@@ -64,7 +66,7 @@ public class DatabaseUpdateBuilder extends DatabaseStatement implements Database
     }
 
     /**
-     * Will {@link #createUpdateStatement(String, List, List)}, set parameters and execute to database
+     * Will {@link DatabaseStatement#createUpdateStatement(String, List, List)}, set parameters and execute to database
      */
     public int execute(Connection connection) {
         if (updateFields.isEmpty()) {

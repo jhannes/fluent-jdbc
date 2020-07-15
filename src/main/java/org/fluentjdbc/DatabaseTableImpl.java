@@ -101,52 +101,6 @@ public class DatabaseTableImpl implements DatabaseTable {
         return new DatabaseSaveBuilderWithUUID(this, idField, id);
     }
 
-    /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
-     */
-    @Override
-    public DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
-        return query().whereOptional(fieldName, value);
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause
-     */
-    @Override
-    public DatabaseSimpleQueryBuilder whereExpression(String expression) {
-        return query().whereExpression(expression);
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
-     */
-    @Override
-    public DatabaseSimpleQueryBuilder whereExpression(String expression, Object parameter) {
-        return query().whereExpression(expression, parameter);
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
-     */
-    public DatabaseSimpleQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
-        return query().whereExpressionWithMultipleParameters(expression, parameters);
-    }
-
-    /**
-     * For each field adds "<code>WHERE fieldName = value</code>" to the query
-     */
-    @Override
-    public DatabaseSimpleQueryBuilder whereAll(List<String> fields, List<Object> values) {
-        return query().whereAll(fields, values);
-    }
-
-    @Override
-    public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
-        return query().whereIn(fieldName, parameters);
-    }
-
     @Override
     public DatabaseSimpleQueryBuilder query() {
         return new DatabaseTableQueryBuilder(this);

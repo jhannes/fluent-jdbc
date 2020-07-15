@@ -3,6 +3,7 @@ package org.fluentjdbc.postgres;
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
 import org.postgresql.ds.PGPoolingDataSource;
+import org.postgresql.ds.PGSimpleDataSource;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
 
@@ -64,8 +65,8 @@ public class PostgresTests {
         }
     }
 
-    public static class DbSyncBuilderContextTest extends org.fluentjdbc.DbSyncBuilderContextTest {
-        public DbSyncBuilderContextTest() {
+    public static class DbContextSyncBuilderTest extends org.fluentjdbc.DbContextSyncBuilderTest {
+        public DbContextSyncBuilderTest() {
             super(getDataSource(), REPLACEMENTS);
         }
     }
@@ -82,14 +83,14 @@ public class PostgresTests {
 
     private static boolean databaseFailed = false;
 
-    private static PGPoolingDataSource dataSource;
+    private static PGSimpleDataSource dataSource;
 
     static DataSource getDataSource() {
         Assume.assumeFalse(databaseFailed);
         if (dataSource != null) {
             return dataSource;
         }
-        dataSource = new PGPoolingDataSource();
+        dataSource = new PGSimpleDataSource();
         String username = System.getProperty("test.db.postgres.username", "fluentjdbc_test");
         dataSource.setUrl(System.getProperty("test.db.postgres.url", "jdbc:postgresql:" + username));
         dataSource.setUser(username);

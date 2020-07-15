@@ -10,12 +10,15 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import static org.fluentjdbc.DatabaseStatement.addBatch;
+import static org.fluentjdbc.DatabaseStatement.createInsertSql;
+
 /**
  * Variation of {@link DatabaseBulkInsertBuilder} which executes the statement with a request
  * to return generated primary keys from the database and calls the registered update function
  * for each object in the batch with the corresponding generated primary key
  */
-public class DatabaseBulkInsertBuilderWithPk<T> extends DatabaseStatement {
+public class DatabaseBulkInsertBuilderWithPk<T> {
 
     private final String primaryKeyColumn;
     private final DatabaseTable table;

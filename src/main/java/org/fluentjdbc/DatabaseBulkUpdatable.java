@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.function.Function;
 
 /**
- * Fluently create a statement for a list of objects which updates values, ie. <code>INSERT</code>
+ * Fluently create a statement for a list of objects which updates values, ie <code>INSERT</code>
  * or <code>UPDATE</code>
  */
 public interface DatabaseBulkUpdatable<ENTITY, SELF extends DatabaseBulkUpdatable<ENTITY, SELF>> {

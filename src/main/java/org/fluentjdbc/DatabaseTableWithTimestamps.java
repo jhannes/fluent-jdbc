@@ -47,6 +47,19 @@ public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
                 .setField("created_at", t -> Instant.now());
     }
 
+    /**
+     * Creates a {@link DatabaseBulkUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
+     * for a list of objects. Example:
+     *
+     * <pre>
+     *     public void updateAll(List&lt;TagType&gt; tagTypes, Connection connection) {
+     *         tagTypesTable.bulkUpdate(tagTypes)
+     *              .where("id", TagType::getId)
+     *              .setField("name", TagType::getName)
+     *              .execute(connection);
+     *     }
+     * </pre>
+     */
     @Override
     public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects) {
         return super.bulkUpdate(objects).setField("updated_at", t -> Instant.now());

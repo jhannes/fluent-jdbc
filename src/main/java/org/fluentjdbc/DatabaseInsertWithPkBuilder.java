@@ -1,5 +1,8 @@
 package org.fluentjdbc;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -7,7 +10,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-public class DatabaseInsertWithPkBuilder<T> extends DatabaseStatement {
+import static org.fluentjdbc.DatabaseStatement.bindParameters;
+
+/**
+ * Generate <code>INSERT</code> statements with automatic primary key generation by collecting
+ * field names and parameters. Example:
+ *
+ * <pre>
+ * Long id = table.insert()
+ *    .setPrimaryKey("id", (Long)null) // this creates {@link DatabaseInsertWithPkBuilder}
+ *    .setField("name", "Something")
+ *    .setField("code", 102)
+ *    .execute(connection);
+ * </pre>
+ */
+public class DatabaseInsertWithPkBuilder<T> {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseInsertWithPkBuilder.class);
 
     private final DatabaseInsertBuilder insertBuilder;
     private final String idField;
@@ -19,16 +38,27 @@ public class DatabaseInsertWithPkBuilder<T> extends DatabaseStatement {
         this.idValue = idValue;
     }
 
+    /**
+     * Adds fieldName to the <code>INSERT (fieldName) VALUES (?)</code> and parameter to the list of parameters
+     */
     public DatabaseInsertWithPkBuilder<T> setField(String fieldName, Object parameter) {
         insertBuilder.setField(fieldName, parameter);
         return this;
     }
 
+    /**
+     * Calls {@link #setField(String, Object)} for each fieldName and parameter
+     */
     public DatabaseInsertWithPkBuilder<T> setFields(List<String> fields, List<Object> values) {
         insertBuilder.setFields(fields, values);
         return this;
     }
 
+    /**
+     * Executes the insert statement and returns the number of rows inserted. If a pre-specified
+     * primary key was supplied, this is used, otherwise, uses the {@link PreparedStatement#getGeneratedKeys()}
+     * to retrieve the generated keys
+     */
     @Nonnull
     public T execute(Connection connection) throws SQLException {
         T idValue = this.idValue;

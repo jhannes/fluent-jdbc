@@ -2,7 +2,6 @@ package org.fluentjdbc.demo;
 
 import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseTable;
-import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.DatabaseTableImpl;
 
 import java.sql.Connection;
@@ -48,16 +47,7 @@ public class Tag {
     }
 
     public static List<Tag> listByTypes(Connection connection, TagType tagType) {
-        return tagsTable.where("type_id", tagType.getId()).unordered().list(connection, createRowMapper());
-    }
-
-    static RowMapper<Tag> createRowMapper() {
-        return new RowMapper<Tag>() {
-            @Override
-            public Tag mapRow(DatabaseRow row) throws SQLException {
-                return mapFromRow(row);
-            }
-        };
+        return tagsTable.where("type_id", tagType.getId()).unordered().list(connection, Tag::mapFromRow);
     }
 
     static Tag mapFromRow(DatabaseRow row) throws SQLException {

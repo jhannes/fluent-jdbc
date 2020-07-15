@@ -18,11 +18,11 @@ import java.util.function.Function;
  *     }
  * </pre>
  */
-public class DbBulkDeleteContext<T> implements DatabaseBulkQueryable<T, DbBulkDeleteContext<T>> {
+public class DbContextBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, DbContextBulkDeleteBuilder<T>> {
     private final DbTableContext tableContext;
     private final DatabaseBulkDeleteBuilder<T> builder;
 
-    public DbBulkDeleteContext(DbTableContext tableContext, DatabaseBulkDeleteBuilder<T> builder) {
+    public DbContextBulkDeleteBuilder(DbTableContext tableContext, DatabaseBulkDeleteBuilder<T> builder) {
         this.tableContext = tableContext;
         this.builder = builder;
     }
@@ -33,7 +33,7 @@ public class DbBulkDeleteContext<T> implements DatabaseBulkQueryable<T, DbBulkDe
      * to extract the values for the <code>WHERE fieldName = ?</code> clause
      */
     @Override
-    public DbBulkDeleteContext<T> where(String field, Function<T, ?> value) {
+    public DbContextBulkDeleteBuilder<T> where(String field, Function<T, ?> value) {
         builder.where(field, value);
         return this;
     }

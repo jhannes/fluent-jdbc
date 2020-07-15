@@ -19,12 +19,12 @@ import java.util.function.Function;
  *     }
  * </pre>
  */
-public class DbBulkInsertContext<T> implements DatabaseBulkUpdatable<T, DbBulkInsertContext<T>> {
+public class DbContextBuildInsertBuilder<T> implements DatabaseBulkUpdatable<T, DbContextBuildInsertBuilder<T>> {
 
     private final DbTableContext tableContext;
     private final DatabaseBulkInsertBuilder<T> builder;
 
-    public DbBulkInsertContext(DbTableContext tableContext, DatabaseBulkInsertBuilder<T> builder) {
+    public DbContextBuildInsertBuilder(DbTableContext tableContext, DatabaseBulkInsertBuilder<T> builder) {
         this.tableContext = tableContext;
         this.builder = builder;
     }
@@ -34,7 +34,7 @@ public class DbBulkInsertContext<T> implements DatabaseBulkUpdatable<T, DbBulkIn
      * {@link PreparedStatement#setObject(int, Object)} for each row in the bulk insert
      */
     @Override
-    public DbBulkInsertContext<T> setField(String fieldName, Function<T, Object> transformer) {
+    public DbContextBuildInsertBuilder<T> setField(String fieldName, Function<T, Object> transformer) {
         builder.setField(fieldName, transformer);
         return this;
     }
@@ -44,7 +44,7 @@ public class DbBulkInsertContext<T> implements DatabaseBulkUpdatable<T, DbBulkIn
      * each of the corresponding parameters in the {@link PreparedStatement}
      */
     @Override
-    public <VALUES extends List<?>> DbBulkInsertContext<T> setFields(List<String> fields, Function<T, VALUES> values) {
+    public <VALUES extends List<?>> DbContextBuildInsertBuilder<T> setFields(List<String> fields, Function<T, VALUES> values) {
         builder.setFields(fields, values);
         return this;
     }

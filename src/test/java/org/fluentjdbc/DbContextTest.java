@@ -176,7 +176,7 @@ public class DbContextTest {
     }
     
 
-    private ConnectionSupplier getConnectionWithoutAutoCommit() {
+    private DbContext.ConnectionSupplier getConnectionWithoutAutoCommit() {
         return () -> {
             final Connection connection = dataSource.getConnection();
             connection.setAutoCommit(false);
@@ -204,7 +204,7 @@ public class DbContextTest {
         assertThat(thrownException).isInstanceOf(SQLException.class);
     }
 
-    private ConnectionSupplier getConnectionWithAutoCommit() {
+    private DbContext.ConnectionSupplier getConnectionWithAutoCommit() {
         return () -> {
             final Connection connection = dataSource.getConnection();
             connection.setAutoCommit(true);

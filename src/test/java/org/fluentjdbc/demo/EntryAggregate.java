@@ -33,7 +33,7 @@ public class EntryAggregate {
         result.getTags().addAll(Tag.tagsTable
             .whereExpression("id in (select tag_id from entry_taggings where entry_id = ?)", id)
             .orderBy("name")
-            .list(connection, Tag.createRowMapper()));
+            .list(connection, Tag::mapFromRow));
         return result;
     }
 
@@ -51,7 +51,7 @@ public class EntryAggregate {
                         aggregate = new EntryAggregate(Entry.mapFromRow(row.table("entries")));
                         entries.add(aggregate);
                     }
-                    aggregate.getTags().add(Tag.createRowMapper().mapRow(row.table("tags")));
+                    aggregate.getTags().add(Tag.mapFromRow(row.table("tags")));
                 }
                 return entries;
             }

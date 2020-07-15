@@ -23,15 +23,21 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Utility methods for generating queries
+ * ({@link #createUpdateStatement(String, List, List)}, {@link #createInsertSql(String, Collection)},
+ * converting parameters to {@link PreparedStatement} ({@link #bindParameter(PreparedStatement, int, Object)}
+ * and comparing values ({@link #dbValuesAreEqual(Object, DatabaseRow, String, Connection)}.
+ */
 @ParametersAreNonnullByDefault
-class DatabaseStatement {
+public class DatabaseStatement {
     protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
 
     /**
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
      * convert each one
      */
-    protected int bindParameters(PreparedStatement stmt, List<Object> parameters) throws SQLException {
+    public static int bindParameters(PreparedStatement stmt, List<Object> parameters) throws SQLException {
         return bindParameters(stmt, parameters, 1);
     }
 
@@ -39,7 +45,7 @@ class DatabaseStatement {
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
      * convert each one
      */
-    protected int bindParameters(PreparedStatement stmt, List<Object> parameters, int start) throws SQLException {
+    public static int bindParameters(PreparedStatement stmt, List<Object> parameters, int start) throws SQLException {
         int index = start;
         for (Object parameter : parameters) {
             bindParameter(stmt, index++, parameter);
@@ -52,7 +58,7 @@ class DatabaseStatement {
      * Supports {@link Instant}, {@link ZonedDateTime}, {@link OffsetDateTime}, {@link LocalDate}, {@link String},
      * {@link Enum}, {@link UUID}, {@link Double}
      */
-    protected void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
+    public static void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof Instant) {
             stmt.setTimestamp(index, (Timestamp) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof ZonedDateTime) {
@@ -97,7 +103,12 @@ class DatabaseStatement {
         }
     }
 
-    protected <T> void addBatch(PreparedStatement statement, Iterable<T> objects, Collection<Function<T, ?>> columnValueExtractors) throws SQLException {
+    /**
+     * Binds the parameters and calls {@link PreparedStatement#addBatch()}.
+     * 
+     * @see #bindParameter(PreparedStatement, int, Object)
+     */
+    public static <T> void addBatch(PreparedStatement statement, Iterable<T> objects, Collection<Function<T, ?>> columnValueExtractors) throws SQLException {
         for (T object : objects) {
             int columnIndex = 1;
             for (Function<T, ?> f : columnValueExtractors) {
@@ -107,11 +118,17 @@ class DatabaseStatement {
         }
     }
 
+    /**
+     * Returns true if the database connection is to SQL server
+     */
     private static boolean isSqlServer(Connection connection) {
         return connection.getClass().getName().startsWith("net.sourceforge.jtds.jdbc") ||
                 connection.getClass().getName().startsWith("com.microsoft.sqlserver.jdbc");
     }
 
+    /**
+     * Returns true if the database connection is to Oracle
+     */
     private static boolean isOracle(Connection connection) {
         return connection.getClass().getName().startsWith("oracle.jdbc");
     }
@@ -121,7 +138,7 @@ class DatabaseStatement {
      * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
      * and executes the statement
      */
-    protected int executeUpdate(String query, List<Object> parameters, Connection connection) {
+    public static int executeUpdate(String query, List<Object> parameters, Connection connection) {
         long startTime = System.currentTimeMillis();
         logger.trace(query);
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -139,7 +156,7 @@ class DatabaseStatement {
      * Creates String for
      * <code>INSERT INTO tableName (fieldName, fieldName, ...) VALUES (?, ?, ...)</code>
      */
-    protected String createInsertSql(String tableName, Collection<String> fieldNames) {
+    public static String createInsertSql(String tableName, Collection<String> fieldNames) {
         return "insert into " + tableName +
                 " (" + String.join(",", fieldNames)
                 + ") values ("
@@ -150,7 +167,7 @@ class DatabaseStatement {
      * Creates String for
      * <code>DELETE FROM tableName WHERE whereCondition AND whereCondition</code>
      */
-    protected String createDeleteStatement(String tableName, List<String> whereConditions) {
+    public static String createDeleteStatement(String tableName, List<String> whereConditions) {
         return "delete from " + tableName + " where "  + String.join(" and ", whereConditions);
     }
 
@@ -158,13 +175,16 @@ class DatabaseStatement {
      * Creates String for
      * <code>UPDATE tableName SET updateField = ?, updateField = ? WHERE whereCondition AND whereCondition</code>
      */
-    protected String createUpdateStatement(String tableName, List<String> updateFields, List<String> whereConditions) {
+    public static String createUpdateStatement(String tableName, List<String> updateFields, List<String> whereConditions) {
         return "update " + tableName
             + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
             + (whereConditions.isEmpty() ? "" : " where " + String.join(" and ", whereConditions));
     }
 
-    protected String parameterString(int parameterCount) {
+    /**
+     * Create a string like <code>?, ?, ?</code> with the parameterCount number of '?'
+     */
+    public static String parameterString(int parameterCount) {
         StringBuilder parameterString = new StringBuilder("?");
         for (int i = 1; i < parameterCount; i++) {
             parameterString.append(", ?");
@@ -172,7 +192,11 @@ class DatabaseStatement {
         return parameterString.toString();
     }
 
-    protected boolean dbValuesAreEqual(Object value, DatabaseRow row, String field, Connection connection) throws SQLException {
+    /**
+     * Returns true if the object value equals the specified field name in the database. Converts
+     * {@link #toDatabaseType(Object, Connection)} to decrease number of false positives
+     */
+    public static boolean dbValuesAreEqual(Object value, DatabaseRow row, String field, Connection connection) throws SQLException {
         Object canonicalValue = toDatabaseType(value, connection);
         Object dbValue;
         if (canonicalValue instanceof Timestamp) {

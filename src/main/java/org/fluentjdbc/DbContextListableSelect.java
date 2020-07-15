@@ -1,30 +1,39 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.DatabaseTable.RowMapper;
-
 import javax.annotation.Nonnull;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface DbListableSelectContext<T extends DbListableSelectContext<T>> extends DatabaseQueryable<T> {
+
+/**
+ * Interface to execute terminal operations for <code>SELECT</code>-statements. Usage:
+ *
+ * <pre>
+ * try (DbContextConnection ignored = context.startConnection(dataSource)) {
+ *     table.where...().list(row -&gt; row.getUUID("column"));
+ *     table.where...().single(row -&gt; row.getLocalDate("column"));
+ * }
+ * </pre>
+ */
+public interface DbContextListableSelect<T extends DbContextListableSelect<T>> extends DatabaseQueryable<T> {
 
     /**
-     * Execute the query and map each return value over the {@link RowMapper} function to return a stream. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>
-     *     table.where("status", status).stream(row -> row.getInstant("created_at"))
+     *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
-    <OBJECT> Stream<OBJECT> stream(RowMapper<OBJECT> mapper);
+    <OBJECT> Stream<OBJECT> stream(DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
-     * Execute the query and map each return value over the {@link RowMapper} function to return a list. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
      * <pre>
-     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -> row.getInstant("created_at"))
+     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
-    <OBJECT> List<OBJECT> list(RowMapper<OBJECT> object);
+    <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> object);
 
     /**
      * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
@@ -54,7 +63,7 @@ public interface DbListableSelectContext<T extends DbListableSelectContext<T>> e
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
-    <OBJECT> Optional<OBJECT> singleObject(RowMapper<OBJECT> mapper);
+    <OBJECT> Optional<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
      * Returns a string from the specified column name
@@ -90,8 +99,8 @@ public interface DbListableSelectContext<T extends DbListableSelectContext<T>> e
 
     /**
      * Executes the <code>SELECT * FROM ...</code> statement and calls back to
-     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     * {@link DatabaseResult.RowConsumer} for each returned row
      */
-    void forEach(DatabaseTable.RowConsumer row);
+    void forEach(DatabaseResult.RowConsumer row);
 
 }

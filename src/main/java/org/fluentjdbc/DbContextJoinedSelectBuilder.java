@@ -3,26 +3,65 @@ package org.fluentjdbc;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
+import java.sql.ResultSetMetaData;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSelectContext> {
+/**
+ * {@link DbContextSelectBuilder} used to generate joined queries using SQL-92 standard
+ * <code>SELECT * FROM table1 a JOIN table2 b ON a.column = b.column</code>. To specify
+ * columns for selection and tables for retrieval of columns, use {@link DbContextTableAlias}
+ * and {@link DatabaseColumnReference}.
+ *
+ * <p><strong>Only works well on JDBC drivers that implement {@link ResultSetMetaData#getTableName(int)}</strong>,
+ * as this is used to calculate column indexes for aliased tables. This includes PostgreSQL, H2, HSQLDB, and SQLite,
+ * but not Oracle or SQL Server.</p>
+ *
+ * <p>Pull requests are welcome for a substitute for SQL Server and Oracle.</p>
+ *
+ * <h3>Usage example:</h3>
+
+ * <pre>
+ * DbContextTableAlias p = productsTable.alias("p");
+ * DbContextTableAlias o = ordersTable.alias("o");
+ * return context
+ *         .join(linesAlias.column("product_id"), p.column("product_id"))
+ *         .join(linesAlias.column("order_id"), o.column("order_id"))
+ *         .list(row -&gt; new OrderLineEntity(
+ *                 OrderRepository.toOrder(row.table(o)),
+ *                 ProductRepository.toProduct(row.table(p)),
+ *                 toOrderLine(row.table(linesAlias))
+ *         ));
+ * </pre>
+ */
+public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbContextJoinedSelectBuilder> {
     private final DbContext dbContext;
     private final DatabaseJoinedQueryBuilder builder;
 
-    public DbJoinedSelectContext(DbTableAliasContext dbTableContext) {
+    public DbContextJoinedSelectBuilder(DbContextTableAlias dbTableContext) {
         dbContext = dbTableContext.getDbContext();
         builder = new DatabaseJoinedQueryBuilder(dbTableContext.getTableAlias());
     }
 
-    public DbJoinedSelectContext join(DatabaseColumnReference a, DatabaseColumnReference b) {
+    /**
+     * Adds an additional table to the join as an inner join. Inner joins require a matching row
+     * in both tables and will leave out rows from one of the table where there is no corresponding
+     * table in the other
+     */
+    public DbContextJoinedSelectBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
         builder.join(a, b);
         return this;
     }
 
-    public DbJoinedSelectContext leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
+    /**
+     * Adds an additional table to the join as a left join. Left join only require a matching row in
+     * the first/left table. If there is no matching row in the second/right table, all columns are
+     * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
+     * the resulting row, <code>null</code> is returned
+     */
+    public DbContextJoinedSelectBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
         builder.leftJoin(a, b);
         return this;
     }
@@ -36,41 +75,41 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
     }
 
     /**
-     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a stream. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      *
      * <pre>
      *     t.join(t.column("id"), o.column("parent_id"))
      *          .where("status", status)
-     *          .stream(row -> row.table(joinedTable).getInstant("created_at"))
+     *          .stream(row -&gt; row.table(joinedTable).getInstant("created_at"))
      * </pre>
      */
     @Override
-    public <OBJECT> Stream<OBJECT> stream(DatabaseTable.RowMapper<OBJECT> mapper) {
+    public <OBJECT> Stream<OBJECT> stream(DatabaseResult.RowMapper<OBJECT> mapper) {
         return builder.stream(getConnection(), mapper);
     }
 
     /**
-     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a list. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
      *
      * <pre>
      *     DbTableAliasContext t = table.alias("t");
      *     DbTableAliasContext o = otherTable.alias("o");
      *     List&lt;Instant&gt; creationTimes = t.join(t.column("id"), o.column("parent_id"))
      *          .where(t.column("name"), name)
-     *          .list(row -> row.table(o).getInstant("created_at"));
+     *          .list(row -&gt; row.table(o).getInstant("created_at"));
      * </pre>
      */
     @Override
-    public <OBJECT> List<OBJECT> list(DatabaseTable.RowMapper<OBJECT> mapper) {
+    public <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> mapper) {
         return builder.list(getConnection(), mapper);
     }
 
     /**
      * Executes the <code>SELECT * FROM ...</code> statement and calls back to
-     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     * {@link DatabaseResult.RowConsumer} for each returned row
      */
     @Override
-    public void forEach(DatabaseTable.RowConsumer consumer) {
+    public void forEach(DatabaseResult.RowConsumer consumer) {
         builder.forEach(getConnection(), consumer);
     }
 
@@ -79,7 +118,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     @Override
-    public DbJoinedSelectContext whereExpression(String expression, @Nullable Object value) {
+    public DbContextJoinedSelectBuilder whereExpression(String expression, @Nullable Object value) {
         builder.whereExpression(expression, value);
         return this;
     }
@@ -88,7 +127,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    public DbJoinedSelectContext whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
+    public DbContextJoinedSelectBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
         builder.whereExpressionWithMultipleParameters(expression, parameters);
         return this;
     }
@@ -97,7 +136,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * Adds the expression to the WHERE-clause
      */
     @Override
-    public DbJoinedSelectContext whereExpression(String expression) {
+    public DbContextJoinedSelectBuilder whereExpression(String expression) {
         builder.whereExpression(expression);
         return this;
     }
@@ -106,7 +145,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
      */
     @Override
-    public DbJoinedSelectContext whereOptional(String fieldName, @Nullable Object value) {
+    public DbContextJoinedSelectBuilder whereOptional(String fieldName, @Nullable Object value) {
         builder.whereOptional(fieldName, value);
         return this;
     }
@@ -117,7 +156,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * resulting in no rows being returned.
      */
     @Override
-    public DbJoinedSelectContext whereIn(String fieldName, Collection<?> parameters) {
+    public DbContextJoinedSelectBuilder whereIn(String fieldName, Collection<?> parameters) {
         builder.whereIn(fieldName, parameters);
         return this;
     }
@@ -126,7 +165,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * For each field adds "<code>WHERE fieldName = value</code>" to the query
      */
     @Override
-    public DbJoinedSelectContext whereAll(List<String> fields, List<Object> values) {
+    public DbContextJoinedSelectBuilder whereAll(List<String> fields, List<Object> values) {
         builder.whereAll(fields, values);
         return this;
     }
@@ -135,7 +174,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * Returns or creates a query object to be used to add {@link #where(String, Object)} statements and operations
      */
     @Override
-    public DbJoinedSelectContext query() {
+    public DbContextJoinedSelectBuilder query() {
         return this;
     }
 
@@ -149,7 +188,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      */
     @Override
     @Nonnull
-    public <OBJECT> Optional<OBJECT> singleObject(DatabaseTable.RowMapper<OBJECT> mapper) {
+    public <OBJECT> Optional<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper) {
         return builder.singleObject(getConnection(), mapper);
     }
 
@@ -157,7 +196,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
-    public DbJoinedSelectContext unordered() {
+    public DbContextJoinedSelectBuilder unordered() {
         builder.unordered();
         return this;
     }
@@ -166,7 +205,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
      * in a predictable order.
      */
-    public DbJoinedSelectContext orderBy(String orderByClause) {
+    public DbContextJoinedSelectBuilder orderBy(String orderByClause) {
         builder.orderBy(orderByClause);
         return this;
     }
@@ -175,7 +214,7 @@ public class DbJoinedSelectContext implements DbListableSelectContext<DbJoinedSe
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
      * in a predictable order.
      */
-    public DbJoinedSelectContext orderBy(DatabaseColumnReference column) {
+    public DbContextJoinedSelectBuilder orderBy(DatabaseColumnReference column) {
         return orderBy(column.getQualifiedColumnName());
     }
 

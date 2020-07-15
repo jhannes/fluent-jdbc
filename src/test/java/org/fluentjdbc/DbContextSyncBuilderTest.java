@@ -18,7 +18,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class DbSyncBuilderContextTest {
+public class DbContextSyncBuilderTest {
 
     private final Map<String, String> replacements;
 
@@ -30,11 +30,11 @@ public class DbSyncBuilderContextTest {
     private static final String CREATE_TABLE =
             "create table sync_test (id ${UUID} primary key, name varchar(200) not null, value DECIMAL(20,2), updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
 
-    public DbSyncBuilderContextTest() {
+    public DbContextSyncBuilderTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
     }
 
-    protected DbSyncBuilderContextTest(DataSource dataSource, Map<String, String> replacements) {
+    protected DbContextSyncBuilderTest(DataSource dataSource, Map<String, String> replacements) {
         this.replacements = replacements;
         dbContext = new DbContextRule(dataSource);
         table = dbContext.tableWithTimestamps("sync_test");
@@ -84,12 +84,12 @@ public class DbSyncBuilderContextTest {
     @Test
     public void internalMissingRowsAreEqual() {
         List<Map<String, Object>> entities = Collections.singletonList(createObject("test", BigDecimal.ONE));
-        DbSyncBuilderContext<Map<String, Object>> syncContext = table.sync(entities).cacheExisting();
+        DbContextSyncBuilder<Map<String, Object>> syncBuilder = table.sync(entities).cacheExisting();
 
-        assertThat(syncContext.areEqual(null, entities)).isFalse();
-        assertThat(syncContext.areEqual(entities, null)).isFalse();
-        assertThat(syncContext.areEqualLists(null, null)).isTrue();
-        assertThat(syncContext.areEqualLists(Collections.emptyList(), entities)).isFalse();
+        assertThat(syncBuilder.areEqual(null, entities)).isFalse();
+        assertThat(syncBuilder.areEqual(entities, null)).isFalse();
+        assertThat(syncBuilder.areEqualLists(null, null)).isTrue();
+        assertThat(syncBuilder.areEqualLists(Collections.emptyList(), entities)).isFalse();
     }
 
     public Map<String, Object> createObject(String name, BigDecimal value) {

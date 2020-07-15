@@ -1,6 +1,5 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.Before;
 import org.junit.Test;
@@ -194,7 +193,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .isInstanceOf(SQLException.class);
 
         assertThatThrownBy(() -> missingTable.where("id", 12).unordered()
-                .list(connection, (RowMapper<Object>) row -> row.getLong("id")))
+                .list(connection, row -> row.getLong("id")))
                 .isInstanceOf(SQLException.class);
 
         assertThatThrownBy(() -> missingTable.insert().setField("id", 12).execute(connection))

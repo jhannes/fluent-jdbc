@@ -11,8 +11,21 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/**
+ * Generate <code>INSERT</code> or <code>UPDATE</code> statements on a {@link DatabaseTable} by
+ * collecting field names and parameters. Support autogeneration of primary keys and unique
+ * natural keys. Example:
+ *
+ * <pre>
+ * DatabaseSaveResult&lt;Long&gt; result = table.newSaveBuilder("id", object.getId())
+ *      .uniqueKey("name", object.getName())
+ *      .setField("value", object.getValue())
+ *      .execute(connection);
+ * object.setId(result.getId());
+ * </pre>
+ */
 @ParametersAreNonnullByDefault
-public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
+public abstract class DatabaseSaveBuilder<T> {
 
     protected final List<String> uniqueKeyFields = new ArrayList<>();
     protected final List<Object> uniqueKeyValues = new ArrayList<>();
@@ -31,34 +44,57 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         this.idValue = id;
     }
 
+    /**
+     * Specify a natural key for this table. If the <code>id</code> is null and there is a unique key
+     * match, UPDATE is called with this row and the existing primary key is returned, instead of INSERT.
+     * If more than one uniqueKey, fluent-jdbc assumes a composite unique constraint, that is <em>all</em>
+     * fields must match
+     */
     public DatabaseSaveBuilder<T> uniqueKey(String fieldName, @Nullable Object fieldValue) {
         uniqueKeyFields.add(fieldName);
         uniqueKeyValues.add(fieldValue);
         return this;
     }
 
+    /**
+     * Specify a column name to be saved
+     */
     public DatabaseSaveBuilder<T> setField(String fieldName, @Nullable Object fieldValue) {
         fields.add(fieldName);
         values.add(fieldValue);
         return this;
     }
 
+    /**
+     * Executes the <code>UPDATE</code> or <code>INSERT</code> statement and returns a
+     * {@link DatabaseSaveResult} which explains what operation was executed.
+     *
+     * <ul>
+     *     <li>If id was set and {@link #tableWhereId(Object)} returns no object, inserts a new row.</li>
+     *     <li>If id was set and {@link #tableWhereId(Object)} returns a row, updates this row if
+     *     {@link #differingFields(DatabaseRow, Connection)} is non empty or treats the row as unchanged otherwise</li>
+     *     <li>If id was null and {@link #tableWhereUniqueKey()} returns no object, inserts a new row,
+     *     generating a new primary key</li>
+     *     <li>If id was null and {@link #tableWhereUniqueKey()} returns a row, updates this row if
+     *     {@link #differingFields(DatabaseRow, Connection)} is non empty or treats the row as unchanged otherwise</li>
+     * </ul>
+     */
     @Nonnull
     public DatabaseSaveResult<T> execute(Connection connection) throws SQLException {
-        AtomicReference<T> idValueLocal = new AtomicReference<>(this.idValue);
-        if (idValueLocal.get() != null) {
-            Optional<List<String>> difference = tableWhereId(idValueLocal.get()).singleObject(connection, row -> differingFields(row, connection));
+        if (this.idValue != null) {
+            Optional<List<String>> difference = tableWhereId(this.idValue).singleObject(connection, row -> differingFields(row, connection));
             if (!difference.isPresent()) {
                 insert(connection);
-                return DatabaseSaveResult.inserted(idValueLocal.get());
+                return DatabaseSaveResult.inserted(this.idValue);
             } else if (!difference.get().isEmpty()) {
-                update(connection, idValueLocal.get());
-                return DatabaseSaveResult.updated(idValueLocal.get(), difference.get());
+                update(connection, this.idValue);
+                return DatabaseSaveResult.updated(this.idValue, difference.get());
             } else {
-                return DatabaseSaveResult.unchanged(idValueLocal.get());
+                return DatabaseSaveResult.unchanged(this.idValue);
             }
         } else if (hasUniqueKey()) {
-            Optional<List<String>> difference = table.whereAll(uniqueKeyFields, uniqueKeyValues).singleObject(connection, row -> {
+            AtomicReference<T> idValueLocal = new AtomicReference<>();
+            Optional<List<String>> difference = tableWhereUniqueKey().singleObject(connection, row -> {
                 idValueLocal.set(getId(row));
                 return differingFields(row, connection);
             });
@@ -76,28 +112,46 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         }
     }
 
+    /**
+     * Creates a query where primary key is specified
+     */
     protected DatabaseSimpleQueryBuilder tableWhereId(T p) {
         return table.where(idField, p);
     }
 
-    private List<String> differingFields(DatabaseRow row, Connection connection) throws SQLException {
+    /**
+     * Creates a query where all unique fields are specified
+     */
+    protected DatabaseSimpleQueryBuilder tableWhereUniqueKey() {
+        return table.whereAll(uniqueKeyFields, uniqueKeyValues);
+    }
+
+    /**
+     * Compares the values on the {@link DatabaseRow} with the fields specified in this object and
+     * returns the columns in the database with a different value
+     */
+    protected List<String> differingFields(DatabaseRow row, Connection connection) throws SQLException {
         List<String> difference = new ArrayList<>();
         for (int i = 0; i < fields.size(); i++) {
             String field = fields.get(i);
-            if (!dbValuesAreEqual(values.get(i), row, field, connection)) {
+            if (!DatabaseStatement.dbValuesAreEqual(values.get(i), row, field, connection)) {
                 difference.add(field);
             }
         }
         for (int i = 0; i < uniqueKeyFields.size(); i++) {
             String field = uniqueKeyFields.get(i);
-            if (!dbValuesAreEqual(uniqueKeyValues.get(i), row, field, connection)) {
+            if (!DatabaseStatement.dbValuesAreEqual(uniqueKeyValues.get(i), row, field, connection)) {
                 difference.add(field);
             }
         }
         return difference;
     }
 
-    private boolean hasUniqueKey() {
+    /**
+     * Returns true if at least one field was specified as {@link #uniqueKey(String, Object)}
+     * and all uniqueKeyValues are non-null
+     */
+    protected boolean hasUniqueKey() {
         if (uniqueKeyFields.isEmpty()) return false;
         for (Object o : uniqueKeyValues) {
             if (o == null) return false;
@@ -105,9 +159,15 @@ public abstract class DatabaseSaveBuilder<T> extends DatabaseStatement {
         return true;
     }
 
+    /**
+     * Build and execute the <code>INSERT</code>-statement to insert this row
+     */
     @Nullable
     protected abstract T insert(Connection connection) throws SQLException;
 
+    /**
+     * Build and execute the <code>UPDATE</code>-statement to update this row
+     */
     protected T update(Connection connection, T idValue) {
         tableWhereId(idValue)
                 .update()

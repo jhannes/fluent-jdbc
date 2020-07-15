@@ -4,6 +4,10 @@ import java.sql.Connection;
 
 import javax.annotation.Nullable;
 
+/**
+ * Subclass of {@link DatabaseSaveBuilder} which assumes the client code always specifies
+ * primary key field
+ */
 public class DatabaseSaveBuilderWithoutGeneratedKeys<T> extends DatabaseSaveBuilder<T> {
 
     public DatabaseSaveBuilderWithoutGeneratedKeys(DatabaseTableImpl table, String idField, T id) {

@@ -11,6 +11,9 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
+import static org.fluentjdbc.DatabaseStatement.addBatch;
+import static org.fluentjdbc.DatabaseStatement.createInsertSql;
+
 /**
  * Fluently generate a <code>INSERT ...</code> statement for a list of objects. Crate with a list of object
  * and use {@link #setField(String, Function)} to pass in a function that will be called for each object
@@ -28,7 +31,7 @@ import java.util.stream.IntStream;
  *     }
  * </pre>
  */
-public class DatabaseBulkInsertBuilder<T> extends DatabaseStatement implements DatabaseBulkUpdatable<T, DatabaseBulkInsertBuilder<T>> {
+public class DatabaseBulkInsertBuilder<T> implements DatabaseBulkUpdatable<T, DatabaseBulkInsertBuilder<T>> {
 
     private final DatabaseTable table;
     private final Iterable<T> objects;

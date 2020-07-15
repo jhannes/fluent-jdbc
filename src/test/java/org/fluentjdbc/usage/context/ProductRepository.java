@@ -8,7 +8,7 @@ import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTableAlias;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextSelectBuilder;
-import org.fluentjdbc.DbTableAliasContext;
+import org.fluentjdbc.DbContextTableAlias;
 import org.fluentjdbc.DbTableContext;
 
 import javax.annotation.Nonnull;
@@ -41,7 +41,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
 
     public Collection<ProductSales> salesReport() {
         DatabaseTableAlias linesAlias = new DatabaseTableAlias("order_lines", "l");
-        DbTableAliasContext productAlias = table.alias("p");
+        DbContextTableAlias productAlias = table.alias("p");
         Map<Product.Id, ProductSales> report = new HashMap<>();
         productAlias
                 .leftJoin(productAlias.column("product_id"), linesAlias.column("product_id"))

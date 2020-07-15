@@ -7,6 +7,10 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
+/**
+ * Subclass of {@link DatabaseSaveBuilder} which uses {@link UUID#randomUUID()} to generate primary
+ * key values
+ */
 @ParametersAreNonnullByDefault
 public class DatabaseSaveBuilderWithUUID extends DatabaseSaveBuilder<UUID> {
 
@@ -32,7 +36,7 @@ public class DatabaseSaveBuilderWithUUID extends DatabaseSaveBuilder<UUID> {
 
     @Override
     protected UUID getId(DatabaseRow row) throws SQLException {
-        return UUID.fromString(row.getString(idField));
+        return row.getUUID(idField);
     }
 
 }

@@ -20,13 +20,13 @@ import java.util.function.Function;
  *     }
  * </pre>
  */
-public class DbBulkUpdateContext<T> implements
-        DatabaseBulkQueryable<T, DbBulkUpdateContext<T>>, DatabaseBulkUpdatable<T, DbBulkUpdateContext<T>> {
+public class DbContextBulkUpdateBuilder<T> implements
+        DatabaseBulkQueryable<T, DbContextBulkUpdateBuilder<T>>, DatabaseBulkUpdatable<T, DbContextBulkUpdateBuilder<T>> {
 
     private final DbTableContext tableContext;
     private final DatabaseBulkUpdateBuilder<T> builder;
 
-    public DbBulkUpdateContext(DbTableContext tableContext, DatabaseBulkUpdateBuilder<T> builder) {
+    public DbContextBulkUpdateBuilder(DbTableContext tableContext, DatabaseBulkUpdateBuilder<T> builder) {
         this.tableContext = tableContext;
         this.builder = builder;
     }
@@ -37,7 +37,7 @@ public class DbBulkUpdateContext<T> implements
      * to extract the values for the <code>WHERE fieldName = ?</code> clause
      */
     @Override
-    public DbBulkUpdateContext<T> where(String field, Function<T, ?> value) {
+    public DbContextBulkUpdateBuilder<T> where(String field, Function<T, ?> value) {
         builder.where(field, value);
         return this;
     }
@@ -48,7 +48,7 @@ public class DbBulkUpdateContext<T> implements
      * to extract the values for the <code>SET fieldName = ?</code> clause
      */
     @Override
-    public DbBulkUpdateContext<T> setField(String fieldName, Function<T, Object> transformer) {
+    public DbContextBulkUpdateBuilder<T> setField(String fieldName, Function<T, Object> transformer) {
         builder.setField(fieldName, transformer);
         return this;
     }

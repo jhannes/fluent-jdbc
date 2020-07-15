@@ -1,7 +1,8 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.util.ExceptionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,6 +18,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.fluentjdbc.DatabaseStatement.bindParameters;
+import static org.fluentjdbc.DatabaseStatement.parameterString;
+
 /**
  * Generate <code>SELECT</code> statements by collecting <code>WHERE</code> expressions and parameters.Example:
  *
@@ -30,7 +34,9 @@ import java.util.stream.Stream;
  * </pre>
  */
 @ParametersAreNonnullByDefault
-public class DatabaseTableQueryBuilder extends DatabaseStatement implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
+public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseTableQueryBuilder.class);
 
     private final List<String> conditions = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
@@ -53,7 +59,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
                     + (orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses));
             logger.trace(query);
             PreparedStatement stmt = connection.prepareStatement(query);
-            bindParameters(stmt);
+            bindParameters(stmt, parameters);
             ResultSet rs = stmt.executeQuery();
             if (!rs.next()) {
                 throw new SQLException("Expected exactly one row from " + query);
@@ -67,18 +73,18 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     }
 
     /**
-     * Execute the query and map each return value over the {@link RowMapper} function to return a stream. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>
-     *     table.where("status", status).stream(connection, row -> row.getInstant("created_at"))
+     *     table.where("status", status).stream(connection, row -&gt; row.getInstant("created_at"))
      * </pre>
      */
     @Override
-    public <T> Stream<T> stream(Connection connection, RowMapper<T> mapper) {
+    public <T> Stream<T> stream(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         try {
             String query = createSelectStatement();
             logger.trace(query);
             PreparedStatement stmt = connection.prepareStatement(query);
-            bindParameters(stmt);
+            bindParameters(stmt, parameters);
 
             DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery());
             return result.stream(mapper, query);
@@ -88,22 +94,22 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     }
 
     /**
-     * Execute the query and map each return value over the {@link RowMapper} function to return a list. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
      * <pre>
-     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(connection, row -> row.getInstant("created_at"))
+     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(connection, row -&gt; row.getInstant("created_at"))
      * </pre>
      */
     @Override
-    public <T> List<T> list(Connection connection, RowMapper<T> mapper) {
+    public <T> List<T> list(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return stream(connection, mapper).collect(Collectors.toList());
     }
 
     /**
      * Executes the <code>SELECT * FROM ...</code> statement and calls back to
-     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     * {@link DatabaseResult.RowConsumer} for each returned row
      */
     @Override
-    public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
+    public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
         query(connection, result -> {
             result.forEach(consumer);
             return null;
@@ -121,7 +127,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
      */
     @Nonnull
     @Override
-    public <T> Optional<T> singleObject(Connection connection, RowMapper<T> mapper) {
+    public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return query(connection, result -> result.single(mapper));
     }
 
@@ -214,7 +220,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     }
 
     /**
-     * If you haven't called {@link #orderBy}, the results of {@link #list(Connection, RowMapper)}
+     * If you haven't called {@link #orderBy}, the results of {@link #list(Connection, DatabaseResult.RowMapper)}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     @Override
@@ -228,10 +234,6 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
     @Override
     public DatabaseSimpleQueryBuilder query() {
         return this;
-    }
-
-    private void bindParameters(PreparedStatement stmt) throws SQLException {
-        bindParameters(stmt, parameters);
     }
 
     private String createSelectStatement() {
@@ -249,7 +251,7 @@ public class DatabaseTableQueryBuilder extends DatabaseStatement implements Data
         String query = createSelectStatement();
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt);
+            bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
                 return resultMapper.apply(result);
             }

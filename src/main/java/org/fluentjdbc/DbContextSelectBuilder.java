@@ -1,7 +1,5 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.DatabaseTable.RowMapper;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
@@ -27,7 +25,7 @@ import java.util.stream.Stream;
  *
  * @see org.fluentjdbc.DatabaseTableQueryBuilder
  */
-public class DbContextSelectBuilder implements DbListableSelectContext<DbContextSelectBuilder> {
+public class DbContextSelectBuilder implements DbContextListableSelect<DbContextSelectBuilder> {
 
     private final DbTableContext dbTableContext;
     private final DatabaseTableQueryBuilder queryBuilder;
@@ -112,7 +110,7 @@ public class DbContextSelectBuilder implements DbListableSelectContext<DbContext
     }
 
     /**
-     * If you haven't called {@link #orderBy}, the results of {@link #list(RowMapper)}
+     * If you haven't called {@link #orderBy}, the results of {@link #list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     public DbContextSelectBuilder unordered() {
@@ -128,23 +126,23 @@ public class DbContextSelectBuilder implements DbListableSelectContext<DbContext
     }
 
     /**
-     * Execute the query and map each return value over the {@link RowMapper} function to return a stream. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>
-     *     table.where("status", status).stream(row -> row.getInstant("created_at"))
+     *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
-    public <T> Stream<T> stream(RowMapper<T> mapper) {
+    public <T> Stream<T> stream(DatabaseResult.RowMapper<T> mapper) {
         return queryBuilder.stream(getConnection(), mapper);
     }
 
     /**
-     * Execute the query and map each return value over the {@link RowMapper} function to return a list. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
      * <pre>
-     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -> row.getInstant("created_at"))
+     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
     @Override
-    public <T> List<T> list(RowMapper<T> mapper) {
+    public <T> List<T> list(DatabaseResult.RowMapper<T> mapper) {
         return queryBuilder.list(getConnection(), mapper);
     }
 
@@ -166,7 +164,7 @@ public class DbContextSelectBuilder implements DbListableSelectContext<DbContext
      */
     @Nonnull
     @Override
-    public <T> Optional<T> singleObject(RowMapper<T> mapper) {
+    public <T> Optional<T> singleObject(DatabaseResult.RowMapper<T> mapper) {
         return queryBuilder.singleObject(getConnection(), mapper);
     }
 
@@ -184,10 +182,10 @@ public class DbContextSelectBuilder implements DbListableSelectContext<DbContext
 
     /**
      * Executes the <code>SELECT * FROM ...</code> statement and calls back to
-     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     * {@link DatabaseResult.RowConsumer} for each returned row
      */
     @Override
-    public void forEach(DatabaseTable.RowConsumer row) {
+    public void forEach(DatabaseResult.RowConsumer row) {
         queryBuilder.forEach(getConnection(), row);
     }
 

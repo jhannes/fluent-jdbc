@@ -1,6 +1,8 @@
 package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,7 +20,39 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
+import static org.fluentjdbc.DatabaseStatement.bindParameters;
+import static org.fluentjdbc.DatabaseStatement.parameterString;
+
+/**
+ * {@link DatabaseQueryBuilder} used to generate joined queries using SQL-92 standard
+ * <code>SELECT * FROM table1 a JOIN table2 b ON a.column = b.column</code>. To specify
+ * columns for selection and tables for retrieval of columns, use {@link DatabaseTableAlias}
+ * and {@link DatabaseColumnReference}.
+ *
+ * <p><strong>Only works well on JDBC drivers that implement {@link ResultSetMetaData#getTableName(int)}</strong>,
+ * as this is used to calculate column indexes for aliased tables. This includes PostgreSQL, H2, HSQLDB, and SQLite,
+ * but not Oracle or SQL Server.</p>
+ *
+ * <p>Pull requests are welcome for a substitute for SQL Server and Oracle.</p>
+ *
+ * <h3>Usage example:</h3>
+
+ * <pre>
+ * DatabaseTableAlias p = productsTable.alias("p");
+ * DatabaseTableAlias o = ordersTable.alias("o");
+ * return context
+ *         .join(linesAlias.column("product_id"), p.column("product_id"))
+ *         .join(linesAlias.column("order_id"), o.column("order_id"))
+ *         .list(connection, row -&gt; new OrderLineEntity(
+ *                 OrderRepository.toOrder(row.table(o)),
+ *                 ProductRepository.toProduct(row.table(p)),
+ *                 toOrderLine(row.table(linesAlias))
+ *         ));
+ * </pre>
+ */
+public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseJoinedQueryBuilder.class);
+
     private final DatabaseTableAlias table;
     private final List<JoinedTable> joinedTables = new ArrayList<>();
     private final List<String> conditions = new ArrayList<>();
@@ -133,11 +167,22 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         return this;
     }
 
+    /**
+     * Adds an additional table to the join as an inner join. Inner joins require a matching row
+     * in both tables and will leave out rows from one of the table where there is no corresponding
+     * table in the other
+     */
     public DatabaseJoinedQueryBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
         joinedTables.add(new JoinedTable(a, b, "inner join"));
         return this;
     }
 
+    /**
+     * Adds an additional table to the join as a left join. Left join only require a matching row in
+     * the first/left table. If there is no matching row in the second/right table, all columns are
+     * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
+     * the resulting row, <code>null</code> is returned
+     */
     public DatabaseJoinedQueryBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
         joinedTables.add(new JoinedTable(a, b, "left join"));
         return this;
@@ -154,39 +199,39 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
      */
     @Nonnull
     @Override
-    public <T> Optional<T> singleObject(Connection connection, DatabaseTable.RowMapper<T> mapper) {
+    public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return query(connection, result -> result.single(mapper));
     }
 
     /**
-     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a stream. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>
-     *     table.where("status", status).stream(connection, row -> row.table(joinedTable).getInstant("created_at"))
+     *     table.where("status", status).stream(connection, row -&gt; row.table(joinedTable).getInstant("created_at"))
      * </pre>
      */
     @Override
-    public <T> Stream<T> stream(Connection connection, DatabaseTable.RowMapper<T> mapper) {
+    public <T> Stream<T> stream(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return list(connection, mapper).stream();
     }
 
     /**
-     * Execute the query and map each return value over the {@link DatabaseTable.RowMapper} function to return a list. Example:
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
      * <pre>
      *     List&lt;Instant&gt; creationTimes = table.where("status", status)
-     *          .list(connection, row -> row.table(joinedTable).getInstant("created_at"))
+     *          .list(connection, row -&gt; row.table(joinedTable).getInstant("created_at"))
      * </pre>
      */
     @Override
-    public <T> List<T> list(Connection connection, DatabaseTable.RowMapper<T> mapper) {
+    public <T> List<T> list(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return query(connection, result -> result.list(mapper));
     }
 
     /**
      * Executes the <code>SELECT * FROM ...</code> statement and calls back to
-     * {@link org.fluentjdbc.DatabaseTable.RowConsumer} for each returned row
+     * {@link DatabaseResult.RowConsumer} for each returned row
      */
     @Override
-    public void forEach(Connection connection, DatabaseTable.RowConsumer consumer) {
+    public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
         query(connection, result -> {
             result.forEach(consumer);
             return null;
@@ -216,6 +261,10 @@ public class DatabaseJoinedQueryBuilder extends DatabaseStatement implements Dat
         }
     }
 
+    /**
+     * Executes the resulting <code>SELECT * FROM table ... INNER JOIN table ...</code> statement and
+     * calculates column indexes based on {@link ResultSetMetaData}
+     */
     protected DatabaseResult createResult(PreparedStatement statement) throws SQLException {
         List<DatabaseTableAlias> aliases = new ArrayList<>();
         aliases.add(table);

@@ -64,22 +64,22 @@ public class OracleTests {
         }
     }
 
-    @Ignore
+    @Ignore("Oracle does not support ResultSetMetaData and cannot be used with DatabaseRow.table")
     public static class DatabaseJoinedQueryBuilderTest extends org.fluentjdbc.DatabaseJoinedQueryBuilderTest {
         public DatabaseJoinedQueryBuilderTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
         }
     }
 
-    @Ignore
+    @Ignore("Oracle does not support ResultSetMetaData and cannot be used with DatabaseRow.table")
     public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
         public DbContextJoinedQueryBuilderTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
         }
     }
 
-    public static class DbSyncBuilderContextTest extends org.fluentjdbc.DbSyncBuilderContextTest {
-        public DbSyncBuilderContextTest() throws SQLException {
+    public static class DbContextSyncBuilderTest extends org.fluentjdbc.DbContextSyncBuilderTest {
+        public DbContextSyncBuilderTest() throws SQLException {
             super(getDataSource(), REPLACEMENTS);
         }
     }

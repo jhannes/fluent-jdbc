@@ -3,8 +3,8 @@ package org.fluentjdbc.usage.context;
 import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DbContext;
-import org.fluentjdbc.DbJoinedSelectContext;
-import org.fluentjdbc.DbTableAliasContext;
+import org.fluentjdbc.DbContextJoinedSelectBuilder;
+import org.fluentjdbc.DbContextTableAlias;
 import org.fluentjdbc.DbTableContext;
 
 import java.sql.SQLException;
@@ -63,11 +63,11 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
     }
 
     public class QueryImpl implements Query<OrderLine> {
-        private final DbJoinedSelectContext context;
-        final DbTableAliasContext linesAlias = table.alias("l");
+        private final DbContextJoinedSelectBuilder context;
+        final DbContextTableAlias linesAlias = table.alias("l");
 
         public QueryImpl() {
-            this.context = new DbJoinedSelectContext(linesAlias);
+            this.context = new DbContextJoinedSelectBuilder(linesAlias);
         }
 
         @Override
@@ -84,8 +84,8 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
         }
 
         public List<OrderLineEntity> listEntities() {
-            DbTableAliasContext p = productsTable.alias("p");
-            DbTableAliasContext o = ordersTable.alias("o");
+            DbContextTableAlias p = productsTable.alias("p");
+            DbContextTableAlias o = ordersTable.alias("o");
             return context
                     .join(linesAlias.column("product_id"), p.column("product_id"))
                     .join(linesAlias.column("order_id"), o.column("order_id"))
@@ -100,7 +100,7 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
             return context.list(OrderLineRepository::toOrderLine);
         }
 
-        private QueryImpl query(DbJoinedSelectContext context) {
+        private QueryImpl query(DbContextJoinedSelectBuilder context) {
             return this;
         }
 

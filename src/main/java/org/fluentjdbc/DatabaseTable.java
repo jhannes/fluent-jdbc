@@ -46,16 +46,6 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuil
 
     DatabaseTableAlias alias(String alias);
 
-    @FunctionalInterface
-    interface RowMapper<T> {
-        T mapRow(DatabaseRow row) throws SQLException;
-    }
-
-    @FunctionalInterface
-    interface RowConsumer {
-        void apply(DatabaseRow row) throws SQLException;
-    }
-
     String getTableName();
 
     /**

@@ -1,13 +1,15 @@
 package org.fluentjdbc;
 
+/**
+ * Describes a database column alias for a <code>SELECT * FROM table a JOIN table b ON a.column = b.column</code>
+ * expression. {@link DatabaseColumnReference} binds together the table, table alias and column name
+ */
 public class DatabaseColumnReference {
     private final String columnName;
-    private final String tableName;
     private final DatabaseTableAlias alias;
 
     DatabaseColumnReference(DatabaseTableAlias alias, String columnName) {
         this.columnName = columnName;
-        this.tableName = alias.getTableName();
         this.alias = alias;
     }
 
@@ -16,9 +18,12 @@ public class DatabaseColumnReference {
     }
 
     public String getTableName() {
-        return tableName;
+        return alias.getTableName();
     }
 
+    /**
+     * Returns the expression to be used for <code>JOIN ... ON alias.columnName = ...</code>
+     */
     public String getQualifiedColumnName() {
         return alias.getAlias() + "." + columnName;
     }

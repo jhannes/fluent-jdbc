@@ -1,12 +1,12 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.DatabaseTable.RowMapper;
 import org.fluentjdbc.util.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -20,14 +20,45 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+/**
+ * Collects together a {@link PreparedStatement} and the resulting {@link ResultSet},
+ * as well as metaData to map column names to collect indexes from {@link ResultSetMetaData}.
+ * Use {@link #list(RowMapper)}, {@link #forEach(RowConsumer)} and {@link #single(RowMapper)}
+ * to process the {@link ResultSet}
+ */
 @ParametersAreNonnullByDefault
 public class DatabaseResult implements AutoCloseable {
 
     private final static Logger logger = LoggerFactory.getLogger(DatabaseResult.class);
 
+    /**
+     * Used to execute statements on the whole DatabaseResult. Like
+     * {@link java.util.function.Function}, but allows {@link SQLException} to be
+     * thrown from {@link #apply(DatabaseResult)}
+     */
+    @FunctionalInterface
     public interface DatabaseResultMapper<T> {
 
         T apply(DatabaseResult result) throws SQLException;
+    }
+
+    /**
+     * Functional interface for {@link #single(RowMapper)} and {@link #list(RowMapper)}.
+     * Like {@link java.util.function.Function}, but allows {@link SQLException} to be
+     * thrown from {@link #mapRow(DatabaseRow)}
+     */
+    @FunctionalInterface
+    public interface RowMapper<T> {
+        T mapRow(DatabaseRow row) throws SQLException;
+    }
+
+    /**
+     * Functional interface for {@link #forEach}. Like {@link java.util.function.Consumer},
+     * but allows {@link SQLException} to be thrown from {@link #apply}
+     */
+    @FunctionalInterface
+    public interface RowConsumer {
+        void apply(DatabaseRow row) throws SQLException;
     }
 
     private final PreparedStatement statement;
@@ -67,10 +98,20 @@ public class DatabaseResult implements AutoCloseable {
         resultSet.close();
     }
 
+    /**
+     * Position the underlying {@link ResultSet} on the next row
+     */
     public boolean next() throws SQLException {
         return resultSet.next();
     }
 
+    /**
+     * Call mapper for each row in the {@link ResultSet} and return the result as
+     * a List. If {@link RowMapper} throws {@link SQLException}, processing is aborted
+     * and the exception is rethrown
+     *
+     * @param mapper Function to be called for each row
+     */
     public <T> List<T> list(RowMapper<T> mapper) throws SQLException {
         List<T> result = new ArrayList<>();
         while (next()) {
@@ -79,12 +120,50 @@ public class DatabaseResult implements AutoCloseable {
         return result;
     }
 
-    public void forEach(DatabaseTable.RowConsumer consumer) throws SQLException {
+    /**
+     * Returns a {@link Stream} which iterates over all rows in the {@link ResultSet} and apply a
+     * {@link RowMapper} to each.
+     * 
+     * @see DatabaseTableQueryBuilder#stream(Connection, RowMapper)
+     *
+     * @param mapper Function to be called for each row
+     * @param query The SQL that was used to generate this {@link DatabaseResult}. Used for logging
+     */
+    public <T> Stream<T> stream(RowMapper<T> mapper, String query) throws SQLException {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(mapper, query), 0), false);
+    }
+
+    /**
+     * Returns an {@link Iterator} which iterates over all rows in the {@link ResultSet} and apply a
+     * {@link RowMapper} to each.
+     *
+     * @param mapper Function to be called for each row
+     * @param query The SQL that was used to generate this {@link DatabaseResult}. Used for logging
+     */
+    public <T> Iterator<T> iterator(RowMapper<T> mapper, String query) throws SQLException {
+        return new Iterator<>(mapper, query);
+    }
+
+    /**
+     * Call {@link RowConsumer} for each row in the {@link ResultSet}.
+     * If {@link RowMapper} throws {@link SQLException}, processing is aborted and the exception is
+     * rethrown
+     */
+    public void forEach(RowConsumer consumer) throws SQLException {
         while (next()) {
             consumer.apply(row());
         }
     }
 
+    /**
+     * Call {@link RowConsumer} for the first row in the {@link ResultSet}. Should only be used
+     * where the query parameter ensure that no more than one row can be returned, ie the query
+     * should include a unique key.
+     *
+     * @return the mapped row. If no rows were returned, returns {@link Optional#empty()}
+     * @throws IllegalArgumentException if more than one row was returned
+     * @throws SQLException if the {@link RowMapper} throws
+     */
     @Nonnull
     public <T> Optional<T> single(RowMapper<T> mapper) throws SQLException {
         if (!next()) {
@@ -97,19 +176,15 @@ public class DatabaseResult implements AutoCloseable {
         return Optional.of(result);
     }
 
+    /**
+     * Returns a {@link DatabaseRow} for the current row, allowing mapping retrieval and conversion
+     * of data in all columns
+     */
     public DatabaseRow row() {
         return new DatabaseRow(this.resultSet, this.columnIndexes, this.tableColumnIndexes, this.keys);
     }
 
-    public <T> Stream<T> stream(RowMapper<T> mapper, String query) throws SQLException {
-        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(mapper, query), 0), false);
-    }
-
-    public <T> Iterator<T> iterator(RowMapper<T> mapper, String query) throws SQLException {
-        return new Iterator<>(mapper, query);
-    }
-
-    class Iterator<T> implements java.util.Iterator<T> {
+    private class Iterator<T> implements java.util.Iterator<T> {
         private final RowMapper<T> mapper;
         private final long startTime;
         private final String query;
@@ -152,4 +227,5 @@ public class DatabaseResult implements AutoCloseable {
         protected void finalize() throws Throwable {
             close();
         }
-    }}
+    }
+}
