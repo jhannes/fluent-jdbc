@@ -20,7 +20,7 @@ import java.util.Map;
  * <ul>
  *     <li>DataRow.table() due to missing support for ResultTypeMetadata.getTableName</li>
  *     <li>SaveBuilder may give wrong status due to unusual return values from ResultSet.getObject</li>
- *     <li>DbSyncBuilderContext gives wrong status due to unusual return values from ResultSet.getObject</li>
+ *     <li>DbContextSyncBuilder gives wrong status due to unusual return values from ResultSet.getObject</li>
  * </ul>
  */
 public class OracleTests {

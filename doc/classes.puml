@@ -63,7 +63,7 @@ class DatabaseTableWithTimestamps extends DatabaseTableImpl {
 
 package dbcontext {
 
-    interface DbListableSelectContext extends DatabaseQueryable {
+    interface DbContextListableSelect extends DatabaseQueryable {
         list() : List<T>
         listStrings() : List<String>
         listLongs() : List<Long>
@@ -73,7 +73,7 @@ package dbcontext {
     class DbContextTable implements DatabaseQueryable {
     }
 
-    class DbSelectContext implements DbListableSelectContext {
+    class DbSelectContext implements DbContextListableSelect {
         singleObject
         singleString
         singleLong

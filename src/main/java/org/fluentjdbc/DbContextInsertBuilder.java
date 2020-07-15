@@ -24,15 +24,15 @@ import org.fluentjdbc.util.ExceptionUtil;
  */
 public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsertBuilder> {
 
-    public class DbInsertContextWithPk<T> {
+    public class DbContextInsertBuilderWithPk<T> {
 
         private final DatabaseInsertWithPkBuilder<T> builder2;
 
-        public DbInsertContextWithPk(DatabaseInsertWithPkBuilder<T> builder) {
+        public DbContextInsertBuilderWithPk(DatabaseInsertWithPkBuilder<T> builder) {
             builder2 = builder;
         }
 
-        public DbInsertContextWithPk<T> setField(String fieldName, Object parameter) {
+        public DbContextInsertBuilderWithPk<T> setField(String fieldName, Object parameter) {
             builder2.setField(fieldName, parameter);
             return this;
         }
@@ -59,9 +59,9 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
      * this will {@link java.sql.PreparedStatement#execute(String, String[])} to generate the primary
      * key using the underlying table autogeneration mechanism
      */
-    public <T> DbInsertContextWithPk<T> setPrimaryKey(String idField, T idValue) {
+    public <T> DbContextInsertBuilderWithPk<T> setPrimaryKey(String idField, T idValue) {
         DatabaseInsertWithPkBuilder<T> setPrimaryKey = builder.setPrimaryKey(idField, idValue);
-        return new DbInsertContextWithPk<>(setPrimaryKey);
+        return new DbContextInsertBuilderWithPk<>(setPrimaryKey);
     }
 
     /**
