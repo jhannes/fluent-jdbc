@@ -249,7 +249,7 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
             try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
-                return result.single(row -> row.getInt("count")).orElseThrow();
+                return result.single(row -> row.getInt("count")).orElseThrow(() -> new RuntimeException("Should never happen"));
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
