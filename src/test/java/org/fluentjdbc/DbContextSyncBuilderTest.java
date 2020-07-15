@@ -25,7 +25,7 @@ public class DbContextSyncBuilderTest {
     @Rule
     public final DbContextRule dbContext;
 
-    private final DbTableContext table;
+    private final DbContextTable table;
 
     private static final String CREATE_TABLE =
             "create table sync_test (id ${UUID} primary key, name varchar(200) not null, value DECIMAL(20,2), updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";

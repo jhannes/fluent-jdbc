@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  * {@link DbContextSyncBuilder} assumes it's acceptable to hold the full contents of both the table and
  * the external source in memory during the synchronization, which scales well up to a few 100,000 rows.
  *
- * <p>Generate a {@link DbContextSyncBuilder} with {@link DbTableContext#sync(List)} with the target objects,
+ * <p>Generate a {@link DbContextSyncBuilder} with {@link DbContextTable#sync(List)} with the target objects,
  * then call {@link #unique(String, Function)} and {@link #field(String, Function)} to specify the relationship
  * between the objects and the database table. Call {@link #cacheExisting()} to load the table into memory
  * and finally, call one or more of {@link #deleteExtras()}, {@link #insertMissing()} and {@link #updateDiffering()}
@@ -31,7 +31,7 @@ import java.util.stream.Stream;
  * <pre>
  *     public EnumMap&lt;DatabaseSaveResult.SaveStatus, Integer&gt; syncProducts(List&lt;Product&gt; products) {
  *         return table.sync(products)
- *                 .unique("product_id", p -> p.getProductId().getValue())
+ *                 .unique("product_id", p -&gt; p.getProductId().getValue())
  *                 .field("name", Product::getName)
  *                 .field("category", Product::getCategory)
  *                 .field("price_in_cents", Product::getPriceInCents)
@@ -43,10 +43,9 @@ import java.util.stream.Stream;
  *                 .getStatus();
  *     }
  * </pre>
- * @param <T>
  */
 public class DbContextSyncBuilder<T>  {
-    private final DbTableContext table;
+    private final DbContextTable table;
     private final EnumMap<SaveStatus, Integer> status = new EnumMap<>(SaveStatus.class);
     private final List<T> theirObjects;
     private boolean isCached = false;
@@ -57,7 +56,7 @@ public class DbContextSyncBuilder<T>  {
     private final List<String> updatedFields = new ArrayList<>();
     private final List<Function<T, Object>> updatedValueFunctions = new ArrayList<>();
 
-    public DbContextSyncBuilder(DbTableContext table, List<T> theirObjects) {
+    public DbContextSyncBuilder(DbContextTable table, List<T> theirObjects) {
         this.table = table;
         this.theirObjects = theirObjects;
         Stream.of(SaveStatus.values()).forEach(v -> status.put(v, 0));

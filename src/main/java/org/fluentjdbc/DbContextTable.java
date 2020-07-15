@@ -1,9 +1,7 @@
 package org.fluentjdbc;
 
-import javax.annotation.Nullable;
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,7 +14,7 @@ import java.util.stream.Stream;
  * 
  *<h2>Usage examples</h2>
  * <pre>
- * DbTableContext table = context.table("database_test_table");
+ * {@link DbContextTable} table = context.table("database_test_table");
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {
  *     table.{@link #insert()}.setField("code", 102).execute();
  *     table.{@link #query()}.where("key", key).orderBy("value").listStrings("value");
@@ -27,12 +25,12 @@ import java.util.stream.Stream;
  * }
  * </pre>
  */
-public class DbTableContext implements DatabaseQueryable<DbContextSelectBuilder> {
+public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder> {
 
     private final DatabaseTable table;
     private final DbContext dbContext;
 
-    public DbTableContext(DatabaseTable databaseTable, DbContext dbContext) {
+    public DbContextTable(DatabaseTable databaseTable, DbContext dbContext) {
         this.table = databaseTable;
         this.dbContext = dbContext;
     }
@@ -91,7 +89,7 @@ public class DbTableContext implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     /**
-     * Associates the argument {@link DatabaseSaveResult} with this {@link DbTableContext}'s {@link DbContext}
+     * Associates the argument {@link DatabaseSaveResult} with this {@link DbContextTable}'s {@link DbContext}
      */
     public <T> DbContextSaveBuilder<T> save(DatabaseSaveBuilder<T> saveBuilder) {
         return new DbContextSaveBuilder<>(this, saveBuilder);
@@ -107,7 +105,7 @@ public class DbTableContext implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     /**
-     * Create a {@link DbContextTableAlias} associated with this {@link DbTableContext} which can
+     * Create a {@link DbContextTableAlias} associated with this {@link DbContextTable} which can
      * be used to <code>JOIN</code> statements with {@link DbContextTableAlias#join(DatabaseColumnReference, DatabaseColumnReference)}.
      *
      * @see DbContextJoinedSelectBuilder

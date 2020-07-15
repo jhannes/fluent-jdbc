@@ -24,7 +24,7 @@ import java.util.stream.Stream;
  * <h3>Usage example:</h3>
 
  * <pre>
- * DbContextTableAlias p = productsTable.alias("p");
+ * {@link DbContextTable}Alias p = productsTable.alias("p");
  * DbContextTableAlias o = ordersTable.alias("o");
  * return context
  *         .join(linesAlias.column("product_id"), p.column("product_id"))
@@ -40,9 +40,9 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     private final DbContext dbContext;
     private final DatabaseJoinedQueryBuilder builder;
 
-    public DbContextJoinedSelectBuilder(DbContextTableAlias dbTableContext) {
-        dbContext = dbTableContext.getDbContext();
-        builder = new DatabaseJoinedQueryBuilder(dbTableContext.getTableAlias());
+    public DbContextJoinedSelectBuilder(DbContextTableAlias table) {
+        dbContext = table.getDbContext();
+        builder = new DatabaseJoinedQueryBuilder(table.getTableAlias());
     }
 
     /**
@@ -92,8 +92,8 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
      *
      * <pre>
-     *     DbTableAliasContext t = table.alias("t");
-     *     DbTableAliasContext o = otherTable.alias("o");
+     *     {@link DbContextTableAlias} t = table.alias("t");
+     *     DbContextTableAlias o = otherTable.alias("o");
      *     List&lt;Instant&gt; creationTimes = t.join(t.column("id"), o.column("parent_id"))
      *          .where(t.column("name"), name)
      *          .list(row -&gt; row.table(o).getInstant("created_at"));

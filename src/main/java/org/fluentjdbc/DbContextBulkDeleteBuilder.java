@@ -19,11 +19,11 @@ import java.util.function.Function;
  * </pre>
  */
 public class DbContextBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, DbContextBulkDeleteBuilder<T>> {
-    private final DbTableContext tableContext;
+    private final DbContextTable table;
     private final DatabaseBulkDeleteBuilder<T> builder;
 
-    public DbContextBulkDeleteBuilder(DbTableContext tableContext, DatabaseBulkDeleteBuilder<T> builder) {
-        this.tableContext = tableContext;
+    public DbContextBulkDeleteBuilder(DbContextTable table, DatabaseBulkDeleteBuilder<T> builder) {
+        this.table = table;
         this.builder = builder;
     }
 
@@ -45,6 +45,6 @@ public class DbContextBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, D
      * @return the sum count of all the rows deleted
      */
     public int execute() {
-        return builder.execute(tableContext.getConnection());
+        return builder.execute(table.getConnection());
     }
 }

@@ -21,11 +21,11 @@ import java.util.function.Function;
  */
 public class DbContextBuildInsertBuilder<T> implements DatabaseBulkUpdatable<T, DbContextBuildInsertBuilder<T>> {
 
-    private final DbTableContext tableContext;
+    private final DbContextTable table;
     private final DatabaseBulkInsertBuilder<T> builder;
 
-    public DbContextBuildInsertBuilder(DbTableContext tableContext, DatabaseBulkInsertBuilder<T> builder) {
-        this.tableContext = tableContext;
+    public DbContextBuildInsertBuilder(DbContextTable table, DatabaseBulkInsertBuilder<T> builder) {
+        this.table = table;
         this.builder = builder;
     }
 
@@ -56,6 +56,6 @@ public class DbContextBuildInsertBuilder<T> implements DatabaseBulkUpdatable<T, 
      * @return the count of rows inserted
      */
     public int execute() {
-        return builder.execute(tableContext.getConnection());
+        return builder.execute(table.getConnection());
     }
 }

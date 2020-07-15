@@ -5,7 +5,7 @@ import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextJoinedSelectBuilder;
 import org.fluentjdbc.DbContextTableAlias;
-import org.fluentjdbc.DbTableContext;
+import org.fluentjdbc.DbContextTable;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -22,9 +22,9 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
             "quantity integer not null, " +
             "updated_at ${DATETIME} not null, " +
             "created_at ${DATETIME} not null)";
-    private final DbTableContext table;
-    private final DbTableContext productsTable;
-    private final DbTableContext ordersTable;
+    private final DbContextTable table;
+    private final DbContextTable productsTable;
+    private final DbContextTable ordersTable;
 
     public OrderLineRepository(DbContext dbContext) {
         this.table = dbContext.tableWithTimestamps("order_lines");

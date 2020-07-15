@@ -11,7 +11,7 @@ Motivating code example, using [DbContext](http://jhannes.github.io/fluent-jdbc/
 ```java
 DbContext context = new DbContext();
 
-DbTableContext table = context.table("database_test_table");
+DbContextTable table = context.table("database_test_table");
 DataSource dataSource = createDataSource();
 
 try (DbContextConnection ignored = context.startConnection(dataSource)) {
@@ -72,9 +72,9 @@ public class UsageDemonstrationTest {
 ```
 
 ```java
-import org.fluentjdbc.DbContextSelectBuilder;public class OrderRepository implements Repository<Order, UUID> {
+public class OrderRepository implements Repository<Order, UUID> {
 
-    private final DbTableContext table;
+    private final DbContextTable table;
 
     public OrderRepository(DbContext dbContext) {
         this.table = dbContext.tableWithTimestamps("orders");

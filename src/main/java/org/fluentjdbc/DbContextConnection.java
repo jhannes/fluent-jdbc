@@ -2,7 +2,7 @@ package org.fluentjdbc;
 
 /**
  * Specified a context where a {@link java.sql.Connection} is associated with the current thread
- * in order to perform operations on {@link DbTableContext}. Example:
+ * in order to perform operations on {@link DbContextTable}. Example:
  *
  * <pre>
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {

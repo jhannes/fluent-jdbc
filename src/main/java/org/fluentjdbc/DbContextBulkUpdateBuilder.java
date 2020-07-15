@@ -23,11 +23,11 @@ import java.util.function.Function;
 public class DbContextBulkUpdateBuilder<T> implements
         DatabaseBulkQueryable<T, DbContextBulkUpdateBuilder<T>>, DatabaseBulkUpdatable<T, DbContextBulkUpdateBuilder<T>> {
 
-    private final DbTableContext tableContext;
+    private final DbContextTable table;
     private final DatabaseBulkUpdateBuilder<T> builder;
 
-    public DbContextBulkUpdateBuilder(DbTableContext tableContext, DatabaseBulkUpdateBuilder<T> builder) {
-        this.tableContext = tableContext;
+    public DbContextBulkUpdateBuilder(DbContextTable table, DatabaseBulkUpdateBuilder<T> builder) {
+        this.table = table;
         this.builder = builder;
     }
 
@@ -60,7 +60,7 @@ public class DbContextBulkUpdateBuilder<T> implements
      * @return the sum of all the rows to be updated
      */
     public int execute() {
-        return builder.execute(tableContext.getConnection());
+        return builder.execute(table.getConnection());
     }
 
 }

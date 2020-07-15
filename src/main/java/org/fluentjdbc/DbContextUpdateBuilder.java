@@ -7,7 +7,7 @@ import java.util.Collection;
  * autogeneration of primary keys. Example:
  *
  * <pre>
- * DbTableContext table = context.table("database_test_table");
+ * {@link DbContextTable} table = context.table("database_test_table");
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {
  *      int count = table
  *          .where("id", id)
@@ -20,11 +20,11 @@ import java.util.Collection;
  */
 public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdateBuilder> {
 
-    private final DbTableContext tableContext;
+    private final DbContextTable table;
     private final DatabaseUpdateBuilder updateBuilder;
 
-    public DbContextUpdateBuilder(DbTableContext tableContext, DatabaseUpdateBuilder updateBuilder) {
-        this.tableContext = tableContext;
+    public DbContextUpdateBuilder(DbContextTable table, DatabaseUpdateBuilder updateBuilder) {
+        this.table = table;
         this.updateBuilder = updateBuilder;
     }
 
@@ -50,7 +50,7 @@ public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdate
      * Will execute the UPDATE statement to the database
      */
     public int execute() {
-        return updateBuilder.execute(tableContext.getConnection());
+        return updateBuilder.execute(table.getConnection());
     }
 
 

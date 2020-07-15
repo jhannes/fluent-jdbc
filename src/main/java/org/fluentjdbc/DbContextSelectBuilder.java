@@ -12,7 +12,7 @@ import java.util.stream.Stream;
  * Generate <code>SELECT</code> statements by collecting <code>WHERE</code> expressions and parameters.Example:
  *
  * <pre>
- * DbTableContext table = context.table("database_test_table");
+ * {@link DbContextTable} table = context.table("database_test_table");
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {
  *      List&lt;Person&gt; result = table
  *          .where("firstName", firstName)
@@ -27,16 +27,16 @@ import java.util.stream.Stream;
  */
 public class DbContextSelectBuilder implements DbContextListableSelect<DbContextSelectBuilder> {
 
-    private final DbTableContext dbTableContext;
+    private final DbContextTable dbContextTable;
     private final DatabaseTableQueryBuilder queryBuilder;
 
-    public DbContextSelectBuilder(DbTableContext dbTableContext) {
-        this.dbTableContext = dbTableContext;
-        queryBuilder = new DatabaseTableQueryBuilder(dbTableContext.getTable());
+    public DbContextSelectBuilder(DbContextTable dbContextTable) {
+        this.dbContextTable = dbContextTable;
+        queryBuilder = new DatabaseTableQueryBuilder(dbContextTable.getTable());
     }
 
     /**
-     * Returns this. Needed to make {@link DbContextSelectBuilder} interchangeable with {@link DbTableContext}
+     * Returns this. Needed to make {@link DbContextSelectBuilder} interchangeable with {@link DbContextTable}
      */
     @Override
     public DbContextSelectBuilder query() {
@@ -193,10 +193,10 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * Creates a {@link DbContextUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
      */
     public DbContextUpdateBuilder update() {
-        return new DbContextUpdateBuilder(this.dbTableContext, queryBuilder.update());
+        return new DbContextUpdateBuilder(this.dbContextTable, queryBuilder.update());
     }
 
     private Connection getConnection() {
-        return dbTableContext.getConnection();
+        return dbContextTable.getConnection();
     }
 }

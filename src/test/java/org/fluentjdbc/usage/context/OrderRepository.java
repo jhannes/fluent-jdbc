@@ -4,7 +4,7 @@ import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextSelectBuilder;
-import org.fluentjdbc.DbTableContext;
+import org.fluentjdbc.DbContextTable;
 
 import java.sql.SQLException;
 import java.util.Optional;
@@ -21,7 +21,7 @@ public class OrderRepository implements Repository<Order, UUID> {
             "updated_at ${DATETIME} not null, " +
             "created_at ${DATETIME} not null)";
 
-    private final DbTableContext table;
+    private final DbContextTable table;
 
     public OrderRepository(DbContext dbContext) {
         this.table = dbContext.tableWithTimestamps("orders");

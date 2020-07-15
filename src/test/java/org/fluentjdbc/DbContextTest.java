@@ -29,12 +29,12 @@ public class DbContextTest {
     @Rule
     public final DbContextRule dbContext = new DbContextRule(dataSource);
 
-    private final DbTableContext tableContext;
+    private final DbContextTable table;
 
     private final Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
 
     public DbContextTest() {
-        this.tableContext = dbContext.table("database_table_test_table");
+        this.table = dbContext.table("database_table_test_table");
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
@@ -61,23 +61,23 @@ public class DbContextTest {
 
     @Test
     public void shouldHandleOrStatements() {
-        tableContext.insert()
+        table.insert()
                 .setFields(Arrays.asList("code", "name"), Arrays.asList(1001, "A"))
                 .execute();
-        tableContext.insert()
+        table.insert()
                 .setField("code", 1002)
                 .setField("name", "B")
                 .execute();
-        tableContext.insert()
+        table.insert()
                 .setField("code", 2001)
                 .setField("name", "C")
                 .execute();
-        tableContext.insert()
+        table.insert()
                 .setField("code", 2002)
                 .setField("name", "D")
                 .execute();
 
-        assertThat(tableContext
+        assertThat(table
                 .whereExpressionWithMultipleParameters("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
                 .whereExpressionWithMultipleParameters("(name = ? OR code > ?)", Arrays.asList("A", 2000L))
                 .unordered()
@@ -87,12 +87,12 @@ public class DbContextTest {
 
     @Test
     public void shouldHaveAccessToConnection() throws SQLException {
-        tableContext.insert()
+        table.insert()
                 .setField("code", 1001)
                 .setField("name", "customSqlTest")
                 .execute();
 
-        String customSql = String.format("select code from %s where name = 'customSqlTest'", tableContext.getTable().getTableName());
+        String customSql = String.format("select code from %s where name = 'customSqlTest'", table.getTable().getTableName());
         ResultSet resultSet = dbContext.getThreadConnection()
                 .prepareStatement(customSql)
                 .executeQuery();
@@ -105,7 +105,7 @@ public class DbContextTest {
     public void shouldBeAbleToTurnOffAutoCommits() throws InterruptedException {
         final Thread thread = new Thread(() -> {
             try (DbContextConnection ignored = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
-                tableContext.insert()
+                table.insert()
                         .setField("code", 1001)
                         .setField("name", "insertTest")
                         .execute();
@@ -114,7 +114,7 @@ public class DbContextTest {
         thread.start();
         thread.join();
 
-        assertThat(tableContext.where("name", "insertTest").unordered().listLongs("code"))
+        assertThat(table.where("name", "insertTest").unordered().listLongs("code"))
                 .isEmpty();
     }
 
@@ -123,7 +123,7 @@ public class DbContextTest {
         final Thread thread = new Thread(() -> {
             try (DbContextConnection ignored = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
                 try (DbTransaction tx = dbContext.ensureTransaction()) {
-                    tableContext.insert()
+                    table.insert()
                             .setField("code", 1001)
                             .setField("name", "insertTest")
                             .execute();
@@ -134,7 +134,7 @@ public class DbContextTest {
         thread.start();
         thread.join();
 
-        assertThat(tableContext.where("name", "insertTest").unordered().listLongs("code"))
+        assertThat(table.where("name", "insertTest").unordered().listLongs("code"))
                 .containsExactly(1001L);
     }
 
@@ -143,21 +143,21 @@ public class DbContextTest {
         DbContext rolledBackContext = new DbContext();
         DbContext committedContext = new DbContext();
         try (DbContextConnection ignored = rolledBackContext.startConnection(dataSource)) {
-            DbTableContext tableContext = rolledBackContext.table("database_table_test_table");
+            DbContextTable table = rolledBackContext.table("database_table_test_table");
             try (DbTransaction dbTransaction = rolledBackContext.ensureTransaction()) {
-                tableContext.insert().setField("code", 2000).execute();
+                table.insert().setField("code", 2000).execute();
                 dbTransaction.setRollback();
 
                 try (DbContextConnection ignored2 = committedContext.startConnection(dataSource)) {
-                    DbTableContext committedTableContext = committedContext.table("database_table_test_table");
+                    DbContextTable committedTable = committedContext.table("database_table_test_table");
                     try (DbTransaction committedTransaction = rolledBackContext.ensureTransaction()) {
-                        committedTableContext.insert().setField("code", 3000).execute();
+                        committedTable.insert().setField("code", 3000).execute();
                         committedTransaction.setComplete();
                     }
                 }
             }
         }
-        assertThat(tableContext.query().listLongs("code"))
+        assertThat(table.query().listLongs("code"))
                 .contains(3000L)
                 .doesNotContain(2000L);
     }
@@ -165,14 +165,14 @@ public class DbContextTest {
     @Test
     public void shouldNestContexts() {
         try (DbContextConnection ignored = dbContext.startConnection(dataSource)) {
-            tableContext.insert().setField("code", 1).execute();
+            table.insert().setField("code", 1).execute();
             try (DbContextConnection ignored2 = dbContext.startConnection(dataSource)) {
-                tableContext.insert().setField("code", 2).execute();
+                table.insert().setField("code", 2).execute();
             }
-            tableContext.insert().setField("code", 3).execute();
+            table.insert().setField("code", 3).execute();
         }
 
-        assertThat(tableContext.query().listLongs("code")).contains(1L, 2L, 3L);
+        assertThat(table.query().listLongs("code")).contains(1L, 2L, 3L);
     }
     
 
@@ -191,7 +191,7 @@ public class DbContextTest {
         final Thread thread = new Thread(() -> {
             try (DbContextConnection ignore = dbContext.startConnection(getConnectionWithAutoCommit())) {
                 try (DbTransaction tx = dbContext.ensureTransaction()) {
-                    tableContext.insert().setField("name", "test").execute();
+                    table.insert().setField("name", "test").execute();
                     tx.setComplete();
                 }
             } catch (Exception e) {
@@ -214,29 +214,29 @@ public class DbContextTest {
 
     @Test
     public void shouldInsertWithoutKey() {
-        tableContext.insert()
+        table.insert()
             .setField("code", 1001)
             .setField("name", "insertTest")
             .execute();
 
-        Object id = tableContext.insert()
+        Object id = table.insert()
             .setPrimaryKey("id", null)
             .setField("code", 1002)
             .setField("name", "insertTest")
             .execute();
         assertThat(id).isNotNull();
 
-        assertThat(tableContext.where("name", "insertTest").orderBy("code").listLongs("code"))
+        assertThat(table.where("name", "insertTest").orderBy("code").listLongs("code"))
             .containsExactly(1001L, 1002L);
     }
 
     @Test
     public void shouldCommitTransaction() {
         try (DbTransaction tx = dbContext.ensureTransaction()) {
-            tableContext.insert().setField("code", 1003).setField("name", "commitTest").execute();
+            table.insert().setField("code", 1003).setField("name", "commitTest").execute();
             tx.setComplete();
         }
-        assertThat(tableContext.where("name", "commitTest").listLongs("code"))
+        assertThat(table.where("name", "commitTest").listLongs("code"))
                 .contains(1003L);
     }
 
@@ -267,86 +267,86 @@ public class DbContextTest {
     @Test
     public void shouldRollbackTransaction() {
         try (DbTransaction tx = dbContext.ensureTransaction()) {
-            tableContext.insert().setField("code", 1004).setField("name", "txTest").execute();
-            tableContext.insert().setField("code", 1005).setField("name", "txTest").execute();
+            table.insert().setField("code", 1004).setField("name", "txTest").execute();
+            table.insert().setField("code", 1005).setField("name", "txTest").execute();
             tx.setRollback();
         }
-        assertThat(tableContext.where("name", "txTest").listLongs("code")).isEmpty();
+        assertThat(table.where("name", "txTest").listLongs("code")).isEmpty();
     }
 
     @Test
     public void shouldCommitNestedTransaction() {
         try (DbTransaction outerTx = dbContext.ensureTransaction()) {
-            tableContext.insert().setField("code", 1006).setField("name", "nestedTx").execute();
+            table.insert().setField("code", 1006).setField("name", "nestedTx").execute();
             try (DbTransaction innerTx = dbContext.ensureTransaction()) {
-                tableContext.insert().setField("code", 1007).setField("name", "nestedTx").execute();
+                table.insert().setField("code", 1007).setField("name", "nestedTx").execute();
                 innerTx.setComplete();
             }
             outerTx.setComplete();
         }
-        assertThat(tableContext.where("name", "nestedTx").listLongs("code"))
+        assertThat(table.where("name", "nestedTx").listLongs("code"))
                 .contains(1006L, 1006L);
     }
 
     @Test
     public void shouldRollbackNestedTransaction() {
         try (DbTransaction tx = dbContext.ensureTransaction()) {
-            tableContext.insert().setField("code", 1008).setField("name", "nestedTx").execute();
+            table.insert().setField("code", 1008).setField("name", "nestedTx").execute();
             try (DbTransaction innerTx = dbContext.ensureTransaction()) {
-                tableContext.insert().setField("code", 1009).setField("name", "nestedTx").execute();
+                table.insert().setField("code", 1009).setField("name", "nestedTx").execute();
                 innerTx.setRollback();
             }
             tx.setComplete();
         }
-        assertThat(tableContext.where("name", "nestedTx").listLongs("code"))
+        assertThat(table.where("name", "nestedTx").listLongs("code"))
                 .contains();
     }
 
     @Test
     public void shouldListOnWhereIn() {
-        Object id1 = tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute();
-        Object id2 = tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "world").execute();
-        Object id3 = tableContext.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "darkness").execute();
+        Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute();
+        Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "world").execute();
+        Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "darkness").execute();
 
-        assertThat(tableContext.whereIn("name", Arrays.asList("hello", "world")).unordered().listStrings("id"))
+        assertThat(table.whereIn("name", Arrays.asList("hello", "world")).unordered().listStrings("id"))
             .containsOnly(id1.toString(), id2.toString())
             .doesNotContain(id3.toString());
     }
 
     @Test
     public void shouldListOnOptional() {
-        Object id1 = tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "yes").execute();
-        Object id2 = tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "yes").execute();
-        Object id3 = tableContext.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute();
+        Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "yes").execute();
+        Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "yes").execute();
+        Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute();
 
-        assertThat(tableContext.whereOptional("name", "yes").unordered().listStrings("id"))
+        assertThat(table.whereOptional("name", "yes").unordered().listStrings("id"))
             .contains(id1.toString(), id2.toString()).doesNotContain(id3.toString());
-        assertThat(tableContext.whereOptional("name", null).unordered().listStrings("id"))
+        assertThat(table.whereOptional("name", null).unordered().listStrings("id"))
             .contains(id1.toString(), id2.toString(), id3.toString());
     }
 
     @Test
     public void shouldCountRows() {
-        tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "shouldCountRows").execute();
-        tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "shouldCountRows").execute();
-        tableContext.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "SomethingElse").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "shouldCountRows").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "shouldCountRows").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "SomethingElse").execute();
 
-        assertThat(tableContext.where("name", "shouldCountRows").getCount()).isEqualTo(2);
+        assertThat(table.where("name", "shouldCountRows").getCount()).isEqualTo(2);
     }
 
     @Test
     public void orderRows() {
-        tableContext.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "C").execute();
-        tableContext.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "B").execute();
-        tableContext.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "A").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "C").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "B").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "A").execute();
 
-        assertThat(tableContext.orderedBy("name").listStrings("name"))
+        assertThat(table.orderedBy("name").listStrings("name"))
                 .containsExactly("A", "B", "C");
     }
 
     @Test
     public void shouldInsertWithExplicitKey() {
-        Object id = tableContext.insert()
+        Object id = table.insert()
                 .setPrimaryKey("id", 453534643)
                 .setField("code", 1003)
                 .setField("name", "insertTest")
@@ -357,87 +357,87 @@ public class DbContextTest {
 
     @Test
     public void shouldUpdate() {
-        Object id = tableContext.insert()
+        Object id = table.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1004)
                 .setField("name", "oldName")
                 .execute();
 
-        tableContext.where("id", id).update()
+        table.where("id", id).update()
                 .setFields(Arrays.asList("code"), Arrays.asList(1104))
                 .setField("name", "New name").execute();
 
-        assertThat(tableContext.where("id", id).singleString("name")).get()
+        assertThat(table.where("id", id).singleString("name")).get()
             .isEqualTo("New name");
-        assertThat(tableContext.where("id", id).singleLong("code")).get()
+        assertThat(table.where("id", id).singleLong("code")).get()
             .isEqualTo(1104L);
     }
 
     @Test
     public void shouldReadFromCache() {
-        Object id = tableContext.insert()
+        Object id = table.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1005)
                 .setField("name", "hello")
                 .execute();
 
-        assertThat(tableContext.cache(id,
-                i -> tableContext.where("id", i).singleObject(row -> row.getString("name"))
+        assertThat(table.cache(id,
+                i -> table.where("id", i).singleObject(row -> row.getString("name"))
         )).get().isEqualTo("hello");
 
-        tableContext.where("id", id)
+        table.where("id", id)
                 .update()
                 .setField("name", "updated")
                 .execute();
 
-        assertThat(tableContext.cache(id,
-                i -> tableContext.where("id", i).singleObject(row -> row.getString("name"))
+        assertThat(table.cache(id,
+                i -> table.where("id", i).singleObject(row -> row.getString("name"))
         )).get().isEqualTo("hello");
     }
 
     @Test
     public void shouldDelete() {
-        Long id = (Long) tableContext.insert()
+        Long id = (Long) table.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1)
                 .setField("name", "hello")
                 .execute();
 
-        tableContext
+        table
                 .whereAll(Arrays.asList("code", "name"), Arrays.asList(1, "hello"))
                 .whereExpression("id is not null")
                 .executeDelete();
-        assertThat(tableContext.unordered().listLongs("id"))
+        assertThat(table.unordered().listLongs("id"))
             .doesNotContain(id);
-        assertThat(tableContext.query().where("id", id).singleLong("code")).isEmpty();
+        assertThat(table.query().where("id", id).singleLong("code")).isEmpty();
     }
 
     @Test
     public void shouldThrowOnMissingColumn() {
         final Object id;
-        id = tableContext.insert()
+        id = table.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1234)
                 .setField("name", "testing")
                 .execute();
 
-        assertThatThrownBy(() -> tableContext.where("id", id).singleString("non_existing"))
+        assertThatThrownBy(() -> table.where("id", id).singleString("non_existing"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Column {non_existing} is not present");
     }
 
     @Test
     public void shouldThrowOnGetCountWithIllegalQuery() {
-        assertThatThrownBy(() -> tableContext.where("non_existing_column", "10").getCount())
+        assertThatThrownBy(() -> table.where("non_existing_column", "10").getCount())
                 .isInstanceOf(SQLException.class);
     }
 
     @Test
     public void shouldThrowIfSingleQueryReturnsMultipleRows() {
-        tableContext.insert().setField("code", 123).setField("name", "the same name").execute();
-        tableContext.insert().setField("code", 456).setField("name", "the same name").execute();
+        table.insert().setField("code", 123).setField("name", "the same name").execute();
+        table.insert().setField("code", 456).setField("name", "the same name").execute();
 
-        assertThatThrownBy(() -> tableContext.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
 
     }
 

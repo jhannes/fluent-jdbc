@@ -10,7 +10,7 @@ import org.fluentjdbc.util.ExceptionUtil;
  * autogeneration of primary keys. Example:
  *
  * <pre>
- * DbTableContext table = context.table("database_test_table");
+ * {@link DbContextTable} table = context.table("database_test_table");
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {
  *     Long id = table.insert()
  *      .setPrimaryKey("id", (Long)null)
@@ -39,7 +39,7 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
 
         public T execute() {
             try {
-                return builder2.execute(dbTableContext.getConnection());
+                return builder2.execute(dbContextTable.getConnection());
             } catch (SQLException e) {
                 throw ExceptionUtil.softenCheckedException(e);
             }
@@ -47,11 +47,11 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
     }
 
     private final DatabaseInsertBuilder builder;
-    private final DbTableContext dbTableContext;
+    private final DbContextTable dbContextTable;
 
-    public DbContextInsertBuilder(DbTableContext dbTableContext) {
-        this.dbTableContext = dbTableContext;
-        builder = dbTableContext.getTable().insert();
+    public DbContextInsertBuilder(DbContextTable dbContextTable) {
+        this.dbContextTable = dbContextTable;
+        builder = dbContextTable.getTable().insert();
     }
 
     /**
@@ -85,6 +85,6 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
      * Executes the insert statement and returns the number of rows inserted
      */
     public int execute() {
-        return builder.execute(dbTableContext.getConnection());
+        return builder.execute(dbContextTable.getConnection());
     }
 }

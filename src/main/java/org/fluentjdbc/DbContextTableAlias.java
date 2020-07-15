@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
  * statement. The same table can be joined several times by using different aliases. Example:
  *
  * <pre>
- * DbContextTableAlias perm = permissions.alias("perm");
+ * {@link DbContextTableAlias} perm = permissions.alias("perm");
  * DbContextTableAlias m = memberships.alias("m");
  * DbContextTableAlias p = persons.alias("p");
  * DbContextTableAlias g = persons.alias("granter");
@@ -19,12 +19,12 @@ import javax.annotation.Nullable;
  * </pre>
  */
 public class DbContextTableAlias {
-    private final DbTableContext dbTableContext;
+    private final DbContextTable table;
     private final DatabaseTableAlias alias;
 
-    public DbContextTableAlias(DbTableContext dbTableContext, String alias) {
-        this.dbTableContext = dbTableContext;
-        this.alias = dbTableContext.getTable().alias(alias);
+    public DbContextTableAlias(DbContextTable table, String alias) {
+        this.table = table;
+        this.alias = table.getTable().alias(alias);
     }
 
     /**
@@ -76,7 +76,7 @@ public class DbContextTableAlias {
     }
 
     public DbContext getDbContext() {
-        return dbTableContext.getDbContext();
+        return table.getDbContext();
     }
 
 }

@@ -70,7 +70,7 @@ package dbcontext {
         listInstants() : List<Instant>
     }
 
-    class DbTableContext implements DatabaseQueryable {
+    class DbContextTable implements DatabaseQueryable {
     }
 
     class DbSelectContext implements DbListableSelectContext {
@@ -80,7 +80,7 @@ package dbcontext {
         singleInstant
     }
 
-    DbTableContext .right.> DbSelectContext: creates
+    DbContextTable .right.> DbSelectContext: creates
 }
 @enduml
 

@@ -10,14 +10,14 @@ import java.util.Optional;
 
 /**
  * <p>Provides a starting point for for context oriented database operation. Create one DbContext for your
- * application and use {@link #table(String)} to create {@link DbTableContext} object for each table
+ * application and use {@link #table(String)} to create {@link DbContextTable} object for each table
  * you manipulate. All database operations must be nested inside a call to {@link #startConnection(DataSource)}.</p>
  *
  * <p>Example</p>
  * <pre>
  * DbContext context = new DbContext();
  *
- * {@link DbTableContext} table = context.table("database_test_table");
+ * {@link DbContextTable} table = context.table("database_test_table");
  * DataSource dataSource = createDataSource();
  *
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {
@@ -49,10 +49,10 @@ public class DbContext {
     private final ThreadLocal<DbTransaction> currentTransaction = new ThreadLocal<>();
 
     /**
-     * Creates a {@link DbTableContext} associated with this DbContext. All operations will be executed
+     * Creates a {@link DbContextTable} associated with this DbContext. All operations will be executed
      * with the connection from this {@link DbContext}
      */
-    public DbTableContext table(String tableName) {
+    public DbContextTable table(String tableName) {
         return table(new DatabaseTableImpl(tableName));
     }
 
@@ -62,20 +62,20 @@ public class DbContext {
      *
      * @see DatabaseTableWithTimestamps
      */
-    public DbTableContext tableWithTimestamps(String tableName) {
+    public DbContextTable tableWithTimestamps(String tableName) {
         return table(new DatabaseTableWithTimestamps(tableName));
     }
 
     /**
      * Associate a custom implementation of {@link DatabaseTable} with this {@link DbContext}
      */
-    public DbTableContext table(DatabaseTable table) {
-        return new DbTableContext(table, this);
+    public DbContextTable table(DatabaseTable table) {
+        return new DbContextTable(table, this);
     }
 
     /**
      * Binds a database connection to this {@link DbContext} for the current thread. All database
-     * operations on {@link DbTableContext} objects created from this {@link DbContext} in the current
+     * operations on {@link DbContextTable} objects created from this {@link DbContext} in the current
      * thread will be executed using this connection. Calls to startConnection can be nested.
      *
      * <p>Example:</p>

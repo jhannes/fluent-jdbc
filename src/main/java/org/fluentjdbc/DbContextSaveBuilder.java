@@ -6,12 +6,12 @@ import java.sql.SQLException;
 import org.fluentjdbc.util.ExceptionUtil;
 
 /**
- * Generate <code>INSERT</code> or <code>UPDATE</code> statements on {@link DbTableContext} by
+ * Generate <code>INSERT</code> or <code>UPDATE</code> statements on {@link DbContextTable} by
  * collecting field names and parameters. Support autogeneration of primary keys and unique natural
  * keys. Example:
  *
  * <pre>
- * DbTableContext table = context.table("database_test_table");
+ * {@link DbContextTable} table = context.table("database_test_table");
  * try (DbContextConnection ignored = context.startConnection(dataSource)) {
  *     DatabaseSaveResult&lt;Long&gt; result = table.newSaveBuilder("id", object.getId())
  *         .uniqueKey("name", object.getName())
@@ -25,11 +25,11 @@ import org.fluentjdbc.util.ExceptionUtil;
  */
 public class DbContextSaveBuilder<T> {
 
-    private final DbTableContext tableContext;
+    private final DbContextTable table;
     private final DatabaseSaveBuilder<T> saveBuilder;
 
-    public DbContextSaveBuilder(DbTableContext tableContext, DatabaseSaveBuilder<T> saveBuilder) {
-        this.tableContext = tableContext;
+    public DbContextSaveBuilder(DbContextTable table, DatabaseSaveBuilder<T> saveBuilder) {
+        this.table = table;
         this.saveBuilder = saveBuilder;
     }
 
@@ -59,7 +59,7 @@ public class DbContextSaveBuilder<T> {
      */
     public DatabaseSaveResult<T> execute() {
         try {
-            return saveBuilder.execute(tableContext.getConnection());
+            return saveBuilder.execute(table.getConnection());
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }

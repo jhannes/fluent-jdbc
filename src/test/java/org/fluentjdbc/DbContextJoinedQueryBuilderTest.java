@@ -28,10 +28,10 @@ public class DbContextJoinedQueryBuilderTest {
     @Rule
     public final DbContextRule dbContext;
 
-    private final DbTableContext organizations;
-    private final DbTableContext persons;
-    private final DbTableContext memberships;
-    private final DbTableContext permissions;
+    private final DbContextTable organizations;
+    private final DbContextTable persons;
+    private final DbContextTable memberships;
+    private final DbContextTable permissions;
 
     public DbContextJoinedQueryBuilderTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);

@@ -9,7 +9,7 @@ import org.fluentjdbc.DatabaseTableAlias;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextSelectBuilder;
 import org.fluentjdbc.DbContextTableAlias;
-import org.fluentjdbc.DbTableContext;
+import org.fluentjdbc.DbContextTable;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -94,7 +94,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
             "launched_at ${DATETIME}, " +
             "updated_at ${DATETIME} not null, " +
             "created_at ${DATETIME} not null)";
-    private final DbTableContext table;
+    private final DbContextTable table;
 
     public ProductRepository(DbContext dbContext) {
         table = dbContext.tableWithTimestamps("products");
