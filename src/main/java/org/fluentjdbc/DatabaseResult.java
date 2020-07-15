@@ -82,13 +82,20 @@ public class DatabaseResult implements AutoCloseable {
             String columnName = metaData.getColumnName(i).toUpperCase();
             String tableName = metaData.getTableName(i).toUpperCase();
             if (!tableName.equals("")) {
-                tableColumnIndexes.computeIfAbsent(tableName, name -> new HashMap<>()).put(columnName, i);
+                if (!tableColumnIndexes.containsKey(tableName)) {
+                    tableColumnIndexes.put(tableName, new HashMap<>());
+                }
+                if (tableColumnIndexes.get(tableName).containsKey(columnName)) {
+                    logger.warn("Duplicate column {}.{} in query result", tableName, columnName);
+                } else {
+                    tableColumnIndexes.get(tableName).put(columnName, i);
+                }
             }
 
             if (!columnIndexes.containsKey(columnName)) {
                 columnIndexes.put(columnName, i);
             } else {
-                logger.warn("Duplicate column " + columnName + " in query result");
+                logger.debug("Duplicate column {} in query result", columnName);
             }
         }
     }
