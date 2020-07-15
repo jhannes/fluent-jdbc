@@ -268,6 +268,20 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .hasMessageContaining("non_existing_column");
     }
 
+    @Test
+    public void shouldThrowWhenCountingWithUnknownColumn() {
+        DatabaseTableAlias m = memberships.alias("m");
+        DatabaseTableAlias p = persons.alias("p");
+        DatabaseTableAlias o = organizations.alias("o");
+
+        assertThatThrownBy(() -> {
+            p.join(p.column("id"), m.column("person_id"))
+                    .join(m.column("non_existing_column"), o.column("id"))
+                    .getCount(connection);
+        }).isInstanceOf(SQLException.class)
+                .hasMessageContaining("non_existing_column");
+    }
+
     private long savePerson(String personOneName) throws SQLException {
         return persons.insert()
                 .setPrimaryKey("id", (Long)null)

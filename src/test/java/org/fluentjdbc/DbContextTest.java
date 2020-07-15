@@ -427,6 +427,12 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldThrowOnGetCountWithIllegalQuery() {
+        assertThatThrownBy(() -> tableContext.where("non_existing_column", "10").getCount())
+                .isInstanceOf(SQLException.class);
+    }
+
+    @Test
     public void shouldThrowIfSingleQueryReturnsMultipleRows() {
         tableContext.insert().setField("code", 123).setField("name", "the same name").execute();
         tableContext.insert().setField("code", 456).setField("name", "the same name").execute();

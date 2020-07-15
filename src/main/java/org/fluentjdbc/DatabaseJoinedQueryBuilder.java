@@ -244,15 +244,12 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
     @Override
     public int getCount(Connection connection) {
         long startTime = System.currentTimeMillis();
-        String query = "select count(*) " + fromClause() + whereClause() + orderByClause();
+        String query = "select count(*) as count " + fromClause() + whereClause() + orderByClause();
         logger.trace(query);
         try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
-            try (ResultSet rs = stmt.executeQuery()) {
-                if (!rs.next()) {
-                    throw new SQLException("Expected exactly one row returned from " + query);
-                }
-                return rs.getInt(1);
+            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
+                return result.single(row -> row.getInt("count")).orElseThrow();
             }
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
@@ -312,17 +309,17 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
         return "select *" + fromClause() + whereClause() + orderByClause();
     }
 
-    private String orderByClause() {
-        return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
-    }
-
     protected String fromClause() {
         return " from " + table.getTableNameAndAlias() + " " +
                 joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
     }
 
-    private String whereClause() {
-        return conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions);
+    protected String whereClause() {
+        return conditions.isEmpty() ? "" : " where " + String.join(" and ", conditions);
+    }
+
+    protected String orderByClause() {
+        return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
     }
 
     private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {

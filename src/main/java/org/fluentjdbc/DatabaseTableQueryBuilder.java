@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,23 +51,18 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
      */
     @Override
     public int getCount(Connection connection) {
-        try {
-            long startTime = System.currentTimeMillis();
-            String query = "select count(*) " + fromClause()
-                    + (conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions))
-                    + (orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses));
-            logger.trace(query);
-            PreparedStatement stmt = connection.prepareStatement(query);
+        long startTime = System.currentTimeMillis();
+        String query = "select count(*) as count " + fromClause() + whereClause() + orderByClause();
+        logger.trace(query);
+        try(PreparedStatement stmt = connection.prepareStatement(query)) {
             bindParameters(stmt, parameters);
-            ResultSet rs = stmt.executeQuery();
-            if (!rs.next()) {
-                throw new SQLException("Expected exactly one row from " + query);
+            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
+                return result.single(row -> row.getInt("count")).orElseThrow();
             }
-            int count = rs.getInt(1);
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
-            return count;
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
         }
     }
 
@@ -85,7 +79,6 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
             logger.trace(query);
             PreparedStatement stmt = connection.prepareStatement(query);
             bindParameters(stmt, parameters);
-
             DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery());
             return result.stream(mapper, query);
         } catch (SQLException e) {
@@ -237,13 +230,19 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
     }
 
     private String createSelectStatement() {
-        return "select *" + fromClause()
-                + (conditions.isEmpty() ? "" : " where " + String.join(" AND ", conditions))
-                + (orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses));
+        return "select *" + fromClause() + whereClause() + orderByClause();
     }
 
     protected String fromClause() {
         return " from " + table.getTableName();
+    }
+
+    protected String whereClause() {
+        return conditions.isEmpty() ? "" : " where " + String.join(" and ", conditions);
+    }
+
+    protected String orderByClause() {
+        return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
     }
 
     private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
