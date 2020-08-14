@@ -58,6 +58,8 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
     private final List<String> conditions = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
     private final List<String> orderByClauses = new ArrayList<>();
+    private Integer offset;
+    private Integer rowCount;
 
     public DatabaseJoinedQueryBuilder(DatabaseTableAlias table) {
         this.table = table;
@@ -87,6 +89,19 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
     @Override
     public DatabaseJoinedQueryBuilder orderBy(String orderByClause) {
         orderByClauses.add(orderByClause);
+        return this;
+    }
+
+    /**
+     * Adds <code>OFFSET ... ROWS FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code>
+     * statement. FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    @Override
+    public DatabaseJoinedQueryBuilder skipAndLimit(int offset, int rowCount) {
+        this.offset = offset;
+        this.rowCount = rowCount;
         return this;
     }
 
@@ -306,7 +321,7 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
     }
 
     private String createSelectStatement() {
-        return "select *" + fromClause() + whereClause() + orderByClause();
+        return "select *" + fromClause() + whereClause() + orderByClause() + fetchClause();
     }
 
     protected String fromClause() {
@@ -320,6 +335,10 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
 
     protected String orderByClause() {
         return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
+    }
+
+    private String fetchClause() {
+        return rowCount == null ? "" : " offset " + offset + " rows fetch first " + rowCount + " rows only";
     }
 
     private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {

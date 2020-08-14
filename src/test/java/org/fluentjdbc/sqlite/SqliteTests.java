@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.fluentjdbc.DatabaseSaveResult;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.sqlite.SQLiteDataSource;
 
@@ -84,9 +85,36 @@ public class SqliteTests {
         }
     }
 
+    public static class DbContextTest extends org.fluentjdbc.DbContextTest {
+        public DbContextTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+
+        @Test
+        @Override
+        @Ignore("Not supported on SQLite")
+        public void shouldLimitRows() {
+            super.shouldLimitRows();
+        }
+
+        @Test
+        @Override
+        @Ignore("Not supported on SQLite")
+        public void shouldSeparateConnectionPerDbContext() {
+            super.shouldSeparateConnectionPerDbContext();
+        }
+    }
+
     public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
         public DbContextJoinedQueryBuilderTest() {
             super(getDataSource(), REPLACEMENTS);
+        }
+
+        @Test
+        @Override
+        @Ignore("Not supported on SQLite")
+        public void shouldOrderAndLimit() {
+            super.shouldOrderAndLimit();
         }
     }
 

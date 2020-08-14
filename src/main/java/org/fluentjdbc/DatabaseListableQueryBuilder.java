@@ -14,7 +14,28 @@ import java.util.stream.Stream;
  */
 public interface DatabaseListableQueryBuilder {
 
+    /**
+     * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
+     */
     DatabaseListableQueryBuilder orderBy(String orderByClause);
+
+    /**
+     * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.
+     * FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    default DatabaseListableQueryBuilder limit(int rowCount) {
+        return skipAndLimit(0, rowCount);
+    }
+
+    /**
+     * Adds <code>OFFSET ... ROWS FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code>
+     * statement. FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    DatabaseListableQueryBuilder skipAndLimit(int offset, int rowCount);
 
     /**
      * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:

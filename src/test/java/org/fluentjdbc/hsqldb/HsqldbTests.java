@@ -1,6 +1,8 @@
 package org.fluentjdbc.hsqldb;
 
 import org.hsqldb.jdbc.JDBCDataSource;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -52,6 +54,17 @@ public final class HsqldbTests {
         public DatabaseJoinedQueryBuilderTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
         }
+    }
+
+    public static class DbContextTest extends org.fluentjdbc.DbContextTest {
+        public DbContextTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+
+        @Test
+        @Override
+        @Ignore("Not supported on HsqlDb")
+        public void shouldSeparateConnectionPerDbContext() { }
     }
 
     public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {

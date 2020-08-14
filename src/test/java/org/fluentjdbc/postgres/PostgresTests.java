@@ -59,6 +59,12 @@ public class PostgresTests {
         }
     }
 
+    public static class DbContextTest extends org.fluentjdbc.DbContextTest {
+        public DbContextTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+    }
+
     public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
         public DbContextJoinedQueryBuilderTest() {
             super(getDataSource(), REPLACEMENTS);

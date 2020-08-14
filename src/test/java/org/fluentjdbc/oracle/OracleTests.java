@@ -6,6 +6,7 @@ import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
 import org.junit.Ignore;
+import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -68,6 +69,18 @@ public class OracleTests {
     public static class DatabaseJoinedQueryBuilderTest extends org.fluentjdbc.DatabaseJoinedQueryBuilderTest {
         public DatabaseJoinedQueryBuilderTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
+        }
+    }
+
+    public static class DbContextTest extends org.fluentjdbc.DbContextTest {
+        public DbContextTest() throws SQLException {
+            super(getDataSource(), REPLACEMENTS);
+        }
+
+        @Test
+        @Override
+        @Ignore("Unknown why this doesn't work")
+        public void shouldBeAbleToTurnOffAutoCommits() {
         }
     }
 

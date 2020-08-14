@@ -119,6 +119,30 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     }
 
     /**
+     * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.
+     * FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    @Override
+    public DbContextSelectBuilder limit(int rowCount) {
+        queryBuilder.limit(rowCount);
+        return this;
+    }
+
+    /**
+     * Adds <code>OFFSET ... ROWS FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code>
+     * statement. FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    @Override
+    public DbContextSelectBuilder skipAndLimit(int offset, int rowCount) {
+        queryBuilder.skipAndLimit(offset, rowCount);
+        return this;
+    }
+
+    /**
      * Executes <code>DELETE FROM tableName WHERE ....</code>
      */
     public int executeDelete() {

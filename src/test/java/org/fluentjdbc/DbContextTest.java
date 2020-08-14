@@ -20,21 +20,24 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DbContextTest {
 
-    private final DataSource dataSource = createDataSource();
-
-    protected DataSource createDataSource() {
-        return H2TestDatabase.createDataSource();
-    }
-
     @Rule
-    public final DbContextRule dbContext = new DbContextRule(dataSource);
+    public final DbContextRule dbContext;
+
+    private final DataSource dataSource;
 
     private final DbContextTable table;
 
-    private final Map<String, String> replacements = H2TestDatabase.REPLACEMENTS;
+    private final Map<String, String> replacements;
 
     public DbContextTest() {
+        this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
+    }
+
+    protected DbContextTest(DataSource dataSource, Map<String, String> replacements) {
+        this.dbContext = new DbContextRule(dataSource);
+        this.dataSource = dataSource;
         this.table = dbContext.table("database_table_test_table");
+        this.replacements = replacements;
     }
 
     protected String preprocessCreateTable(String createTableStatement) {
@@ -343,6 +346,21 @@ public class DbContextTest {
         assertThat(table.orderedBy("name").listStrings("name"))
                 .containsExactly("A", "B", "C");
     }
+
+    @Test
+    public void shouldLimitRows() {
+        table.whereExpression("1 = 1").executeDelete();
+        table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "C").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "B").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "A").execute();
+        table.insert().setPrimaryKey("id", null).setField("code", 4).setField("name", "A").execute();
+
+        assertThat(table.orderedBy("name, code").limit(3).listLongs("code"))
+                .containsExactly(3L, 4L, 2L);
+        assertThat(table.orderedBy("name, code").skipAndLimit(2, 3).listLongs("code"))
+                .containsExactly(2L, 1L);
+    }
+
 
     @Test
     public void shouldInsertWithExplicitKey() {

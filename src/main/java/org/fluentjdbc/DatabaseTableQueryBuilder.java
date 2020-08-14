@@ -37,10 +37,12 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
     
     private static final Logger logger = LoggerFactory.getLogger(DatabaseTableQueryBuilder.class);
 
+    private final DatabaseTable table;
     private final List<String> conditions = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
     private final List<String> orderByClauses = new ArrayList<>();
-    private final DatabaseTable table;
+    private Integer offset;
+    private Integer rowCount;
 
     DatabaseTableQueryBuilder(DatabaseTable table) {
         this.table = table;
@@ -222,6 +224,19 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
     }
 
     /**
+     * Adds <code>OFFSET ... ROWS FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code>
+     * statement. FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    @Override
+    public DatabaseTableQueryBuilder skipAndLimit(int offset, int rowCount) {
+        this.offset = offset;
+        this.rowCount = rowCount;
+        return this;
+    }
+
+    /**
      * Returns this. Needed to make {@link DatabaseTableQueryBuilder} interchangeable with {@link DatabaseTable}
      */
     @Override
@@ -230,7 +245,7 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
     }
 
     private String createSelectStatement() {
-        return "select *" + fromClause() + whereClause() + orderByClause();
+        return "select *" + fromClause() + whereClause() + orderByClause() + fetchClause();
     }
 
     protected String fromClause() {
@@ -243,6 +258,10 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
 
     protected String orderByClause() {
         return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
+    }
+
+    private String fetchClause() {
+        return rowCount == null ? "" : " offset " + offset + " rows fetch first " + rowCount + " rows only";
     }
 
     private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {

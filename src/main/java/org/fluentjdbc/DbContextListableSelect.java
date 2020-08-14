@@ -103,4 +103,19 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      */
     void forEach(DatabaseResult.RowConsumer row);
 
+    /**
+     * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.
+     * FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    T limit(int rowCount);
+
+    /**
+     * Adds <code>OFFSET ... ROWS FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code>
+     * statement. FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    T skipAndLimit(int offset, int rowCount);
 }

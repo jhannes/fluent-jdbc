@@ -222,6 +222,41 @@ public class DbContextJoinedQueryBuilderTest {
     }
 
     @Test
+    public void shouldOrderAndLimit() {
+        long alice = savePerson("Alice");
+        long bob = savePerson("Bob");
+        long charlene = savePerson("Charlene");
+
+        long army = saveOrganization("Army");
+        long boutique = saveOrganization("Boutique");
+        long combine = saveOrganization("Combine");
+
+        saveMembership(alice, army);
+        saveMembership(alice, boutique);
+        saveMembership(alice, combine);
+
+        saveMembership(bob, army);
+        saveMembership(bob, combine);
+
+        saveMembership(charlene, combine);
+
+        DbContextTableAlias m = memberships.alias("m");
+        DbContextTableAlias p = persons.alias("p");
+        DbContextTableAlias o = organizations.alias("o");
+
+        List<String> result = m
+                .join(m.column("person_id"), p.column("id"))
+                .join(m.column("organization_id"), o.column("id"))
+                .query()
+                .orderBy(p.column("name"))
+                .orderBy(o.column("name"))
+                .skipAndLimit(2, 3)
+                .list(row -> row.table(o).getString("name") + " " + row.table(p).getString("name"));
+        assertThat(result)
+                .containsExactly("Combine Alice", "Army Bob", "Combine Bob");
+    }
+
+    @Test
     public void shouldCollectJoinedTables() {
         String personOneName = "Jane";
         String personTwoName = "James";
