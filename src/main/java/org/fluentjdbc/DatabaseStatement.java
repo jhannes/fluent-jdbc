@@ -90,8 +90,14 @@ public class DatabaseStatement {
             return Timestamp.from(Instant.from((OffsetDateTime)parameter));
         } else if (parameter instanceof LocalDate) {
             return Date.valueOf((LocalDate)parameter);
-        } else if (parameter instanceof UUID && (isSqlServer(connection) || isOracle(connection))) {
-            return parameter.toString().toUpperCase();
+        } else if (parameter instanceof UUID) {
+            if (isSqlServer(connection)) {
+                return parameter.toString().toUpperCase();
+            } else if (isOracle(connection)) {
+                return parameter.toString();
+            } else {
+                return parameter;
+            }
         } else if (parameter instanceof Double) {
             return BigDecimal.valueOf(((Number) parameter).doubleValue());
         } else if (parameter instanceof CharSequence) {
