@@ -322,7 +322,7 @@ public class DbContextTest {
         Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "yes").execute();
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute();
 
-        assertThat(table.whereOptional("name", "yes").unordered().listStrings("id"))
+        assertThat(table.whereOptional("name", "yes").query().unordered().listStrings("id"))
             .contains(id1.toString(), id2.toString()).doesNotContain(id3.toString());
         assertThat(table.whereOptional("name", null).unordered().listStrings("id"))
             .contains(id1.toString(), id2.toString(), id3.toString());

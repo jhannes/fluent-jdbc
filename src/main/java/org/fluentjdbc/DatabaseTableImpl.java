@@ -1,13 +1,9 @@
 package org.fluentjdbc;
 
-import java.util.Collection;
-import java.util.List;
+import javax.annotation.Nullable;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-import javax.sql.DataSource;
 
 /**
  * <p>Provides a starting point for for fluent-jdbc with explicit Connection management.</p>

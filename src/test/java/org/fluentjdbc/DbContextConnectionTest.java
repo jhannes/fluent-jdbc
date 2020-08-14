@@ -3,8 +3,10 @@ package org.fluentjdbc;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -28,4 +30,15 @@ public class DbContextConnectionTest {
         assertThatThrownBy(connection::close)
                 .isInstanceOf(SQLException.class);
     }
+
+
+    @Test
+    public void shouldPropagateDataSourceExceptionOnEnsureTransaction() {
+        SQLException exception = new SQLException("Connection failed!");
+        DbContext dbContext = new DbContext();
+        dbContext.startConnection(() -> { throw exception; });
+        assertThatThrownBy(dbContext::ensureTransaction)
+                .isEqualTo(exception);
+    }
+
 }

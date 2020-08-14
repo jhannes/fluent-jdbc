@@ -244,16 +244,20 @@ public class DbContextJoinedQueryBuilderTest {
         DbContextTableAlias p = persons.alias("p");
         DbContextTableAlias o = organizations.alias("o");
 
-        List<String> result = m
+        DbContextJoinedSelectBuilder query = m
                 .join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"))
                 .query()
                 .orderBy(p.column("name"))
-                .orderBy(o.column("name"))
+                .orderBy(o.column("name"));
+        List<String> result = query
                 .skipAndLimit(2, 3)
                 .list(row -> row.table(o).getString("name") + " " + row.table(p).getString("name"));
-        assertThat(result)
-                .containsExactly("Combine Alice", "Army Bob", "Combine Bob");
+        assertThat(result).containsExactly("Combine Alice", "Army Bob", "Combine Bob");
+        List<String> result2 = query
+                .limit(1)
+                .list(row -> row.table(o).getString("name") + " " + row.table(p).getString("name"));
+        assertThat(result2).containsExactly("Army Alice");
     }
 
     @Test

@@ -17,10 +17,6 @@ public class DatabaseColumnReference {
         return alias;
     }
 
-    public String getTableName() {
-        return alias.getTableName();
-    }
-
     /**
      * Returns the expression to be used for <code>JOIN ... ON alias.columnName = ...</code>
      */
