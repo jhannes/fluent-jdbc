@@ -9,16 +9,16 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.fluentjdbc.AbstractDatabaseTest.createTable;
+import static org.fluentjdbc.AbstractDatabaseTest.dropTablesIfExists;
 
 public class DbContextJoinedQueryBuilderTest {
 
@@ -47,31 +47,14 @@ public class DbContextJoinedQueryBuilderTest {
         permissions = dbContext.table("dbtest_permissions");
     }
 
-    protected String preprocessCreateTable(String createTableStatement) {
-        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
-    }
-
-    protected void dropTableIfExists(Connection connection, String tableName) {
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException ignored) {
-        }
-    }
-
-    protected void dropTablesIfExists(Connection connection, String... tableNames) {
-        Stream.of(tableNames).forEach(t -> dropTableIfExists(connection, t));
-    }
-
     @Before
-    public void createTable() throws SQLException {
+    public void setupDatabase() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             dropTablesIfExists(connection, "dbtest_permissions", "dbtest_memberships", "dbtest_organizations", "dbtest_persons");
-            try (Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate(preprocessCreateTable("create table dbtest_persons (id ${INTEGER_PK}, name varchar(50) not null)"));
-                stmt.executeUpdate(preprocessCreateTable("create table dbtest_organizations (id ${INTEGER_PK}, name varchar(50) not null)"));
-                stmt.executeUpdate(preprocessCreateTable("create table dbtest_memberships (id ${INTEGER_PK}, person_id integer not null references dbtest_persons(id), organization_id integer not null references dbtest_organizations(id))"));
-                stmt.executeUpdate(preprocessCreateTable("create table dbtest_permissions (id ${INTEGER_PK}, name varchar(50) not null, membership_id integer not null references dbtest_memberships(id), granted_by integer null references dbtest_persons(id))"));
-            }
+            createTable(connection, "create table dbtest_persons (id ${INTEGER_PK}, name varchar(50) not null)", replacements);
+            createTable(connection, "create table dbtest_organizations (id ${INTEGER_PK}, name varchar(50) not null)", replacements);
+            createTable(connection, "create table dbtest_memberships (id ${INTEGER_PK}, person_id integer not null references dbtest_persons(id), organization_id integer not null references dbtest_organizations(id))", replacements);
+            createTable(connection, "create table dbtest_permissions (id ${INTEGER_PK}, name varchar(50) not null, membership_id integer not null references dbtest_memberships(id), granted_by integer null references dbtest_persons(id))", replacements);
         }
     }
 

@@ -8,7 +8,6 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -40,12 +39,9 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     }
 
     @Before
-    public void openConnection() throws SQLException {
+    public void openConnection() {
         dropTableIfExists(connection, "uuid_table");
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(
-                    preprocessCreateTable("create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, expired_at ${DATETIME}, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
-        }
+        createTable(connection, "create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, expired_at ${DATETIME}, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)");
     }
 
     @After

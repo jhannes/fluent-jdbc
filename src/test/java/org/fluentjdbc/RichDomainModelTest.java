@@ -39,17 +39,15 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
     }
 
     @Before
-    public void createTables() throws SQLException {
+    public void createTables() {
         dropTableIfExists(connection, "entry_taggings");
         dropTableIfExists(connection, "entries");
         dropTableIfExists(connection, "tags");
         dropTableIfExists(connection, "tag_types");
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable(TagType.CREATE_TABLE));
-            stmt.executeUpdate(preprocessCreateTable(Tag.CREATE_TABLE));
-            stmt.executeUpdate(preprocessCreateTable(Entry.CREATE_TABLE));
-            stmt.executeUpdate(preprocessCreateTable(Entry.CREATE_TAGGING_TABLE));
-        }
+        createTable(connection, TagType.CREATE_TABLE);
+        createTable(connection, Tag.CREATE_TABLE);
+        createTable(connection, Entry.CREATE_TABLE);
+        createTable(connection, Entry.CREATE_TAGGING_TABLE);
     }
 
     @Test

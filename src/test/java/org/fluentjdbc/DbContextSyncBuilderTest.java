@@ -8,8 +8,6 @@ import org.junit.Test;
 
 import javax.sql.DataSource;
 import java.math.BigDecimal;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -17,6 +15,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.fluentjdbc.AbstractDatabaseTest.createTable;
+import static org.fluentjdbc.AbstractDatabaseTest.dropTableIfExists;
 
 public class DbContextSyncBuilderTest {
 
@@ -41,18 +41,9 @@ public class DbContextSyncBuilderTest {
     }
 
     @Before
-    public void setupDatabase() throws SQLException {
-        try (Statement statement = dbContext.getThreadConnection().createStatement()) {
-            dropTableIfExists(statement, "sync_test");
-            statement.executeUpdate(AbstractDatabaseTest.preprocessCreateTable(CREATE_TABLE, replacements));
-        }
-    }
-
-    protected void dropTableIfExists(Statement stmt, String tableName) {
-        try {
-            stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException ignored) {
-        }
+    public void setupDatabase() {
+        dropTableIfExists(dbContext.getThreadConnection(), "sync_test");
+        createTable(dbContext.getThreadConnection(), CREATE_TABLE, replacements);
     }
 
 

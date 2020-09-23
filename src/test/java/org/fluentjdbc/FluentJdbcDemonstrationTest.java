@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Random;
@@ -31,11 +30,9 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Before
-    public void createTables() throws SQLException {
+    public void setupDatabase() {
         dropTableIfExists(connection, "demo_table");
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable("create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
-        }
+        createTable(connection, "create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)");
     }
 
     @After

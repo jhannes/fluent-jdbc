@@ -10,12 +10,13 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.fluentjdbc.AbstractDatabaseTest.createTable;
+import static org.fluentjdbc.AbstractDatabaseTest.dropTableIfExists;
 
 
 public class DbContextTest {
@@ -40,25 +41,11 @@ public class DbContextTest {
         this.replacements = replacements;
     }
 
-    protected String preprocessCreateTable(String createTableStatement) {
-        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
-    }
-
-    protected void dropTableIfExists(Connection connection, String tableName) {
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException ignored) {
-        }
-    }
-
-
     @Before
-    public void createTable() throws SQLException {
+    public void setupDatabase() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             dropTableIfExists(connection, "database_table_test_table");
-            try(Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null)"));
-            }
+            createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null)", replacements);
         }
     }
 

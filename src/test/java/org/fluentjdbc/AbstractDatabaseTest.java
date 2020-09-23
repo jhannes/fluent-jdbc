@@ -1,5 +1,7 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.util.ExceptionUtil;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,8 +17,16 @@ public class AbstractDatabaseTest {
         this.replacements = replacements;
     }
 
-    protected String preprocessCreateTable(String createTableStatement) {
-        return preprocessCreateTable(createTableStatement, replacements);
+    protected void createTable(Connection connection, String createTable) {
+        createTable(connection, createTable, replacements);
+    }
+
+    public static void createTable(Connection connection, String createTable, Map<String, String> replacements) {
+        try(Statement stmt = connection.createStatement()) {
+            stmt.executeUpdate(preprocessCreateTable(createTable, replacements));
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        }
     }
 
     public static String preprocessCreateTable(String createTableStatement, Map<String, String> replacements) {
@@ -28,11 +38,11 @@ public class AbstractDatabaseTest {
                 ;
     }
 
-    protected void dropTablesIfExists(Connection connection, String... tableNames) {
+    public static void dropTablesIfExists(Connection connection, String... tableNames) {
         Stream.of(tableNames).forEach(t -> dropTableIfExists(connection, t));
     }
 
-    protected void dropTableIfExists(Connection connection, String tableName) {
+    public static void dropTableIfExists(Connection connection, String tableName) {
         try(Statement stmt = connection.createStatement()) {
             stmt.executeUpdate("drop table " + tableName);
         } catch(SQLException ignored) {

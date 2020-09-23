@@ -9,7 +9,6 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -32,18 +31,12 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
     public void openConnection() throws SQLException {
         DataSource serverDataSource = H2TestDatabase.createDataSource();
         serverConnection = serverDataSource.getConnection();
-
-        try(Statement stmt = serverConnection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable(CREATE_TABLE));
-        }
+        createTable(serverConnection, CREATE_TABLE);
 
         JdbcDataSource clientDataSource = new JdbcDataSource();
         clientDataSource.setUrl("jdbc:h2:mem:" + getClass().getName());
         clientConnection = clientDataSource.getConnection();
-
-        try(Statement stmt = clientConnection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable(CREATE_TABLE));
-        }
+        createTable(clientConnection, CREATE_TABLE);
     }
 
     @After

@@ -32,11 +32,9 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Before
-    public void createTable() throws SQLException {
+    public void createTable() {
         dropTableIfExists(connection, "database_table_test_table");
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable("create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, description varchar(100) null)"));
-        }
+        createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, description varchar(100) null)");
     }
 
     @Test

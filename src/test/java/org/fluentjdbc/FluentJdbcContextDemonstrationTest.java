@@ -8,7 +8,6 @@ import org.junit.Test;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
@@ -17,6 +16,8 @@ import java.util.Random;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.fluentjdbc.AbstractDatabaseTest.createTable;
+import static org.fluentjdbc.AbstractDatabaseTest.dropTableIfExists;
 
 public class FluentJdbcContextDemonstrationTest {
 
@@ -35,29 +36,14 @@ public class FluentJdbcContextDemonstrationTest {
         this.tableWithStringKeyContext = dbContext.tableWithTimestamps("demo_string_table");
     }
 
-    protected String preprocessCreateTable(String createTableStatement) {
-        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
-    }
-
-    protected void dropTableIfExists(Connection connection, String tableName) {
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException ignored) {
-        }
-    }
-
-
     @Before
-    public void createTable() throws SQLException {
+    public void setupDatabase() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             dropTableIfExists(connection, "demo_table");
             dropTableIfExists(connection, "demo_string_table");
-            try(Statement stmt = connection.createStatement()) {
-                stmt.executeUpdate(preprocessCreateTable("create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
-                stmt.executeUpdate(preprocessCreateTable("create table demo_string_table (id varchar(200) not null primary key, value integer not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
-            }
+            createTable(connection, "create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)", replacements);
+            createTable(connection, "create table demo_string_table (id varchar(200) not null primary key, value integer not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)", replacements);
         }
-
         connection = dbContext.startConnection(dataSource);
     }
 

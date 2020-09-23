@@ -10,8 +10,6 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import javax.sql.DataSource;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
@@ -24,6 +22,8 @@ import java.util.Random;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.fluentjdbc.AbstractDatabaseTest.createTable;
+import static org.fluentjdbc.AbstractDatabaseTest.dropTableIfExists;
 
 public class UsageDemonstrationTest {
 
@@ -55,22 +55,13 @@ public class UsageDemonstrationTest {
     }
 
     @Before
-    public void createTables() throws SQLException {
-        try (Statement statement = dbContext.getThreadConnection().createStatement()) {
-            dropTableIfExists(statement, "order_lines");
-            dropTableIfExists(statement, "products");
-            dropTableIfExists(statement, "orders");
-            statement.executeUpdate(preprocessCreateTable(ProductRepository.CREATE_TABLE));
-            statement.executeUpdate(preprocessCreateTable(OrderRepository.CREATE_TABLE));
-            statement.executeUpdate(preprocessCreateTable(OrderLineRepository.CREATE_TABLE));
-        }
-    }
-
-    protected void dropTableIfExists(Statement stmt, String tableName) {
-        try {
-            stmt.executeUpdate("drop table " + tableName);
-        } catch(SQLException ignored) {
-        }
+    public void createTables() {
+        dropTableIfExists(dbContext.getThreadConnection(), "order_lines");
+        dropTableIfExists(dbContext.getThreadConnection(), "products");
+        dropTableIfExists(dbContext.getThreadConnection(), "orders");
+        createTable(dbContext.getThreadConnection(), ProductRepository.CREATE_TABLE, replacements);
+        createTable(dbContext.getThreadConnection(), OrderRepository.CREATE_TABLE, replacements);
+        createTable(dbContext.getThreadConnection(), OrderLineRepository.CREATE_TABLE, replacements);
     }
 
 
@@ -248,10 +239,6 @@ public class UsageDemonstrationTest {
     @SafeVarargs
     private final <T> T pickOne(T... alternatives) {
         return alternatives[random.nextInt(alternatives.length)];
-    }
-
-    protected String preprocessCreateTable(String createTableStatement) {
-        return AbstractDatabaseTest.preprocessCreateTable(createTableStatement, replacements);
     }
 
 }

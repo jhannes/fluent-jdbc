@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,11 +29,9 @@ public class BulkInsertTest extends AbstractDatabaseTest {
     }
 
     @Before
-    public void createTables() throws SQLException {
+    public void createTables() {
         dropTableIfExists(connection, demoTable.getTableName());
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable("create table bulk_insert_table (id ${INTEGER_PK}, type varchar(50) not null, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)"));
-        }
+        createTable(connection, "create table bulk_insert_table (id ${INTEGER_PK}, type varchar(50) not null, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)");
     }
 
     @Test

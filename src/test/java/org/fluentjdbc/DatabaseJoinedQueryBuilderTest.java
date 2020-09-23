@@ -7,7 +7,6 @@ import org.slf4j.event.Level;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
@@ -38,14 +37,12 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
     }
 
     @Before
-    public void createTable() throws SQLException {
-        dropTablesIfExists(connection, "dbtest_permissions","dbtest_memberships", "dbtest_organizations", "dbtest_persons");
-        try(Statement stmt = connection.createStatement()) {
-            stmt.executeUpdate(preprocessCreateTable("create table dbtest_persons (id ${INTEGER_PK}, name varchar(50) not null, birth_date date)"));
-            stmt.executeUpdate(preprocessCreateTable("create table dbtest_organizations (id ${INTEGER_PK}, name varchar(50) not null)"));
-            stmt.executeUpdate(preprocessCreateTable("create table dbtest_memberships (id ${INTEGER_PK}, person_id integer not null references dbtest_persons(id), organization_id integer not null references dbtest_organizations(id), status varchar(100), expires_at ${DATETIME})"));
-            stmt.executeUpdate(preprocessCreateTable("create table dbtest_permissions (id ${INTEGER_PK}, name varchar(50) not null, membership_id integer not null references dbtest_memberships(id), granted_by integer null references dbtest_persons(id), is_admin ${BOOLEAN})"));
-        }
+    public void createTable() {
+        dropTablesIfExists(connection, "dbtest_permissions", "dbtest_memberships", "dbtest_organizations", "dbtest_persons");
+        createTable(connection, "create table dbtest_persons (id ${INTEGER_PK}, name varchar(50) not null, birth_date date)");
+        createTable(connection, "create table dbtest_organizations (id ${INTEGER_PK}, name varchar(50) not null)");
+        createTable(connection, "create table dbtest_memberships (id ${INTEGER_PK}, person_id integer not null references dbtest_persons(id), organization_id integer not null references dbtest_organizations(id), status varchar(100), expires_at ${DATETIME})");
+        createTable(connection, "create table dbtest_permissions (id ${INTEGER_PK}, name varchar(50) not null, membership_id integer not null references dbtest_memberships(id), granted_by integer null references dbtest_persons(id), is_admin ${BOOLEAN})");
     }
 
     @Test
@@ -80,18 +77,18 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias ps = persons.alias("ps");
         DatabaseTableAlias o = organizations.alias("o");
         List<String> result = permissions
-            .join(permissions.column("membership_id"), memberships.column("id"))
-            .join(memberships.column("person_id"), ps.column("id"))
-            .join(memberships.column("organization_id"), o.column("id"))
-            .whereOptional("name", applicationName)
-            .unordered()
-            .list(connection, row ->
-                String.format(
-                    format,
-                    row.table(permissions).getString("name"),
-                    row.table(ps).getString("name"),
-                    row.table(o).getString("name")
-                ));
+                .join(permissions.column("membership_id"), memberships.column("id"))
+                .join(memberships.column("person_id"), ps.column("id"))
+                .join(memberships.column("organization_id"), o.column("id"))
+                .whereOptional("name", applicationName)
+                .unordered()
+                .list(connection, row ->
+                        String.format(
+                                format,
+                                row.table(permissions).getString("name"),
+                                row.table(ps).getString("name"),
+                                row.table(o).getString("name")
+                        ));
 
         assertThat(result)
                 .contains(String.format(format, applicationName, personOneName, orgOneName))
@@ -260,11 +257,11 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias o = organizations.alias("o");
 
-        assertThatThrownBy(() -> {
-            p.join(p.column("id"), m.column("person_id"))
-                    .join(m.column("organization_id"), o.column("id"))
-                    .list(connection, row -> row.table(p).getLocalDate("non_existing_column"));
-        }).isInstanceOf(IllegalArgumentException.class)
+        assertThatThrownBy(
+                () -> p.join(p.column("id"), m.column("person_id"))
+                        .join(m.column("organization_id"), o.column("id"))
+                        .list(connection, row -> row.table(p).getLocalDate("non_existing_column"))
+        ).isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("non_existing_column");
     }
 
@@ -274,17 +271,17 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias o = organizations.alias("o");
 
-        assertThatThrownBy(() -> {
-            p.join(p.column("id"), m.column("person_id"))
-                    .join(m.column("non_existing_column"), o.column("id"))
-                    .getCount(connection);
-        }).isInstanceOf(SQLException.class)
+        assertThatThrownBy(
+                () -> p.join(p.column("id"), m.column("person_id"))
+                        .join(m.column("non_existing_column"), o.column("id"))
+                        .getCount(connection)
+        ).isInstanceOf(SQLException.class)
                 .hasMessageContaining("non_existing_column");
     }
 
     private long savePerson(String personOneName) throws SQLException {
         return persons.insert()
-                .setPrimaryKey("id", (Long)null)
+                .setPrimaryKey("id", (Long) null)
                 .setField("name", personOneName)
                 .execute(connection);
     }
