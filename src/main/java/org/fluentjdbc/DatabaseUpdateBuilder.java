@@ -30,9 +30,11 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
     private final List<Object> whereParameters = new ArrayList<>();
     private final List<String> updateFields = new ArrayList<>();
     private final List<Object> updateValues = new ArrayList<>();
+    private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseUpdateBuilder(String tableName) {
+    public DatabaseUpdateBuilder(String tableName, DatabaseTableOperationReporter reporter) {
         this.tableName = tableName;
+        this.reporter = reporter;
     }
 
     /**
@@ -75,7 +77,7 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
         List<Object> parameters = new ArrayList<>();
         parameters.addAll(updateValues);
         parameters.addAll(whereParameters);
-        return executeUpdate(createUpdateStatement(tableName, updateFields, whereConditions), parameters, connection);
+        return executeUpdate(createUpdateStatement(tableName, updateFields, whereConditions), parameters, connection, reporter);
     }
 
 }

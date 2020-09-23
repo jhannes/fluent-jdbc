@@ -28,14 +28,16 @@ public class DatabaseInsertWithPkBuilder<T> {
     
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInsertWithPkBuilder.class);
 
+    private final DatabaseTableOperationReporter reporter;
     private final DatabaseInsertBuilder insertBuilder;
     private final String idField;
     private final T idValue;
 
-    public DatabaseInsertWithPkBuilder(DatabaseInsertBuilder insertBuilder, String idField, T idValue) {
+    public DatabaseInsertWithPkBuilder(DatabaseInsertBuilder insertBuilder, String idField, T idValue, DatabaseTableOperationReporter reporter) {
         this.insertBuilder = insertBuilder;
         this.idField = idField;
         this.idValue = idValue;
+        this.reporter = reporter;
     }
 
     /**
@@ -79,8 +81,7 @@ public class DatabaseInsertWithPkBuilder<T> {
             bindParameters(stmt, insertBuilder.getParameters());
             stmt.executeUpdate();
         } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
+            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 
@@ -94,7 +95,7 @@ public class DatabaseInsertWithPkBuilder<T> {
             stmt.executeUpdate();
             return getGeneratedKey(stmt);
         } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 

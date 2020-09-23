@@ -25,9 +25,15 @@ import java.util.stream.Stream;
 public class DatabaseTableImpl implements DatabaseTable {
 
     private final String tableName;
+    private final DatabaseTableReporter reporter;
 
     public DatabaseTableImpl(String tableName) {
+        this(tableName, DatabaseTableReporter.LOGGING_REPORTER);
+    }
+
+    public DatabaseTableImpl(String tableName, DatabaseTableReporter reporter) {
         this.tableName = tableName;
+        this.reporter = reporter;
     }
 
     /**
@@ -36,7 +42,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      */
     @Override
     public DatabaseListableQueryBuilder unordered() {
-        return new DatabaseTableQueryBuilder(this);
+        return new DatabaseTableQueryBuilder(this, reporter);
     }
 
     /**
@@ -50,7 +56,7 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public DatabaseTableAlias alias(String alias) {
-        return new DatabaseTableAlias(tableName, alias);
+        return new DatabaseTableAlias(tableName, alias, reporter);
     }
 
     @Override
@@ -99,7 +105,7 @@ public class DatabaseTableImpl implements DatabaseTable {
 
     @Override
     public DatabaseSimpleQueryBuilder query() {
-        return new DatabaseTableQueryBuilder(this);
+        return new DatabaseTableQueryBuilder(this, reporter);
     }
 
     /**
@@ -107,7 +113,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      */
     @Override
     public DatabaseInsertBuilder insert() {
-        return new DatabaseInsertBuilder(tableName);
+        return new DatabaseInsertBuilder(tableName, reporter.operation("INSERT"));
     }
 
     /**
@@ -175,7 +181,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      */
     @Override
     public DatabaseUpdateBuilder update() {
-        return new DatabaseUpdateBuilder(tableName);
+        return new DatabaseUpdateBuilder(tableName, reporter.operation("UPDATE"));
     }
 
     /**
@@ -183,6 +189,6 @@ public class DatabaseTableImpl implements DatabaseTable {
      */
     @Override
     public DatabaseDeleteBuilder delete() {
-        return new DatabaseDeleteBuilder(tableName);
+        return new DatabaseDeleteBuilder(tableName, reporter.operation("DELETE"));
     }
 }

@@ -42,7 +42,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
 
     public DbContextJoinedSelectBuilder(DbContextTableAlias table) {
         dbContext = table.getDbContext();
-        builder = new DatabaseJoinedQueryBuilder(table.getTableAlias());
+        builder = new DatabaseJoinedQueryBuilder(table.getTableAlias(), table.getReporter().operation("SELECT"));
     }
 
     /**

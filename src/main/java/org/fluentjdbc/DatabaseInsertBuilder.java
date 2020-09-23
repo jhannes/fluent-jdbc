@@ -29,9 +29,11 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
     private final List<String> fieldNames = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
     private final String table;
+    private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseInsertBuilder(String table) {
+    public DatabaseInsertBuilder(String table, DatabaseTableOperationReporter reporter) {
         this.table = table;
+        this.reporter = reporter;
     }
 
     List<Object> getParameters() {
@@ -61,11 +63,11 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
     /**
      * Executes the insert statement and returns the number of rows inserted. Calls
      * {@link #createInsertStatement()} to generate SQL and
-     * {@link DatabaseStatement#executeUpdate(String, List, Connection)}
+     * {@link DatabaseStatement#executeUpdate(String, List, Connection, DatabaseTableOperationReporter)}
      * to bind parameters and execute statement
      */
     public int execute(Connection connection) {
-        return executeUpdate(createInsertStatement(), parameters, connection);
+        return executeUpdate(createInsertStatement(), parameters, connection, reporter);
     }
 
     /**
@@ -86,7 +88,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
         if (idValue != null) {
             setField(idField, idValue);
         }
-        return new DatabaseInsertWithPkBuilder<>(this, idField, idValue);
+        return new DatabaseInsertWithPkBuilder<>(this, idField, idValue, reporter);
     }
 
 }

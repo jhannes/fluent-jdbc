@@ -35,6 +35,20 @@ import java.util.Optional;
  */
 public class DbContext {
 
+    private final DatabaseReporter reporter;
+
+    public DbContext() {
+        this(DatabaseReporter.LOGGING_REPORTER);
+    }
+
+    public DbContext(DatabaseReporter reporter) {
+        this.reporter = reporter;
+    }
+
+    public DatabaseTableReporter tableReporter(DatabaseTable table) {
+        return reporter.table(table.getTableName());
+    }
+
     /**
      * A {@link java.util.function.Supplier} for {@link Connection} objects. Like {@link java.util.function.Supplier},
      * but can throw {@link SQLException}. Used as an alternative to a {@link DataSource}
@@ -53,7 +67,7 @@ public class DbContext {
      * with the connection from this {@link DbContext}
      */
     public DbContextTable table(String tableName) {
-        return table(new DatabaseTableImpl(tableName));
+        return table(new DatabaseTableImpl(tableName, reporter.table(tableName)));
     }
 
     /**
@@ -63,7 +77,7 @@ public class DbContext {
      * @see DatabaseTableWithTimestamps
      */
     public DbContextTable tableWithTimestamps(String tableName) {
-        return table(new DatabaseTableWithTimestamps(tableName));
+        return table(new DatabaseTableWithTimestamps(tableName, reporter.table(tableName)));
     }
 
     /**

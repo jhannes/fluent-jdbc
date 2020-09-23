@@ -22,10 +22,12 @@ import java.util.List;
 public class DbContextTableAlias {
     private final DbContextTable table;
     private final DatabaseTableAlias alias;
+    private final DatabaseTableReporter reporter;
 
-    public DbContextTableAlias(DbContextTable table, String alias) {
+    public DbContextTableAlias(DbContextTable table, String alias, DatabaseTableReporter reporter) {
         this.table = table;
         this.alias = table.getTable().alias(alias);
+        this.reporter = reporter;
     }
 
     /**
@@ -100,4 +102,7 @@ public class DbContextTableAlias {
         return table.getDbContext();
     }
 
+    public DatabaseTableReporter getReporter() {
+        return reporter;
+    }
 }

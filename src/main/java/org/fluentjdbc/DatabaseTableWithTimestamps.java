@@ -2,7 +2,6 @@ package org.fluentjdbc;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.Instant;
-import java.util.List;
 
 /**
  * {@link DatabaseTable} which automatically adds <code>created_at</code> and <code>updated_at</code>
@@ -11,8 +10,12 @@ import java.util.List;
 @ParametersAreNonnullByDefault
 public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
 
+    public DatabaseTableWithTimestamps(String tableName, DatabaseTableReporter queryReporter) {
+        super(tableName, queryReporter);
+    }
+
     public DatabaseTableWithTimestamps(String tableName) {
-        super(tableName);
+        super(tableName, DatabaseTableReporter.LOGGING_REPORTER);
     }
 
     /**

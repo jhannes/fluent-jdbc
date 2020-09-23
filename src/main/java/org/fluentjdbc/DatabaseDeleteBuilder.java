@@ -23,9 +23,11 @@ class DatabaseDeleteBuilder {
 
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Object> whereParameters = new ArrayList<>();
+    private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseDeleteBuilder(String tableName) {
+    public DatabaseDeleteBuilder(String tableName, DatabaseTableOperationReporter reporter) {
         this.tableName = tableName;
+        this.reporter = reporter;
     }
 
     /**
@@ -45,8 +47,8 @@ class DatabaseDeleteBuilder {
         return executeUpdate(
                 createDeleteStatement(tableName, whereConditions),
                 whereParameters,
-                connection
-        );
+                connection,
+                reporter);
     }
 
 }

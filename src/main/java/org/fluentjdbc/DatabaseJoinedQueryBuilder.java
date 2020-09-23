@@ -54,6 +54,7 @@ import static org.fluentjdbc.DatabaseStatement.parameterString;
 public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseJoinedQueryBuilder.class);
 
+    private final DatabaseTableOperationReporter reporter;
     private final DatabaseTableAlias table;
     private final List<JoinedTable> joinedTables = new ArrayList<>();
     private final List<String> conditions = new ArrayList<>();
@@ -62,8 +63,9 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
     private Integer offset;
     private Integer rowCount;
 
-    public DatabaseJoinedQueryBuilder(DatabaseTableAlias table) {
+    public DatabaseJoinedQueryBuilder(DatabaseTableAlias table, DatabaseTableOperationReporter reporter) {
         this.table = table;
+        this.reporter = reporter;
     }
 
     /**
@@ -291,7 +293,7 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 
@@ -374,7 +376,7 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 

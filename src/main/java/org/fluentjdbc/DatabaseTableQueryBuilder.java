@@ -38,14 +38,16 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
     private static final Logger logger = LoggerFactory.getLogger(DatabaseTableQueryBuilder.class);
 
     private final DatabaseTable table;
+    private final DatabaseTableReporter reporter;
     private final List<String> conditions = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
     private final List<String> orderByClauses = new ArrayList<>();
     private Integer offset;
     private Integer rowCount;
 
-    DatabaseTableQueryBuilder(DatabaseTable table) {
+    DatabaseTableQueryBuilder(DatabaseTable table, DatabaseTableReporter reporter) {
         this.table = table;
+        this.reporter = reporter;
     }
 
     /**
@@ -64,7 +66,7 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+            reporter.operation("SELECT").reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 
@@ -76,8 +78,9 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
      */
     @Override
     public <T> Stream<T> stream(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+        long startTime = System.currentTimeMillis();
+        String query = createSelectStatement();
         try {
-            String query = createSelectStatement();
             logger.trace(query);
             PreparedStatement stmt = connection.prepareStatement(query);
             bindParameters(stmt, parameters);
@@ -85,6 +88,8 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
             return result.stream(mapper, query);
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            reporter.operation("SELECT").reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 
@@ -276,7 +281,7 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"", (System.currentTimeMillis()-startTime)/1000.0, query);
+            reporter.operation("SELECT").reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 }

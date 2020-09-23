@@ -29,10 +29,12 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
 
     private final DatabaseTable table;
     private final DbContext dbContext;
+    private final DatabaseTableReporter reporter;
 
     public DbContextTable(DatabaseTable databaseTable, DbContext dbContext) {
         this.table = databaseTable;
         this.dbContext = dbContext;
+        this.reporter = dbContext.tableReporter(table);
     }
 
     /**
@@ -111,7 +113,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      * @see DbContextJoinedSelectBuilder
      */
     public DbContextTableAlias alias(String alias) {
-        return new DbContextTableAlias(this, alias);
+        return new DbContextTableAlias(this, alias, reporter);
     }
 
     /**
@@ -241,5 +243,9 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
 
     public Connection getConnection() {
         return dbContext.getThreadConnection();
+    }
+
+    public DatabaseTableReporter getReporter() {
+        return reporter;
     }
 }

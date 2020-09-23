@@ -1,7 +1,5 @@
 package org.fluentjdbc;
 
-import java.util.Objects;
-
 /**
  * Used to specify a table in a {@link DatabaseJoinedQueryBuilder} joined <code>SELECT</code>
  * statement. The same table can be joined several times by using different aliases. Example:
@@ -21,10 +19,16 @@ import java.util.Objects;
 public class DatabaseTableAlias {
     private final String alias;
     private final String tableName;
+    private final DatabaseTableReporter reporter;
 
-    public DatabaseTableAlias(String tableName, String alias) {
+    public DatabaseTableAlias(String tableName, String alias, DatabaseTableReporter reporter) {
         this.alias = alias;
         this.tableName = tableName;
+        this.reporter = reporter;
+    }
+
+    public DatabaseTableAlias(String tableName, String alias) {
+        this(tableName, alias, DatabaseTableReporter.LOGGING_REPORTER);
     }
 
     /**
@@ -60,7 +64,7 @@ public class DatabaseTableAlias {
      * Create a new {@link DatabaseJoinedQueryBuilder}
      */
     public DatabaseJoinedQueryBuilder select() {
-        return new DatabaseJoinedQueryBuilder(this);
+        return new DatabaseJoinedQueryBuilder(this, reporter.operation("SELECT"));
     }
 
     public String getTableName() {

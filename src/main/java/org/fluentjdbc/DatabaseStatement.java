@@ -144,7 +144,7 @@ public class DatabaseStatement {
      * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
      * and executes the statement
      */
-    public static int executeUpdate(String query, List<Object> parameters, Connection connection) {
+    public static int executeUpdate(String query, List<Object> parameters, Connection connection, DatabaseTableOperationReporter reporter) {
         long startTime = System.currentTimeMillis();
         logger.trace(query);
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
@@ -153,8 +153,7 @@ public class DatabaseStatement {
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            logger.debug("time={}s query=\"{}\"",
-                    (System.currentTimeMillis()-startTime)/1000.0, query);
+            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
         }
     }
 
