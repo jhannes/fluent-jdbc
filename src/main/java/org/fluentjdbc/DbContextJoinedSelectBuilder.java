@@ -56,6 +56,16 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     }
 
     /**
+     * Adds an additional table to the join as an inner join. Inner joins require that all columns
+     * in both tables match and will leave out rows from one of the table where there is no corresponding
+     * table in the other
+     */
+    public DbContextJoinedSelectBuilder join(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
+        builder.join(leftFields, joinedTable.getTableAlias(), rightFields);
+        return this;
+    }
+
+    /**
      * Adds an additional table to the join as a left join. Left join only require a matching row in
      * the first/left table. If there is no matching row in the second/right table, all columns are
      * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
@@ -63,6 +73,17 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      */
     public DbContextJoinedSelectBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
         builder.leftJoin(a, b);
+        return this;
+    }
+
+    /**
+     * Adds an additional table to the join as a left join. Left join only require a matching row in
+     * the first/left table. If there is no matching row in the second/right table, all columns are
+     * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
+     * the resulting row, <code>null</code> is returned
+     */
+    public DbContextJoinedSelectBuilder leftJoin(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
+        builder.leftJoin(leftFields, joinedTable.getTableAlias(), rightFields);
         return this;
     }
 

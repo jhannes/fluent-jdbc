@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -193,6 +194,16 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
     }
 
     /**
+     * Adds an additional table to the join as an inner join. Inner joins require that all columns
+     * in both tables match and will leave out rows from one of the table where there is no corresponding
+     * table in the other
+     */
+    public DatabaseJoinedQueryBuilder join(List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
+        joinedTables.add(new JoinedTable(table, leftFields, joinedTable, rightFields, "inner join"));
+        return this;
+    }
+
+    /**
      * Adds an additional table to the join as a left join. Left join only require a matching row in
      * the first/left table. If there is no matching row in the second/right table, all columns are
      * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
@@ -200,6 +211,17 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
      */
     public DatabaseJoinedQueryBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
         joinedTables.add(new JoinedTable(a, b, "left join"));
+        return this;
+    }
+
+    /**
+     * Adds an additional table to the join as a left join. Left join only require a matching row in
+     * the first/left table. If there is no matching row in the second/right table, all columns are
+     * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
+     * the resulting row, <code>null</code> is returned
+     */
+    public DatabaseJoinedQueryBuilder leftJoin(List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
+        joinedTables.add(new JoinedTable(table, leftFields, joinedTable, rightFields, "left join"));
         return this;
     }
 
@@ -312,10 +334,9 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
 
         Map<DatabaseTableAlias, Integer> keys = new HashMap<>();
         for (JoinedTable table : joinedTables) {
-            DatabaseColumnReference joinedTable = table.b;
-            String tableAlias = joinedTable.getTableAlias().getAlias().toUpperCase();
-            String columnAlias = joinedTable.getColumnName().toUpperCase();
-            keys.put(joinedTable.getTableAlias(), aliasColumnIndexes.get(tableAlias).get(columnAlias));
+            String tableAlias = table.joinedTable.getAlias().toUpperCase();
+            String columnAlias = table.rightFields.get(0).toUpperCase();
+            keys.put(table.joinedTable, aliasColumnIndexes.get(tableAlias).get(columnAlias));
         }
         return new DatabaseResult(statement, resultSet, columnIndexes, aliasColumnIndexes, keys);
     }
@@ -358,18 +379,38 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
     }
 
     private static class JoinedTable {
-        private final DatabaseColumnReference a;
-        private final DatabaseColumnReference b;
-        private final String join;
+        private final DatabaseTableAlias leftTable;
+        private final List<String> leftFields;
+        private final DatabaseTableAlias joinedTable;
+        private final List<String> rightFields;
+        private final String joinType;
 
-        private JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b, String join) {
-            this.a = a;
-            this.b = b;
-            this.join = join;
+        private JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b, String joinType) {
+            this(a.getTableAlias(), Arrays.asList(a.getColumnName()), b.getTableAlias(), Arrays.asList(b.getColumnName()), joinType);
+        }
+
+        public JoinedTable(DatabaseTableAlias leftTable, List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields, String joinType) {
+            if (leftFields.size() != rightFields.size()) {
+                throw new IllegalArgumentException("Column lists must have same length: " + leftFields + " != " + rightFields);
+            }
+            if (leftFields.isEmpty()) {
+                throw new IllegalArgumentException("Must have at least one joined column");
+            }
+            this.leftTable = leftTable;
+            this.leftFields = leftFields;
+            this.joinedTable = joinedTable;
+            this.rightFields = rightFields;
+            this.joinType = joinType;
         }
 
         public String toSql() {
-            return join + " " + b.getTableNameAndAlias() + " on " + a.getQualifiedColumnName() + " = " + b.getQualifiedColumnName();
+            List<String> joinParts = new ArrayList<>();
+            for (int i = 0, leftFieldsSize = leftFields.size(); i < leftFieldsSize; i++) {
+                joinParts.add(leftTable.getAlias() + "." + leftFields.get(i) + " = " + joinedTable.getAlias() + "." + rightFields.get(i));
+            }
+
+            return joinType + " " + joinedTable.getTableNameAndAlias()
+                    + " on " + String.join(" and ", joinParts);
         }
 
         @Override
@@ -378,7 +419,7 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
         }
 
         DatabaseTableAlias getAlias() {
-            return b.getTableAlias();
+            return joinedTable;
         }
     }
 }

@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fluentjdbc.AbstractDatabaseTest.createTable;
@@ -32,6 +33,8 @@ public class DbContextJoinedQueryBuilderTest {
     private final DbContextTable persons;
     private final DbContextTable memberships;
     private final DbContextTable permissions;
+    private final DbContextTable parents;
+    private final DbContextTable children;
 
     public DbContextJoinedQueryBuilderTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -45,16 +48,22 @@ public class DbContextJoinedQueryBuilderTest {
         persons = dbContext.table("dbtest_persons");
         memberships = dbContext.table("dbtest_memberships");
         permissions = dbContext.table("dbtest_permissions");
+        parents = dbContext.table("dbtest_parents");
+        children = dbContext.table("dbtest_children");
+
     }
 
     @Before
     public void setupDatabase() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
-            dropTablesIfExists(connection, "dbtest_permissions", "dbtest_memberships", "dbtest_organizations", "dbtest_persons");
+            dropTablesIfExists(connection, "dbtest_permissions", "dbtest_memberships", "dbtest_organizations", "dbtest_persons", "dbtest_children", "dbtest_parents");
             createTable(connection, "create table dbtest_persons (id ${INTEGER_PK}, name varchar(50) not null)", replacements);
             createTable(connection, "create table dbtest_organizations (id ${INTEGER_PK}, name varchar(50) not null)", replacements);
             createTable(connection, "create table dbtest_memberships (id ${INTEGER_PK}, person_id integer not null references dbtest_persons(id), organization_id integer not null references dbtest_organizations(id))", replacements);
             createTable(connection, "create table dbtest_permissions (id ${INTEGER_PK}, name varchar(50) not null, membership_id integer not null references dbtest_memberships(id), granted_by integer null references dbtest_persons(id))", replacements);
+            // TODO: Can we come up with a better example of a multi-column join?
+            createTable(connection, "create table dbtest_parents (first_key varchar(50) not null, second_key varchar(50) not null, name varchar(100), primary key (first_key, second_key))", replacements);
+            createTable(connection, "create table dbtest_children (id ${INTEGER_PK}, first_key varchar(50) not null, second_key varchar(50) not null, name varchar(100), foreign key (first_key, second_key) references dbtest_parents (first_key, second_key))", replacements);
         }
     }
 
@@ -94,7 +103,7 @@ public class DbContextJoinedQueryBuilderTest {
             .join(memberships.column("person_id"), ps.column("id"))
             .join(memberships.column("organization_id"), o.column("id"))
             .whereOptional("name", applicationName)
-            .whereExpressionWithMultipleParameters("(p.name = ? or p.name = ?)", Arrays.asList(applicationName, applicationName2))
+            .whereExpressionWithMultipleParameters("(p.name = ? or p.name = ?)", asList(applicationName, applicationName2))
             .unordered()
             .list(row ->
                 String.format(
@@ -195,7 +204,7 @@ public class DbContextJoinedQueryBuilderTest {
                 .join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"))
                 .query()
-                .whereIn(o.column("name").getQualifiedColumnName(), Arrays.asList("Army", "Boutique"))
+                .whereIn(o.column("name").getQualifiedColumnName(), asList("Army", "Boutique"))
                 .whereOptional(p.column("name").getQualifiedColumnName(), null)
                 .orderBy(p.column("name"))
                 .orderBy(o.column("name"))
@@ -267,13 +276,13 @@ public class DbContextJoinedQueryBuilderTest {
         Map<Long, List<String>> organizationsPerPerson = new HashMap<>();
         p.join(p.column("id"), m.column("person_id"))
                 .join(m.column("organization_id"), o.column("id"))
-                .whereAll(Arrays.asList("id", "name"), Arrays.asList(personOneId, personOneName))
+                .whereAll(asList("id", "name"), asList(personOneId, personOneName))
                 .orderBy(o.column("name"))
                 .forEach(row -> organizationsPerPerson
                         .computeIfAbsent(row.table(p).getLong("id"), id -> new ArrayList<>())
                         .add(row.table(o).getString("name")));
         assertThat(organizationsPerPerson)
-                .containsEntry(personOneId, Arrays.asList(orgTwoName, orgOneName));
+                .containsEntry(personOneId, asList(orgTwoName, orgOneName));
     }
 
     @Test
@@ -294,6 +303,56 @@ public class DbContextJoinedQueryBuilderTest {
         assertThatThrownBy(() -> selectContext.singleString("id"))
                 .isInstanceOf(SQLException.class)
                 .hasMessageContaining("non_existing");
+    }
+    
+    @Test
+    public void shouldJoinOnTwoColumns() {
+        parents.insert()
+                .setField("first_key", "A")
+                .setField("second_key", "B")
+                .setField("name", "first parent")
+                .execute();
+        parents.insert()
+                .setField("first_key", "A")
+                .setField("second_key", "C")
+                .setField("name", "second parent")
+                .execute();
+        children.insert()
+                .setField("first_key", "A")
+                .setField("second_key", "B")
+                .setField("name", "first child")
+                .execute();
+        children.insert()
+                .setField("first_key", "A")
+                .setField("second_key", "C")
+                .setField("name", "second child")
+                .execute();
+
+        DbContextTableAlias p = parents.alias("p");
+        DbContextTableAlias c = children.alias("c");
+        List<String> results = p.join(asList("first_key", "second_key"), c, asList("first_key", "second_key"))
+                .unordered()
+                .list(row -> row.table(p).getString("name") + " - " + row.table(c).getString("name"));
+        assertThat(results)
+                .containsExactlyInAnyOrder("first parent - first child", "second parent - second child");
+    }
+
+    @Test
+    public void shouldValidateMatchingNumberOfJoinedColumns() {
+        assertThatThrownBy(() ->
+                parents.alias("p")
+                    .leftJoin(asList("first_key", "second_key"), children.alias("c"), asList("first_key"))
+                    .getCount()
+        ).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    public void shouldValidateAtLeastOneJoinedColumn() {
+        assertThatThrownBy(() ->
+                parents.alias("p")
+                    .join(asList(), children.alias("c"), asList())
+                    .getCount()
+        ).isInstanceOf(IllegalArgumentException.class);
     }
 
     private long savePerson(String personOneName) {

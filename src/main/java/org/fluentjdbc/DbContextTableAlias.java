@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Used to specify a table in a {@link DbContextJoinedSelectBuilder} joined <code>SELECT</code>
@@ -46,6 +47,16 @@ public class DbContextTableAlias {
     }
 
     /**
+     * Create a new {@link DbContextJoinedSelectBuilder} based on this table by joining the
+     * specified joinedTable on all fields
+     *
+     * @see DbContextJoinedSelectBuilder#join(List, DbContextTableAlias, List)
+     */
+    public DbContextJoinedSelectBuilder join(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
+        return select().join(leftFields, joinedTable, rightFields);
+    }
+
+    /**
      * Create a new {@link DbContextJoinedSelectBuilder} based on this table by left joining the
      * specified {@link DatabaseColumnReference}.
      * 
@@ -53,6 +64,16 @@ public class DbContextTableAlias {
      */
     public DbContextJoinedSelectBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
         return select().leftJoin(a, b);
+    }
+
+    /**
+     * Create a new {@link DbContextJoinedSelectBuilder} based on this table by left joining the
+     * specified joinedTable on all fields
+     *
+     * @see DbContextJoinedSelectBuilder#join(List, DbContextTableAlias, List)
+     */
+    public DbContextJoinedSelectBuilder leftJoin(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
+        return select().leftJoin(leftFields, joinedTable, rightFields);
     }
 
     public DatabaseTableAlias getTableAlias() {
