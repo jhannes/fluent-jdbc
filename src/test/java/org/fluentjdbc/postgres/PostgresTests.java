@@ -83,6 +83,12 @@ public class PostgresTests {
         }
     }
 
+    public static class DatabaseTableWithArraysTest extends org.fluentjdbc.usage.context.DatabaseTableWithArraysTest {
+        public DatabaseTableWithArraysTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+    }
+
     static Connection getConnection() throws SQLException {
         return getDataSource().getConnection();
     }

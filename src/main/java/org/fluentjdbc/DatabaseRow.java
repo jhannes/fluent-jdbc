@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -10,6 +11,8 @@ import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -182,6 +185,16 @@ public class DatabaseRow {
      */
     public BigDecimal getBigDecimal(String column) throws SQLException {
         return rs.getBigDecimal(getColumnIndex(column));
+    }
+
+    public List<Integer> getIntList(String columnName) throws SQLException {
+        Array array = rs.getArray(getColumnIndex(columnName));
+        return array != null ? Arrays.asList((Integer[]) array.getArray()) : null;
+    }
+
+    public List<String> getStringList(String columnName) throws SQLException {
+        Array array = rs.getArray(getColumnIndex(columnName));
+        return array != null ? Arrays.asList((String[]) array.getArray()) : null;
     }
 
     /**

@@ -71,6 +71,15 @@ public class DatabaseStatement {
             stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof Enum<?>) {
             stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
+        } else if (parameter instanceof Collection<?>) {
+            Object[] elements = ((Collection) parameter).toArray();
+            if (elements[0] instanceof Integer) {
+                stmt.setArray(index, stmt.getConnection().createArrayOf("integer", elements));
+            } else if (elements[0] instanceof String) {
+                stmt.setArray(index, stmt.getConnection().createArrayOf("varchar", elements));
+            } else {
+                throw new IllegalArgumentException("Not supported: Arrays of " + elements[0].getClass());
+            }
         } else {
             stmt.setObject(index, toDatabaseType(parameter, stmt.getConnection()));
         }
