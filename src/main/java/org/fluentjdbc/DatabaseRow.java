@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Date;
@@ -187,14 +188,36 @@ public class DatabaseRow {
         return rs.getBigDecimal(getColumnIndex(column));
     }
 
+    /**
+     * Returns the value of the specified column on this row as a List of Integers,
+     * if the underlying type is Array
+     *
+     * @see #getColumnIndex
+     */
     public List<Integer> getIntList(String columnName) throws SQLException {
-        Array array = rs.getArray(getColumnIndex(columnName));
-        return array != null ? Arrays.asList((Integer[]) array.getArray()) : null;
+        return toList(rs.getArray(getColumnIndex(columnName)), Integer.class);
     }
 
+    /**
+     * Returns the value of the specified column on this row as a List of String,
+     * if the underlying type is Array
+     *
+     * @see #getColumnIndex
+     */
     public List<String> getStringList(String columnName) throws SQLException {
-        Array array = rs.getArray(getColumnIndex(columnName));
-        return array != null ? Arrays.asList((String[]) array.getArray()) : null;
+        return toList(rs.getArray(getColumnIndex(columnName)), String.class);
+    }
+
+    @Nonnull
+    private <T> List<T> toList(Array array, Class<T> arrayType) throws SQLException {
+        if (array == null) {
+            return null;
+        }
+        T[] javaArray = (T[]) array.getArray();
+        if (javaArray.length > 0 && !arrayType.isAssignableFrom(javaArray[0].getClass())) {
+            throw new ClassCastException("Can't convert " + javaArray[0].getClass() + " to " + arrayType);
+        }
+        return Arrays.asList(javaArray);
     }
 
     /**

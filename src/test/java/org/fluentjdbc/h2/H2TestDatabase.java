@@ -17,6 +17,8 @@ public class H2TestDatabase {
         REPLACEMENTS.put("INTEGER_PK", "serial primary key");
         REPLACEMENTS.put("DATETIME", "datetime");
         REPLACEMENTS.put("BOOLEAN", "boolean");
+        REPLACEMENTS.put("INT_ARRAY", "Array");
+        REPLACEMENTS.put("STRING_ARRAY", "Array");
     }
 
     public static Connection createConnection() throws SQLException {

@@ -35,6 +35,8 @@ public class AbstractDatabaseTest {
                 .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
                 .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
                 .replaceAll(Pattern.quote("${BOOLEAN}"), replacements.get("BOOLEAN"))
+                .replaceAll(Pattern.quote("${INT_ARRAY}"), replacements.get("INT_ARRAY"))
+                .replaceAll(Pattern.quote("${STRING_ARRAY}"), replacements.get("STRING_ARRAY"))
                 ;
     }
 

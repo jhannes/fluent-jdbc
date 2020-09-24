@@ -2,7 +2,6 @@ package org.fluentjdbc.postgres;
 
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
-import org.postgresql.ds.PGPoolingDataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
@@ -21,6 +20,8 @@ public class PostgresTests {
         REPLACEMENTS.put("INTEGER_PK", "serial primary key");
         REPLACEMENTS.put("DATETIME", "timestamp");
         REPLACEMENTS.put("BOOLEAN", "boolean");
+        REPLACEMENTS.put("INT_ARRAY", "int[]");
+        REPLACEMENTS.put("STRING_ARRAY", "varchar[]");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {
@@ -86,6 +87,7 @@ public class PostgresTests {
     public static class DatabaseTableWithArraysTest extends org.fluentjdbc.usage.context.DatabaseTableWithArraysTest {
         public DatabaseTableWithArraysTest() {
             super(getDataSource(), REPLACEMENTS);
+            supportsTypedArrays();
         }
     }
 

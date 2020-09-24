@@ -56,7 +56,7 @@ public class DatabaseStatement {
     /**
      * Calls the correct {@link PreparedStatement} <code>setXXX</code> method based on the type of the parameter.
      * Supports {@link Instant}, {@link ZonedDateTime}, {@link OffsetDateTime}, {@link LocalDate}, {@link String},
-     * {@link Enum}, {@link UUID}, {@link Double}
+     * {@link List} of String or Integer, {@link Enum}, {@link UUID}, {@link Double}
      */
     public static void bindParameter(PreparedStatement stmt, int index, @Nullable Object parameter) throws SQLException {
         if (parameter instanceof Instant) {
@@ -73,7 +73,9 @@ public class DatabaseStatement {
             stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof Collection<?>) {
             Object[] elements = ((Collection) parameter).toArray();
-            if (elements[0] instanceof Integer) {
+            if (elements.length == 0) {
+                stmt.setArray(index, stmt.getConnection().createArrayOf(null, elements));
+            } else if (elements[0] instanceof Integer) {
                 stmt.setArray(index, stmt.getConnection().createArrayOf("integer", elements));
             } else if (elements[0] instanceof String) {
                 stmt.setArray(index, stmt.getConnection().createArrayOf("varchar", elements));

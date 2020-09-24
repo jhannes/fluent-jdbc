@@ -18,6 +18,8 @@ public final class HsqldbTests {
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
         REPLACEMENTS.put("DATETIME", "datetime");
         REPLACEMENTS.put("BOOLEAN", "boolean");
+        REPLACEMENTS.put("INT_ARRAY", "integer array");
+        REPLACEMENTS.put("STRING_ARRAY", "varchar(256) array");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {
@@ -53,6 +55,13 @@ public final class HsqldbTests {
     public static class DatabaseJoinedQueryBuilderTest extends org.fluentjdbc.DatabaseJoinedQueryBuilderTest {
         public DatabaseJoinedQueryBuilderTest() throws SQLException {
             super(getConnection(), REPLACEMENTS);
+        }
+    }
+
+    public static class DatabaseTableWithArraysTest extends org.fluentjdbc.usage.context.DatabaseTableWithArraysTest {
+        public DatabaseTableWithArraysTest() {
+            super(getDataSource(), REPLACEMENTS);
+            supportsTypedArrays();
         }
     }
 
