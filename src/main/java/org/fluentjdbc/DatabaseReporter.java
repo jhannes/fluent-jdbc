@@ -10,7 +10,7 @@ package org.fluentjdbc;
  *
  * <pre>
  * MetricRegistry registry = new MetricRegistry();
- * DatabaseReporter reporter = tableName -> operation -> (query, timing) -> {
+ * DatabaseReporter reporter = tableName -&gt; operation -&gt; (query, timing) -&gt; {
  *      registry.timer(tableName + "/" + operation).update(Duration.ofMilling(timing);
  *      registry.timer(tableName + "/" + operation + "/" + query).update(Duration.ofMilling(timing);
  * }
