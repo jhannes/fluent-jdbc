@@ -137,7 +137,7 @@ public class DbContextSyncBuilder<T>  {
 
     /**
      * Inserts into the database rows that were included in the in-memory dataset, but
-     * that didn't have corresponding rows in the database, using {@link DbContextBuildInsertBuilder}
+     * that didn't have corresponding rows in the database, using {@link DbContextBulkInsertBuilder}
      */
     public DbContextSyncBuilder<T> insertMissing() {
         cacheExisting();

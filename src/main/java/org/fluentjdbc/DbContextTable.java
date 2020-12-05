@@ -136,7 +136,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     /**
-     * Creates a {@link DbContextBuildInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * Creates a {@link DbContextBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
      * for a list of objects. Example:
      *
      * <pre>
@@ -148,12 +148,12 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      *     }
      * </pre>
      */
-    public <T> DbContextBuildInsertBuilder<T> bulkInsert(Stream<T> objects) {
+    public <T> DbContextBulkInsertBuilder<T> bulkInsert(Stream<T> objects) {
         return bulkInsert(objects.collect(Collectors.toList()));
     }
 
     /**
-     * Creates a {@link DbContextBuildInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
+     * Creates a {@link DbContextBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
      * for a list of objects. Example:
      *
      * <pre>
@@ -165,8 +165,8 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      *     }
      * </pre>
      */
-    public <T> DbContextBuildInsertBuilder<T> bulkInsert(Iterable<T> objects) {
-        return new DbContextBuildInsertBuilder<>(this, table.bulkInsert(objects));
+    public <T> DbContextBulkInsertBuilder<T> bulkInsert(Iterable<T> objects) {
+        return new DbContextBulkInsertBuilder<>(this, table.bulkInsert(objects));
     }
 
     /**
