@@ -1,6 +1,5 @@
 package org.fluentjdbc;
 
-import javax.annotation.Nonnull;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Date;
@@ -155,8 +154,8 @@ public class DatabaseRow {
      * @see #getColumnIndex
      */
     public OffsetDateTime getOffsetDateTime(String fieldName) throws SQLException {
-        Instant instant = getInstant(fieldName);
-        return instant != null ? OffsetDateTime.ofInstant(instant, ZoneId.systemDefault()) : null;
+        ZonedDateTime dateTime = getZonedDateTime(fieldName);
+        return dateTime != null ? dateTime.toOffsetDateTime() : null;
     }
 
     /**
@@ -208,7 +207,6 @@ public class DatabaseRow {
         return toList(rs.getArray(getColumnIndex(columnName)), String.class);
     }
 
-    @Nonnull
     private <T> List<T> toList(Array array, Class<T> arrayType) throws SQLException {
         if (array == null) {
             return null;

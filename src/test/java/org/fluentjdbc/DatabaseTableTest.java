@@ -6,7 +6,9 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
@@ -34,7 +36,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     @Before
     public void createTable() {
         dropTableIfExists(connection, "database_table_test_table");
-        createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, description varchar(100) null)");
+        createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, description varchar(100) null, entry_time ${DATETIME} null)");
     }
 
     @Test
@@ -56,6 +58,18 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
 
+    @Test
+    public void shouldRetrieveDates() {
+        OffsetDateTime time = ZonedDateTime.now().minusDays(100).truncatedTo(ChronoUnit.SECONDS).toOffsetDateTime();
+        table.insert()
+                .setField("code", 1002)
+                .setField("name", "whatever")
+                .setField("entry_time", time)
+                .execute(connection);
+        assertThat(table.where("code", 1002).singleObject(connection, row -> row.getOffsetDateTime("entry_time")))
+                .get()
+                .isEqualTo(time);
+    }
 
     @Test
     public void shouldHandleOrStatements() throws SQLException {
