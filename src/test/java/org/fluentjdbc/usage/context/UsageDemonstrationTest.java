@@ -199,13 +199,13 @@ public class UsageDemonstrationTest {
 
         Collection<ProductSales> productSales = productRepository.salesReport();
         assertThat(productSales)
+                .filteredOn(p -> p.getProductId().equals(thirdProduct.getProductId()))
+                .extracting(ProductSales::getTotalQuantity)
+                .isEmpty();
+        assertThat(productSales)
                 .filteredOn(p -> p.getProductId().equals(firstProduct.getProductId()))
                 .extracting(ProductSales::getTotalQuantity)
                 .containsExactly(10+5);
-        assertThat(productSales)
-                .filteredOn(p -> p.getProductId().equals(thirdProduct.getProductId()))
-                .extracting(ProductSales::getTotalQuantity)
-                .containsExactly(0);
     }
 
     protected void verifySyncStatus(EnumMap<DatabaseSaveResult.SaveStatus, Integer> syncStatus) {

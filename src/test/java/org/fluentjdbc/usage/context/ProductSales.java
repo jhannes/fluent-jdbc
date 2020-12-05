@@ -10,10 +10,6 @@ public class ProductSales {
     private final Product.Id productId;
 
     @Getter
-    @Setter
-    private int totalQuantity;
+    private final int totalQuantity;
 
-    public void addSale(OrderLine orderLine) {
-        totalQuantity += orderLine.getQuantity();
-    }
 }

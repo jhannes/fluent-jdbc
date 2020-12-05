@@ -1,24 +1,13 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.fluentjdbc.DatabaseStatement.bindParameters;
-import static org.fluentjdbc.DatabaseStatement.parameterString;
 
 /**
  * Generate <code>SELECT</code> statements by collecting <code>WHERE</code> expressions and parameters.Example:
@@ -38,15 +27,12 @@ public class DatabaseTableQueryBuilder implements
         DatabaseListableQueryBuilder<DatabaseTableQueryBuilder>
 {
 
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseTableQueryBuilder.class);
-
-    private final DatabaseTable table;
-    private final DatabaseTableReporter reporter;
-    private final List<String> conditions = new ArrayList<>();
-    private final List<Object> parameters = new ArrayList<>();
-    private final List<String> orderByClauses = new ArrayList<>();
-    private Integer offset;
-    private Integer rowCount;
+    protected final DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
+    protected final DatabaseTable table;
+    protected final DatabaseTableReporter reporter;
+    protected final List<String> orderByClauses = new ArrayList<>();
+    protected Integer offset;
+    protected Integer rowCount;
 
     DatabaseTableQueryBuilder(DatabaseTable table, DatabaseTableReporter reporter) {
         this.table = table;
@@ -58,19 +44,10 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public int getCount(Connection connection) {
-        long startTime = System.currentTimeMillis();
-        String query = "select count(*) as count " + fromClause() + whereClause() + orderByClause();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
-                return result.single(row -> row.getInt("count")).orElseThrow(() -> new RuntimeException("Should never happen"));
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            reporter.operation("SELECT").reportQuery(query, System.currentTimeMillis()-startTime);
-        }
+        String statement = "select count(*) as count " + fromClause() + whereClause.whereClause();
+        return new DatabaseStatement(statement, whereClause.getParameters(), reporter.operation("COUNT"))
+                .singleObject(connection, row -> row.getInt("count"))
+                .orElseThrow(() -> new RuntimeException("Should never happen"));
     }
 
     /**
@@ -81,30 +58,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public <T> Stream<T> stream(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        try {
-            logger.trace(query);
-            PreparedStatement stmt = connection.prepareStatement(query);
-            bindParameters(stmt, parameters);
-            DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery());
-            return result.stream(mapper, query);
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            reporter.operation("SELECT").reportQuery(query, System.currentTimeMillis()-startTime);
-        }
-    }
-
-    /**
-     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
-     * <pre>
-     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(connection, row -&gt; row.getInstant("created_at"))
-     * </pre>
-     */
-    @Override
-    public <T> List<T> list(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return stream(connection, mapper).collect(Collectors.toList());
+        return createSelect().stream(connection, mapper);
     }
 
     /**
@@ -113,10 +67,11 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
-        query(connection, result -> {
-            result.forEach(consumer);
-            return null;
-        });
+        createSelect().forEach(connection, consumer);
+    }
+
+    public DatabaseStatement createSelect() {
+        return new DatabaseStatement(createSelectStatement(), whereClause.getParameters(), reporter.operation("SELECT"));
     }
 
     /**
@@ -131,7 +86,7 @@ public class DatabaseTableQueryBuilder implements
     @Nonnull
     @Override
     public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return query(connection, result -> result.single(mapper));
+        return createSelect().singleObject(connection, mapper);
     }
 
     /**
@@ -139,8 +94,7 @@ public class DatabaseTableQueryBuilder implements
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     public DatabaseTableQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        conditions.add(expression);
-        this.parameters.addAll(parameters);
+        whereClause.whereExpressionWithParameterList(expression, parameters);
         return this;
     }
 
@@ -149,7 +103,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public DatabaseUpdateBuilder update() {
-        return table.update().setWhereFields(conditions, parameters);
+        return table.update().where(whereClause);
     }
 
     /**
@@ -157,7 +111,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public int delete(Connection connection) {
-        return table.delete().setWhereFields(conditions, parameters).execute(connection);
+        return table.delete().where(whereClause).execute(connection);
     }
 
     /**
@@ -200,15 +154,11 @@ public class DatabaseTableQueryBuilder implements
     }
 
     private String createSelectStatement() {
-        return "select *" + fromClause() + whereClause() + orderByClause() + fetchClause();
+        return "select *" + fromClause() + whereClause.whereClause() + orderByClause() + fetchClause();
     }
 
     protected String fromClause() {
         return " from " + table.getTableName();
-    }
-
-    protected String whereClause() {
-        return conditions.isEmpty() ? "" : " where " + String.join(" and ", conditions);
     }
 
     protected String orderByClause() {
@@ -219,19 +169,4 @@ public class DatabaseTableQueryBuilder implements
         return rowCount == null ? "" : " offset " + offset + " rows fetch first " + rowCount + " rows only";
     }
 
-    private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
-                return resultMapper.apply(result);
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            reporter.operation("SELECT").reportQuery(query, System.currentTimeMillis()-startTime);
-        }
-    }
 }

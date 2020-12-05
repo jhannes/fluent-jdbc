@@ -11,7 +11,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static org.fluentjdbc.DatabaseStatement.addBatch;
-import static org.fluentjdbc.DatabaseStatement.createDeleteStatement;
 
 /**
  * Fluently generate a <code>DELETE ... WHERE ...</code> statement for a list of objects.
@@ -59,7 +58,7 @@ public class DatabaseBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, Da
      * @return the sum count of all the rows deleted
      */
     public int execute(Connection connection) {
-        String deleteStatement = createDeleteStatement(table.getTableName(), whereConditions);
+        String deleteStatement = "delete from " + table.getTableName() + " where " + String.join(" and ", whereConditions);
         try (PreparedStatement statement = connection.prepareStatement(deleteStatement)) {
             addBatch(statement, objects, whereParameters);
             int[] counts = statement.executeBatch();

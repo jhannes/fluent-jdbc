@@ -19,9 +19,11 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Utility methods for generating queries
@@ -32,6 +34,15 @@ import java.util.stream.Collectors;
 @ParametersAreNonnullByDefault
 public class DatabaseStatement {
     protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
+    private final String statement;
+    private final List<Object> parameters;
+    private final DatabaseTableOperationReporter reporter;
+
+    public DatabaseStatement(String statement, List<Object> parameters, DatabaseTableOperationReporter reporter) {
+        this.statement = statement;
+        this.parameters = parameters;
+        this.reporter = reporter;
+    }
 
     /**
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
@@ -155,16 +166,16 @@ public class DatabaseStatement {
      * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
      * and executes the statement
      */
-    public static int executeUpdate(String query, List<Object> parameters, Connection connection, DatabaseTableOperationReporter reporter) {
+    public int executeUpdate(Connection connection) {
         long startTime = System.currentTimeMillis();
-        logger.trace(query);
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+        logger.trace(statement);
+        try (PreparedStatement stmt = connection.prepareStatement(statement)) {
             bindParameters(stmt, parameters);
             return stmt.executeUpdate();
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
+            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
         }
     }
 
@@ -177,14 +188,6 @@ public class DatabaseStatement {
                 " (" + String.join(",", fieldNames)
                 + ") values ("
                 + parameterString(fieldNames.size()) + ")";
-    }
-
-    /**
-     * Creates String for
-     * <code>DELETE FROM tableName WHERE whereCondition AND whereCondition</code>
-     */
-    public static String createDeleteStatement(String tableName, List<String> whereConditions) {
-        return "delete from " + tableName + " where "  + String.join(" and ", whereConditions);
     }
 
     /**
@@ -224,4 +227,46 @@ public class DatabaseStatement {
         }
         return Objects.equals(canonicalValue, toDatabaseType(dbValue, connection));
     }
+
+    public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+        return query(connection, result -> result.single(mapper));
+    }
+
+    public <OBJECT> Stream<OBJECT> stream(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper) {
+        long startTime = System.currentTimeMillis();
+        try {
+            logger.trace(statement);
+            PreparedStatement stmt = connection.prepareStatement(statement);
+            bindParameters(stmt, parameters);
+            DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery());
+            return result.stream(mapper, statement);
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            this.reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
+        }
+    }
+
+    public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
+        query(connection, result -> {
+            result.forEach(consumer);
+            return null;
+        });
+    }
+
+    private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
+        long startTime = System.currentTimeMillis();
+        logger.trace(statement);
+        try(PreparedStatement stmt = connection.prepareStatement(statement)) {
+            bindParameters(stmt, parameters);
+            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
+                return resultMapper.apply(result);
+            }
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
+        }
+    }
+
 }

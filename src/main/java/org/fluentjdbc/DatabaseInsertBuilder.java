@@ -9,7 +9,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import static org.fluentjdbc.DatabaseStatement.createInsertSql;
-import static org.fluentjdbc.DatabaseStatement.executeUpdate;
 
 /**
  * Generate <code>INSERT</code> statements by collecting field names and parameters. Support
@@ -63,11 +62,11 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
     /**
      * Executes the insert statement and returns the number of rows inserted. Calls
      * {@link #createInsertStatement()} to generate SQL and
-     * {@link DatabaseStatement#executeUpdate(String, List, Connection, DatabaseTableOperationReporter)}
+     * {@link DatabaseStatement#executeUpdate(Connection)}
      * to bind parameters and execute statement
      */
     public int execute(Connection connection) {
-        return executeUpdate(createInsertStatement(), parameters, connection, reporter);
+        return new DatabaseStatement(createInsertStatement(), parameters, reporter).executeUpdate(connection);
     }
 
     /**

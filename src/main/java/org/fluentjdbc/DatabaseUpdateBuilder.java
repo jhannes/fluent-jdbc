@@ -6,9 +6,7 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import static org.fluentjdbc.DatabaseStatement.createUpdateStatement;
-import static org.fluentjdbc.DatabaseStatement.executeUpdate;
+import java.util.stream.Collectors;
 
 /**
  * Generate <code>UPDATE</code> statements by collecting field names and parameters. Example:
@@ -26,25 +24,14 @@ import static org.fluentjdbc.DatabaseStatement.executeUpdate;
 public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBuilder> {
 
     private final String tableName;
-    private final List<String> whereConditions = new ArrayList<>();
-    private final List<Object> whereParameters = new ArrayList<>();
     private final List<String> updateFields = new ArrayList<>();
     private final List<Object> updateValues = new ArrayList<>();
     private final DatabaseTableOperationReporter reporter;
+    private DatabaseWhereBuilder whereClause;
 
     public DatabaseUpdateBuilder(String tableName, DatabaseTableOperationReporter reporter) {
         this.tableName = tableName;
         this.reporter = reporter;
-    }
-
-    /**
-     * Add the expressions to the <code>WHERE .... AND ...</code> clause and the where parameters
-     * to the parameterlist for the WHERE-clause
-     */
-    DatabaseUpdateBuilder setWhereFields(List<String> whereConditions, List<Object> whereParameters) {
-        this.whereConditions.addAll(whereConditions);
-        this.whereParameters.addAll(whereParameters);
-        return this;
     }
 
     /**
@@ -76,8 +63,15 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
         }
         List<Object> parameters = new ArrayList<>();
         parameters.addAll(updateValues);
-        parameters.addAll(whereParameters);
-        return executeUpdate(createUpdateStatement(tableName, updateFields, whereConditions), parameters, connection, reporter);
+        parameters.addAll(whereClause.getParameters());
+        return new DatabaseStatement("update " + tableName
+                + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
+                + whereClause.whereClause(), parameters, reporter)
+            .executeUpdate(connection);
     }
 
+    public DatabaseUpdateBuilder where(DatabaseWhereBuilder whereClause) {
+        this.whereClause = whereClause;
+        return this;
+    }
 }

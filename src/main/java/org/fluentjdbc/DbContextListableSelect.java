@@ -25,6 +25,11 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
     T orderBy(String orderByClause);
 
     /**
+     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
+     */
+    int getCount();
+
+    /**
      * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>
      *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
@@ -39,11 +44,6 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * </pre>
      */
     <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> mapper);
-
-    /**
-     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
-     */
-    int getCount();
 
     /**
      * Executes <code>SELECT fieldName FROM ...</code> on the query and returns the result as a list

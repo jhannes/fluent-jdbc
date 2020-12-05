@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.fluentjdbc.DatabaseStatement.bindParameters;
+import static org.fluentjdbc.DatabaseStatement.parameterString;
 
 /**
  * {@link DatabaseQueryBuilder} used to generate joined queries using SQL-92 standard

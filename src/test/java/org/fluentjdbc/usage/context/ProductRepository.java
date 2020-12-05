@@ -40,17 +40,11 @@ public class ProductRepository implements Repository<Product, Product.Id> {
     }
 
     public Collection<ProductSales> salesReport() {
-        DatabaseTableAlias linesAlias = new DatabaseTableAlias("order_lines", "l");
-        DbContextTableAlias productAlias = table.alias("p");
-        Map<Product.Id, ProductSales> report = new HashMap<>();
-        productAlias
-                .leftJoin(productAlias.column("product_id"), linesAlias.column("product_id"))
-                .forEach(row -> {
-                    Product product = toProduct(row.table(productAlias));
-                    ProductSales productSales = report.computeIfAbsent(product.getProductId(), ProductSales::new);
-                    row.table(linesAlias, OrderLineRepository::toOrderLine).ifPresent(productSales::addSale);
-                });
-        return report.values();
+        return dbContext.select("product_id", "sum(quantity) as total_quantity")
+                .from("order_lines l")
+                .groupBy("product_id")
+                .orderBy("product_id")
+                .list(row -> new ProductSales(new Product.Id(row.getUUID("product_id")), row.getInt("total_quantity")));
     }
 
     private static class DatabaseSaveBuilderWithId extends DatabaseSaveBuilder<Product.Id> {
@@ -95,9 +89,12 @@ public class ProductRepository implements Repository<Product, Product.Id> {
             "updated_at ${DATETIME} not null, " +
             "created_at ${DATETIME} not null)";
     private final DbContextTable table;
+    @Nonnull
+    private final DbContext dbContext;
 
     public ProductRepository(DbContext dbContext) {
         table = dbContext.tableWithTimestamps("products");
+        this.dbContext = dbContext;
     }
 
     @Override

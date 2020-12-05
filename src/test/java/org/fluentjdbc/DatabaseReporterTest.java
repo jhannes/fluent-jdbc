@@ -28,8 +28,7 @@ public class DatabaseReporterTest {
     private final DbContextTable table;
 
     private final Map<String, String> replacements;
-    private MetricRegistry metricRegistry = new MetricRegistry();
-    private Timer histogram = metricRegistry.timer("unique_table_name/SELECT");
+    private final MetricRegistry metricRegistry = new MetricRegistry();
 
     public DatabaseReporterTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -55,6 +54,7 @@ public class DatabaseReporterTest {
 
     @Test
     public void shouldCountSelectCounts() {
+        Timer histogram = metricRegistry.timer("unique_table_name/COUNT");
         long countBefore = histogram.getCount();
         int result = table.query().getCount();
         assertThat(result).isZero();
@@ -63,6 +63,7 @@ public class DatabaseReporterTest {
 
     @Test
     public void shouldCountSelects() {
+        Timer histogram = metricRegistry.timer("unique_table_name/SELECT");
         long countBefore = histogram.getCount();
         assertThat(table.query().listStrings("name")).isEmpty();
         assertThat(histogram.getCount()).isEqualTo(countBefore + 1);

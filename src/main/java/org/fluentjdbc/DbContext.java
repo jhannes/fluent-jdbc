@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -51,6 +52,14 @@ public class DbContext {
 
     public DatabaseTableReporter tableReporter(String tableName) {
         return reporter.table(tableName);
+    }
+
+    public DbContextSqlBuilder select(String... columns) {
+        return new DbContextSqlBuilder(this).select(columns);
+    }
+
+    public DbContextStatement statement(String statement, List<Object> parameters) {
+        return new DbContextStatement(this, statement, parameters, reporter.table("*").operation("*"));
     }
 
     /**
