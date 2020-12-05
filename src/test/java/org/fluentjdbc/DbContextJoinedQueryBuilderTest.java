@@ -10,7 +10,6 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -103,7 +102,7 @@ public class DbContextJoinedQueryBuilderTest {
             .join(memberships.column("person_id"), ps.column("id"))
             .join(memberships.column("organization_id"), o.column("id"))
             .whereOptional("name", applicationName)
-            .whereExpressionWithMultipleParameters("(p.name = ? or p.name = ?)", asList(applicationName, applicationName2))
+            .whereExpressionWithParameterList("(p.name = ? or p.name = ?)", asList(applicationName, applicationName2))
             .unordered()
             .list(row ->
                 String.format(

@@ -79,8 +79,8 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         Object id4 = table.insert().setPrimaryKey("id", null).setField("code", 2002).setField("name", "D").execute(connection);
 
         assertThat(table
-                .whereExpressionWithMultipleParameters("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
-                .whereExpressionWithMultipleParameters("(name = ? OR code > ?)", Arrays.asList("A", 2000L))
+                .whereExpressionWithParameterList("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
+                .whereExpressionWithParameterList("(name = ? OR code > ?)", Arrays.asList("A", 2000L))
                 .unordered()
                 .listStrings(connection, "id"))
                 .containsOnly(id1.toString(), id3.toString())

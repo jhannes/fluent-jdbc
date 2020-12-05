@@ -110,8 +110,8 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseTableQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
-        return query().whereExpressionWithMultipleParameters(expression, parameters);
+    public DatabaseTableQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
+        return query().whereExpressionWithParameterList(expression, parameters);
     }
 
     /**

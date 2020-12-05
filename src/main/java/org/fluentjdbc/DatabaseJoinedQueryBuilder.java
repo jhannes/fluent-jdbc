@@ -122,7 +122,7 @@ public class DatabaseJoinedQueryBuilder implements
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    public DatabaseJoinedQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
+    public DatabaseJoinedQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters){
         conditions.add(expression);
         this.parameters.addAll(parameters);
         return this;

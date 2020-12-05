@@ -148,8 +148,8 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    public DbContextJoinedSelectBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
-        builder.whereExpressionWithMultipleParameters(expression, parameters);
+    public DbContextJoinedSelectBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters){
+        builder.whereExpressionWithParameterList(expression, parameters);
         return this;
     }
 

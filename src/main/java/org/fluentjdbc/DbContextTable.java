@@ -127,8 +127,8 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     @Override
-    public DbContextSelectBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
-        return query().whereExpressionWithMultipleParameters(expression, parameters);
+    public DbContextSelectBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
+        return query().whereExpressionWithParameterList(expression, parameters);
     }
 
     public <T> DbContextSyncBuilder<T> sync(List<T> entities) {

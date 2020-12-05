@@ -88,8 +88,8 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     @Override
-    public DbContextSelectBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
-        return query(queryBuilder.whereExpressionWithMultipleParameters(expression, parameters));
+    public DbContextSelectBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
+        return query(queryBuilder.whereExpressionWithParameterList(expression, parameters));
     }
 
     /**
