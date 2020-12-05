@@ -30,19 +30,19 @@ import java.util.stream.Stream;
  * @see DatabaseTableWithTimestamps
  */
 @ParametersAreNonnullByDefault
-public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuilder> {
+public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuilder> {
 
     /**
      * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
-    DatabaseListableQueryBuilder unordered();
+    DatabaseTableQueryBuilder unordered();
 
     /**
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
      * in a predictable order.
      */
-    DatabaseListableQueryBuilder orderBy(String orderByClause);
+    DatabaseTableQueryBuilder orderBy(String orderByClause);
 
     DatabaseTableAlias alias(String alias);
 
@@ -104,7 +104,7 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuil
      * </pre>
      *
      */
-    <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects);
+    <OBJECT> DatabaseBulkInsertBuilder<OBJECT> bulkInsert(Iterable<OBJECT> objects);
 
     /**
      * Creates a {@link DatabaseBulkInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
@@ -119,7 +119,7 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuil
      *     }
      * </pre>
      */
-    <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects);
+    <OBJECT> DatabaseBulkInsertBuilder<OBJECT> bulkInsert(Stream<OBJECT> objects);
 
     /**
      * Creates a {@link DatabaseBulkDeleteBuilder} object to fluently generate a <code>DELETE ...</code> statement
@@ -135,7 +135,7 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuil
      *     }
      * </pre>
      */
-    <T> DatabaseBulkDeleteBuilder<T> bulkDelete(Iterable<T> objects);
+    <OBJECT> DatabaseBulkDeleteBuilder<OBJECT> bulkDelete(Iterable<OBJECT> objects);
 
     /**
      * Creates a {@link DatabaseBulkUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
@@ -150,6 +150,6 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseSimpleQueryBuil
      *     }
      * </pre>
      */
-    <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects);
+    <OBJECT> DatabaseBulkUpdateBuilder<OBJECT> bulkUpdate(Iterable<OBJECT> objects);
 
 }

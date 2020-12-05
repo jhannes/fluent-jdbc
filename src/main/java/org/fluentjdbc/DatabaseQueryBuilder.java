@@ -14,13 +14,13 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
-    DatabaseListableQueryBuilder unordered();
+    T unordered();
 
     /**
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
      * in a predictable order.
      */
-    DatabaseListableQueryBuilder orderBy(String orderByClause);
+    T orderBy(String orderByClause);
 
     /**
      * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,

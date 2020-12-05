@@ -1,8 +1,11 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+
+import static org.fluentjdbc.DatabaseStatement.parameterString;
 
 /**
  * Interface to build <code>WHERE</code>-expressions for <code>SELECT</code>-statements. Usage:
@@ -22,30 +25,29 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    default T whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
-        return query().whereExpressionWithMultipleParameters(expression, parameters);
-    }
+    T whereExpressionWithMultipleParameters(String expression, Collection<?> parameters);
 
     /**
      * Adds the expression to the WHERE-clause and the value to the parameter list. E.g.
      * <code>whereExpression("created_at &gt; ?", earliestDate)</code>
      */
-    default T whereExpression(String expression, @Nullable Object value) {
-        return query().whereExpression(expression, value);
+    default T whereExpression(String expression, @Nullable Object parameter) {
+        return whereExpressionWithMultipleParameters(expression, Arrays.asList(parameter));
     }
 
     /**
      * Adds the expression to the WHERE-clause
      */
     default T whereExpression(String expression) {
-        return query().whereExpression(expression);
+        return whereExpressionWithMultipleParameters(expression, Arrays.asList());
     }
 
     /**
      * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
      */
     default T whereOptional(String fieldName, @Nullable Object value) {
-        return query().whereOptional(fieldName, value);
+        if (value == null) return query();
+        return where(fieldName, value);
     }
 
     /**
@@ -54,14 +56,23 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      * resulting in no rows being returned.
      */
     default T whereIn(String fieldName, Collection<?> parameters) {
-        return query().whereIn(fieldName, parameters);
+        if (parameters.isEmpty()) {
+            return whereExpression(fieldName + " <> " + fieldName);
+        }
+        return whereExpressionWithMultipleParameters(
+                fieldName + " IN (" + parameterString(parameters.size()) + ")",
+                parameters
+        );
     }
 
     /**
      * For each field adds "<code>WHERE fieldName = value</code>" to the query
      */
     default T whereAll(List<String> fields, List<Object> values) {
-        return query().whereAll(fields, values);
+        for (int i = 0; i < fields.size(); i++) {
+            where(fields.get(i), values.get(i));
+        }
+        return query();
     }
 
     /**

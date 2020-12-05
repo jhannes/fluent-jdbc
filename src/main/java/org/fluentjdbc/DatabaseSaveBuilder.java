@@ -115,14 +115,14 @@ public abstract class DatabaseSaveBuilder<T> {
     /**
      * Creates a query where primary key is specified
      */
-    protected DatabaseSimpleQueryBuilder tableWhereId(T p) {
+    protected DatabaseTableQueryBuilder tableWhereId(T p) {
         return table.where(idField, p);
     }
 
     /**
      * Creates a query where all unique fields are specified
      */
-    protected DatabaseSimpleQueryBuilder tableWhereUniqueKey() {
+    protected DatabaseTableQueryBuilder tableWhereUniqueKey() {
         return table.whereAll(uniqueKeyFields, uniqueKeyValues);
     }
 

@@ -33,8 +33,11 @@ import static org.fluentjdbc.DatabaseStatement.parameterString;
  * </pre>
  */
 @ParametersAreNonnullByDefault
-public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, DatabaseListableQueryBuilder {
-    
+public class DatabaseTableQueryBuilder implements
+        DatabaseSimpleQueryBuilder<DatabaseTableQueryBuilder>,
+        DatabaseListableQueryBuilder<DatabaseTableQueryBuilder>
+{
+
     private static final Logger logger = LoggerFactory.getLogger(DatabaseTableQueryBuilder.class);
 
     private final DatabaseTable table;
@@ -132,65 +135,12 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
     }
 
     /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
-     */
-    @Override
-    public DatabaseSimpleQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
-        if (value == null) return this;
-        return where(fieldName, value);
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
-     * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
-     * resulting in no rows being returned.
-     */
-    public DatabaseSimpleQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
-        if (parameters.isEmpty()) {
-            return whereExpression(fieldName + " <> " + fieldName);
-        }
-        whereExpression(fieldName + " IN (" + parameterString(parameters.size()) + ")");
-        this.parameters.addAll(parameters);
-        return this;
-    }
-
-    /**
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    public DatabaseSimpleQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
-        whereExpression(expression);
-        this.parameters.addAll(parameters);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and the value to the parameter list. E.g.
-     * <code>whereExpression("created_at &gt; ?", earliestDate)</code>
-     */
-    @Override
-    public DatabaseSimpleQueryBuilder whereExpression(String expression, @Nullable Object parameter) {
-        whereExpression(expression);
-        parameters.add(parameter);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause
-     */
-    @Override
-    public DatabaseSimpleQueryBuilder whereExpression(String expression) {
+    public DatabaseTableQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
         conditions.add(expression);
-        return this;
-    }
-
-    /**
-     * For each field adds "<code>WHERE fieldName = value</code>" to the query
-     */
-    public DatabaseSimpleQueryBuilder whereAll(List<String> fields, List<Object> values) {
-        for (int i = 0; i < fields.size(); i++) {
-            where(fields.get(i), values.get(i));
-        }
+        this.parameters.addAll(parameters);
         return this;
     }
 
@@ -214,7 +164,7 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
      * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
      */
     @Override
-    public DatabaseListableQueryBuilder orderBy(String orderByClause) {
+    public DatabaseTableQueryBuilder orderBy(String orderByClause) {
         orderByClauses.add(orderByClause);
         return this;
     }
@@ -224,7 +174,7 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     @Override
-    public DatabaseListableQueryBuilder unordered() {
+    public DatabaseTableQueryBuilder unordered() {
         return this;
     }
 
@@ -245,7 +195,7 @@ public class DatabaseTableQueryBuilder implements DatabaseSimpleQueryBuilder, Da
      * Returns this. Needed to make {@link DatabaseTableQueryBuilder} interchangeable with {@link DatabaseTable}
      */
     @Override
-    public DatabaseSimpleQueryBuilder query() {
+    public DatabaseTableQueryBuilder query() {
         return this;
     }
 

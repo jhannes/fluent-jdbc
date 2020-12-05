@@ -3,13 +3,13 @@ package org.fluentjdbc.usage.context;
 import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseSaveBuilder;
 import org.fluentjdbc.DatabaseSaveResult;
-import org.fluentjdbc.DatabaseSimpleQueryBuilder;
 import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTableAlias;
+import org.fluentjdbc.DatabaseTableQueryBuilder;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextSelectBuilder;
-import org.fluentjdbc.DbContextTableAlias;
 import org.fluentjdbc.DbContextTable;
+import org.fluentjdbc.DbContextTableAlias;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -80,7 +80,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
         }
 
         @Override
-        protected DatabaseSimpleQueryBuilder tableWhereId(Product.Id id) {
+        protected DatabaseTableQueryBuilder tableWhereId(Product.Id id) {
             return table.where(idField, id.getValue());
         }
     }

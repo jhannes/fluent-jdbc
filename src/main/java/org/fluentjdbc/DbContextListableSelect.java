@@ -20,6 +20,11 @@ import java.util.stream.Stream;
 public interface DbContextListableSelect<T extends DbContextListableSelect<T>> extends DatabaseQueryable<T> {
 
     /**
+     * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
+     */
+    T orderBy(String orderByClause);
+
+    /**
      * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>
      *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
@@ -33,7 +38,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
-    <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> object);
+    <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
      * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
@@ -101,7 +106,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * Executes the <code>SELECT * FROM ...</code> statement and calls back to
      * {@link DatabaseResult.RowConsumer} for each returned row
      */
-    void forEach(DatabaseResult.RowConsumer row);
+    void forEach(DatabaseResult.RowConsumer consumer);
 
     /**
      * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.

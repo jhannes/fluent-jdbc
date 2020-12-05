@@ -46,7 +46,11 @@ public class DbContext {
     }
 
     public DatabaseTableReporter tableReporter(DatabaseTable table) {
-        return reporter.table(table.getTableName());
+        return tableReporter(table.getTableName());
+    }
+
+    public DatabaseTableReporter tableReporter(String tableName) {
+        return reporter.table(tableName);
     }
 
     /**
@@ -67,7 +71,7 @@ public class DbContext {
      * with the connection from this {@link DbContext}
      */
     public DbContextTable table(String tableName) {
-        return table(new DatabaseTableImpl(tableName, reporter.table(tableName)));
+        return table(new DatabaseTableImpl(tableName, tableReporter(tableName)));
     }
 
     /**
@@ -77,7 +81,7 @@ public class DbContext {
      * @see DatabaseTableWithTimestamps
      */
     public DbContextTable tableWithTimestamps(String tableName) {
-        return table(new DatabaseTableWithTimestamps(tableName, reporter.table(tableName)));
+        return table(new DatabaseTableWithTimestamps(tableName, tableReporter(tableName)));
     }
 
     /**

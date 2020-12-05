@@ -43,13 +43,16 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
         return this;
     }
 
+    private DbContextSelectBuilder query(DatabaseTableQueryBuilder builder) {
+        return this;
+    }
+
     /**
      * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
      */
     @Override
     public DbContextSelectBuilder whereOptional(String fieldName, @Nullable Object value) {
-        queryBuilder.whereOptional(fieldName, value);
-        return this;
+        return query(queryBuilder.whereOptional(fieldName, value));
     }
 
     /**
@@ -57,8 +60,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     @Override
     public DbContextSelectBuilder whereExpression(String expression) {
-        queryBuilder.whereExpression(expression);
-        return this;
+        return query(queryBuilder.whereExpression(expression));
     }
 
     /**
@@ -66,9 +68,8 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * <code>whereExpression("created_at &gt; ?", earliestDate)</code>
      */
     @Override
-    public DbContextSelectBuilder whereExpression(String expression, Object value) {
-        queryBuilder.whereExpression(expression, value);
-        return this;
+    public DbContextSelectBuilder whereExpression(String expression, Object parameter) {
+        return query(queryBuilder.whereExpression(expression, parameter));
     }
 
     /**
@@ -88,8 +89,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     @Override
     public DbContextSelectBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
-        queryBuilder.whereExpressionWithMultipleParameters(expression, parameters);
-        return this;
+        return query(queryBuilder.whereExpressionWithMultipleParameters(expression, parameters));
     }
 
     /**
@@ -97,16 +97,15 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     @Override
     public DbContextSelectBuilder whereAll(List<String> fields, List<Object> values) {
-        queryBuilder.whereAll(fields, values);
-        return this;
+        return query(queryBuilder.whereAll(fields, values));
     }
 
     /**
      * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
      */
+    @Override
     public DbContextSelectBuilder orderBy(String orderByClause) {
-        queryBuilder.orderBy(orderByClause);
-        return this;
+        return query(queryBuilder.orderBy(orderByClause));
     }
 
     /**
@@ -114,8 +113,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     public DbContextSelectBuilder unordered() {
-        queryBuilder.unordered();
-        return this;
+        return query(queryBuilder.unordered());
     }
 
     /**
@@ -126,8 +124,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     @Override
     public DbContextSelectBuilder limit(int rowCount) {
-        queryBuilder.limit(rowCount);
-        return this;
+        return query(queryBuilder.limit(rowCount));
     }
 
     /**
@@ -138,8 +135,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     @Override
     public DbContextSelectBuilder skipAndLimit(int offset, int rowCount) {
-        queryBuilder.skipAndLimit(offset, rowCount);
-        return this;
+        return query(queryBuilder.skipAndLimit(offset, rowCount));
     }
 
     /**
@@ -209,8 +205,8 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * {@link DatabaseResult.RowConsumer} for each returned row
      */
     @Override
-    public void forEach(DatabaseResult.RowConsumer row) {
-        queryBuilder.forEach(getConnection(), row);
+    public void forEach(DatabaseResult.RowConsumer consumer) {
+        queryBuilder.forEach(getConnection(), consumer);
     }
 
     /**

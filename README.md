@@ -8,7 +8,7 @@ Java database code without ORM in a pleasant and fluent style
 
 Motivating code example, using [DbContext](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContext.html):
 
-```java
+```jshelllanguage
 DbContext context = new DbContext();
 
 DbContextTable table = context.table("database_test_table");
@@ -122,7 +122,7 @@ public class OrderRepository implements Repository<Order, UUID> {
         }
     }
 
-    private Order toOrder(DatabaseRow row) throws SQLException {
+    private Order toOrder(DatabaseRow row) {
         Order order = new Order();
         order.setOrderId(row.getUUID("order_id"));
         order.setCustomerName(row.getString("customer_name"));

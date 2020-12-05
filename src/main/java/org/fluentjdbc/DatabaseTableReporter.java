@@ -1,7 +1,7 @@
 package org.fluentjdbc;
 
 /**
- * Observer class used to monitor the timinig of queries.
+ * Observer class used to monitor the timing of queries.
  *
  * @see DatabaseReporter
  */

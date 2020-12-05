@@ -139,8 +139,8 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     @Override
-    public DbContextJoinedSelectBuilder whereExpression(String expression, @Nullable Object value) {
-        builder.whereExpression(expression, value);
+    public DbContextJoinedSelectBuilder whereExpression(String expression, @Nullable Object parameter) {
+        builder.whereExpression(expression, parameter);
         return this;
     }
 
@@ -226,6 +226,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
      * in a predictable order.
      */
+    @Override
     public DbContextJoinedSelectBuilder orderBy(String orderByClause) {
         builder.orderBy(orderByClause);
         return this;

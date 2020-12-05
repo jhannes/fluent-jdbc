@@ -5,7 +5,7 @@ import java.sql.Connection;
 /**
  * Interface for consistent <code>UPDATE</code> and <code>DELETE</code> operations in a fluent way
  */
-public interface DatabaseSimpleQueryBuilder extends DatabaseQueryBuilder<DatabaseSimpleQueryBuilder> {
+public interface DatabaseSimpleQueryBuilder<T extends DatabaseSimpleQueryBuilder<T>> extends DatabaseQueryBuilder<T> {
 
     /**
      * Creates a {@link DatabaseUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement

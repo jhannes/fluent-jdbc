@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,7 +42,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     @Override
-    public DatabaseListableQueryBuilder unordered() {
+    public DatabaseTableQueryBuilder unordered() {
         return new DatabaseTableQueryBuilder(this, reporter);
     }
 
@@ -50,7 +51,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * in a predictable order.
      */
     @Override
-    public DatabaseListableQueryBuilder orderBy(String orderByClause) {
+    public DatabaseTableQueryBuilder orderBy(String orderByClause) {
         return query().orderBy(orderByClause);
     }
 
@@ -104,8 +105,13 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseSimpleQueryBuilder query() {
+    public DatabaseTableQueryBuilder query() {
         return new DatabaseTableQueryBuilder(this, reporter);
+    }
+
+    @Override
+    public DatabaseTableQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
+        return query().whereExpressionWithMultipleParameters(expression, parameters);
     }
 
     /**

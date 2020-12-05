@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -123,6 +124,11 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
     @Override
     public DbContextSelectBuilder query() {
         return new DbContextSelectBuilder(this);
+    }
+
+    @Override
+    public DbContextSelectBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters) {
+        return query().whereExpressionWithMultipleParameters(expression, parameters);
     }
 
     public <T> DbContextSyncBuilder<T> sync(List<T> entities) {

@@ -22,7 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static org.fluentjdbc.DatabaseStatement.bindParameters;
-import static org.fluentjdbc.DatabaseStatement.parameterString;
 
 /**
  * {@link DatabaseQueryBuilder} used to generate joined queries using SQL-92 standard
@@ -51,7 +50,10 @@ import static org.fluentjdbc.DatabaseStatement.parameterString;
  *         ));
  * </pre>
  */
-public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>, DatabaseListableQueryBuilder {
+public class DatabaseJoinedQueryBuilder implements
+        DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>,
+        DatabaseListableQueryBuilder<DatabaseJoinedQueryBuilder>
+{
     private static final Logger logger = LoggerFactory.getLogger(DatabaseJoinedQueryBuilder.class);
 
     private final DatabaseTableOperationReporter reporter;
@@ -120,63 +122,9 @@ public class DatabaseJoinedQueryBuilder implements DatabaseQueryBuilder<Database
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    @Override
-    public DatabaseJoinedQueryBuilder whereExpression(String expression, Object parameter) {
-        whereExpression(expression);
-        parameters.add(parameter);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
-     */
     public DatabaseJoinedQueryBuilder whereExpressionWithMultipleParameters(String expression, Collection<?> parameters){
-        whereExpression(expression);
-        this.parameters.addAll(parameters);
-        return this;
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
-     * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
-     * resulting in no rows being returned.
-     */
-    @Override
-    public DatabaseJoinedQueryBuilder whereIn(String fieldName, Collection<?> parameters) {
-        if (parameters.isEmpty()) {
-            return whereExpression(fieldName + " <> " + fieldName);
-        }
-        whereExpression(fieldName + " IN (" + parameterString(parameters.size()) + ")");
-        this.parameters.addAll(parameters);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause
-     */
-    @Override
-    public DatabaseJoinedQueryBuilder whereExpression(String expression) {
         conditions.add(expression);
-        return this;
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
-     */
-    @Override
-    public DatabaseJoinedQueryBuilder whereOptional(String fieldName, @Nullable Object value) {
-        if (value == null) return this;
-        return where(fieldName, value);
-    }
-
-    /**
-     * For each field adds "<code>WHERE fieldName = value</code>" to the query
-     */
-    @Override
-    public DatabaseJoinedQueryBuilder whereAll(List<String> fields, List<Object> values) {
-        fields.stream().map(s -> table.getAlias() + "." + s + " = ?").forEach(this.conditions::add);
-        this.parameters.addAll(values);
+        this.parameters.addAll(parameters);
         return this;
     }
 
