@@ -51,21 +51,10 @@ public class DbContextTest {
 
     @Test
     public void shouldHandleOrStatements() {
-        table.insert()
-                .setFields(Arrays.asList("code", "name"), Arrays.asList(1001, "A"))
-                .execute();
-        table.insert()
-                .setField("code", 1002)
-                .setField("name", "B")
-                .execute();
-        table.insert()
-                .setField("code", 2001)
-                .setField("name", "C")
-                .execute();
-        table.insert()
-                .setField("code", 2002)
-                .setField("name", "D")
-                .execute();
+        insertTestRow(1001, "A");
+        insertTestRow(1002, "B");
+        insertTestRow(2001, "C");
+        insertTestRow(2002, "D");
 
         assertThat(table
                 .whereExpressionWithParameterList("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
@@ -77,10 +66,7 @@ public class DbContextTest {
 
     @Test
     public void shouldHaveAccessToConnection() throws SQLException {
-        table.insert()
-                .setField("code", 1001)
-                .setField("name", "customSqlTest")
-                .execute();
+        insertTestRow(1001, "customSqlTest");
 
         String customSql = String.format("select code from %s where name = 'customSqlTest'", table.getTable().getTableName());
         ResultSet resultSet = dbContext.getThreadConnection()
@@ -92,13 +78,59 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldExecuteArbitrarySql() {
+        insertTestRow(9000, "ZYX");
+        insertTestRow(10000, "PQR");
+        insertTestRow(10002, "ZYX");
+        insertTestRow(10003, "ABC");
+
+        assertThat(dbContext
+                .statement("select max(code) as max_code from database_table_test_table", Arrays.asList())
+                .singleObject(row -> row.getInt("max_code")))
+                .get()
+                .isEqualTo(10003);
+        assertThat(dbContext
+                .statement("select max(code) as max_code from database_table_test_table where name = ?", Arrays.asList("ZYX"))
+                .list(row -> row.getInt("max_code")))
+                .containsOnly(10002);
+    }
+
+    @Test
+    public void shouldBuildSql() {
+        insertTestRow(9000, "ZYX");
+        insertTestRow(10000, "PQR");
+        insertTestRow(10002, "ZYX");
+        insertTestRow(10003, "ABC");
+
+        DbContextSqlBuilder sqlBuilder = dbContext.select("max(code) as max_code")
+                .from(table.getTable().getTableName())
+                .where("name", "ZYX");
+        assertThat(sqlBuilder.unordered().singleLong("max_code")).get().isEqualTo(10002L);
+        assertThat(sqlBuilder.getCount()).isEqualTo(2);
+    }
+
+    @Test
+    public void shouldBuildRowCount() {
+        insertTestRow(9000, "ZYX");
+        insertTestRow(10000, "PQR");
+        insertTestRow(10002, "ZYX");
+        insertTestRow(10003, "ABC");
+        insertTestRow(10005, "ZYX");
+
+        DbContextSqlBuilder sqlBuilder = dbContext.select("code")
+                .from(table.getTable().getTableName())
+                .where("name", "ZYX")
+                .orderBy("code");
+        assertThat(sqlBuilder.getCount()).isEqualTo(3);
+        assertThat(sqlBuilder.limit(2).listLongs("code"))
+                .containsExactly(9000L, 10002L);
+    }
+
+    @Test
     public void shouldBeAbleToTurnOffAutoCommits() throws InterruptedException {
         final Thread thread = new Thread(() -> {
             try (DbContextConnection ignored = dbContext.startConnection(getConnectionWithoutAutoCommit())) {
-                table.insert()
-                        .setField("code", 1001)
-                        .setField("name", "insertTest")
-                        .execute();
+                insertTestRow(1001, "insertTest");
             }
         });
         thread.start();
@@ -348,7 +380,6 @@ public class DbContextTest {
                 .containsExactly(2L, 1L);
     }
 
-
     @Test
     public void shouldInsertWithExplicitKey() {
         Object id = table.insert()
@@ -444,6 +475,11 @@ public class DbContextTest {
 
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
 
+    }
+
+    public void insertTestRow(int code, String name) {
+        table.insert().setFields(Arrays.asList("code", "name"), Arrays.asList(code, name))
+                .execute();
     }
 
 }

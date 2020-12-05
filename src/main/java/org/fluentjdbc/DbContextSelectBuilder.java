@@ -1,7 +1,6 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
@@ -48,56 +47,12 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     }
 
     /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
-     */
-    @Override
-    public DbContextSelectBuilder whereOptional(String fieldName, @Nullable Object value) {
-        return query(queryBuilder.whereOptional(fieldName, value));
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause
-     */
-    @Override
-    public DbContextSelectBuilder whereExpression(String expression) {
-        return query(queryBuilder.whereExpression(expression));
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and the value to the parameter list. E.g.
-     * <code>whereExpression("created_at &gt; ?", earliestDate)</code>
-     */
-    @Override
-    public DbContextSelectBuilder whereExpression(String expression, Object parameter) {
-        return query(queryBuilder.whereExpression(expression, parameter));
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
-     * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
-     * resulting in no rows being returned.
-     */
-    @Override
-    public DbContextSelectBuilder whereIn(String fieldName, Collection<?> parameters) {
-        queryBuilder.whereIn(fieldName, parameters);
-        return this;
-    }
-
-    /**
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     @Override
     public DbContextSelectBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
         return query(queryBuilder.whereExpressionWithParameterList(expression, parameters));
-    }
-
-    /**
-     * For each field adds "<code>WHERE fieldName = value</code>" to the query
-     */
-    @Override
-    public DbContextSelectBuilder whereAll(List<String> fields, List<Object> values) {
-        return query(queryBuilder.whereAll(fields, values));
     }
 
     /**
@@ -114,17 +69,6 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     public DbContextSelectBuilder unordered() {
         return query(queryBuilder.unordered());
-    }
-
-    /**
-     * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.
-     * FETCH FIRST was introduced in
-     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
-     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
-     */
-    @Override
-    public DbContextSelectBuilder limit(int rowCount) {
-        return query(queryBuilder.limit(rowCount));
     }
 
     /**

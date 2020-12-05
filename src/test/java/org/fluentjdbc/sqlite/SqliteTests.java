@@ -92,9 +92,16 @@ public class SqliteTests {
 
         @Test
         @Override
-        @Ignore("Not supported on SQLite")
+        @Ignore("Limit not supported on SQLite")
         public void shouldLimitRows() {
             super.shouldLimitRows();
+        }
+
+        @Test
+        @Override
+        @Ignore("Limit not supported on SQLite")
+        public void shouldBuildRowCount() {
+            super.shouldBuildRowCount();
         }
 
         @Test

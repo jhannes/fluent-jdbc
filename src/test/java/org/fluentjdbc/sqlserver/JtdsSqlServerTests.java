@@ -86,10 +86,10 @@ public class JtdsSqlServerTests {
         }
     }
 
-    private static boolean databaseFailed = false;
+    private static boolean databaseDisabled = Boolean.getBoolean("test.db.jtds.disabled");
 
     static Connection getConnection() throws SQLException {
-        Assume.assumeFalse(databaseFailed);
+        Assume.assumeFalse(databaseDisabled);
         String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
         String password = System.getProperty("test.db.sqlserver.password", username);
         String url = System.getProperty("test.db.sqlserver.url",
@@ -99,7 +99,7 @@ public class JtdsSqlServerTests {
             return DriverManager.getConnection(url, username, password);
         } catch (SQLException e) {
             if (e.getSQLState().equals("08S03") || e.getSQLState().equals("08S01") || e.getSQLState().equals("HYT01")) {
-                databaseFailed = true;
+                databaseDisabled = true;
                 Assume.assumeFalse("Database is unavailable: " + e, true);
             }
             throw e;

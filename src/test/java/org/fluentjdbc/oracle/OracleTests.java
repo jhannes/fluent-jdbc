@@ -113,12 +113,12 @@ public class OracleTests {
         return getDataSource().getConnection();
     }
 
-    private static boolean databaseFailed;
+    private static boolean databaseDisabled = Boolean.getBoolean("test.db.oracle.disabled");
 
     private static OracleDataSource dataSource;
 
     static synchronized DataSource getDataSource() throws SQLException {
-        Assume.assumeFalse(databaseFailed);
+        Assume.assumeFalse(databaseDisabled);
         if (dataSource != null) {
             return dataSource;
         }
@@ -131,7 +131,7 @@ public class OracleTests {
             dataSource.getConnection().close();
         } catch (SQLException e) {
             if (e.getSQLState().equals("08006")) {
-                databaseFailed = true;
+                databaseDisabled = true;
                 Assume.assumeFalse("Database is unavailable: " + e, true);
             }
             throw ExceptionUtil.softenCheckedException(e);

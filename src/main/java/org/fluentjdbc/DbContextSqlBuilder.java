@@ -21,9 +21,10 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
     public DbContextSqlBuilder query() {
         return this;
     }
+
     @Override
     public DbContextSqlBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        return query().whereExpressionWithParameterList(expression, parameters);
+        return query(builder.whereExpressionWithParameterList(expression, parameters));
     }
 
     public DbContextSqlBuilder select(String... columns) {
@@ -46,11 +47,6 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
 
     public DbContextSqlBuilder unordered() {
         return query(builder.unordered());
-    }
-
-    @Override
-    public DbContextSqlBuilder limit(int rowCount) {
-        return query(builder.limit(rowCount));
     }
 
     @Override
