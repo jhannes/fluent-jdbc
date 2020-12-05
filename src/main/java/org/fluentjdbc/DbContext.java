@@ -54,10 +54,19 @@ public class DbContext {
         return reporter.table(tableName);
     }
 
+    /**
+     * Build an arbitrary select statement, e.g.
+     * <code>dbContext.select("max(age) as max_age").from("persons").where("name", "Johannes").singleLong("max_age")</code>
+     */
     public DbContextSqlBuilder select(String... columns) {
         return new DbContextSqlBuilder(this).select(columns);
     }
 
+    /**
+     * Execute an arbitrary SQL statement, e.g.
+     * <code>dbContext.select("select 1 as number from dual").singleLong("max_age")</code> or
+     * <code>dbContext.select("update persons set full_name = first_name || ' ' || last_name").executeUpdate()</code>
+     */
     public DbContextStatement statement(String statement, List<Object> parameters) {
         return new DbContextStatement(this, statement, parameters, reporter.table("*").operation("*"));
     }

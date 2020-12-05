@@ -91,7 +91,7 @@ public class DatabaseTableQueryBuilder implements
 
     /**
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     public DatabaseTableQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
         whereClause.whereExpressionWithParameterList(expression, parameters);
@@ -146,7 +146,7 @@ public class DatabaseTableQueryBuilder implements
     }
 
     /**
-     * Returns this. Needed to make {@link DatabaseTableQueryBuilder} interchangeable with {@link DatabaseTable}
+     * Implemented as <code>return this</code> for compatibility purposes
      */
     @Override
     public DatabaseTableQueryBuilder query() {

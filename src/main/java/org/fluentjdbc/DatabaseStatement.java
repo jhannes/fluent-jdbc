@@ -26,10 +26,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Utility methods for generating queries
- * ({@link #createUpdateStatement(String, List, List)}, {@link #createInsertSql(String, Collection)},
- * converting parameters to {@link PreparedStatement} ({@link #bindParameter(PreparedStatement, int, Object)}
- * and comparing values ({@link #dbValuesAreEqual(Object, DatabaseRow, String, Connection)}.
+ * Allows the execution of arbitrary SQL statements with parameters and returns the ResultSet.
+ * Will convert parameters to the statement using {@link #bindParameter(PreparedStatement, int, Object)},
+ * which supports many more datatypes than JDBC supports natively. Returns the result via
+ * {@link #list(Connection, DatabaseResult.RowMapper)}, {@link #singleObject(Connection, DatabaseResult.RowMapper)}
+ * and {@link #stream(Connection, DatabaseResult.RowMapper)}, which uses {@link DatabaseRow} to convert
+ * ResultSet types.
  */
 @ParametersAreNonnullByDefault
 public class DatabaseStatement {
@@ -191,16 +193,6 @@ public class DatabaseStatement {
     }
 
     /**
-     * Creates String for
-     * <code>UPDATE tableName SET updateField = ?, updateField = ? WHERE whereCondition AND whereCondition</code>
-     */
-    public static String createUpdateStatement(String tableName, List<String> updateFields, List<String> whereConditions) {
-        return "update " + tableName
-            + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
-            + (whereConditions.isEmpty() ? "" : " where " + String.join(" and ", whereConditions));
-    }
-
-    /**
      * Create a string like <code>?, ?, ?</code> with the parameterCount number of '?'
      */
     public static String parameterString(int parameterCount) {
@@ -228,10 +220,35 @@ public class DatabaseStatement {
         return Objects.equals(canonicalValue, toDatabaseType(dbValue, connection));
     }
 
+    /**
+     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * if more than one is returned, throws `IllegalStateException`
+     *
+     * @param connection Database connection
+     * @param mapper Function object to map a single returned row to a object
+     * @return the mapped row if one row is returned, Optional.empty otherwise
+     * @throws IllegalStateException if more than one row was matched the the query
+     */
     public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return query(connection, result -> result.single(mapper));
     }
 
+    /**
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
+     * <pre>
+     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -&gt; row.getInstant("created_at"))
+     * </pre>
+     */
+    public <OBJECT> List<OBJECT> list(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper) {
+        return stream(connection, mapper).collect(Collectors.toList());
+    }
+
+    /**
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
+     * <pre>
+     *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
+     * </pre>
+     */
     public <OBJECT> Stream<OBJECT> stream(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper) {
         long startTime = System.currentTimeMillis();
         try {
@@ -247,6 +264,10 @@ public class DatabaseStatement {
         }
     }
 
+    /**
+     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
+     * {@link DatabaseResult.RowConsumer} for each returned row
+     */
     public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
         query(connection, result -> {
             result.forEach(consumer);

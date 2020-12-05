@@ -121,7 +121,7 @@ public class DatabaseJoinedQueryBuilder implements
 
     /**
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     public DatabaseJoinedQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters){
         conditions.add(expression);
@@ -129,6 +129,9 @@ public class DatabaseJoinedQueryBuilder implements
         return this;
     }
 
+    /**
+     * Implemented as <code>return this</code> for compability purposes
+     */
     @Override
     public DatabaseJoinedQueryBuilder query() {
         return this;

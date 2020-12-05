@@ -2,16 +2,17 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.fluentjdbc.DatabaseStatement.addBatch;
-import static org.fluentjdbc.DatabaseStatement.createUpdateStatement;
 
 /**
  * Fluently generate a <code>UPDATE ...</code> statement for a list of objects. Create with a list of object
@@ -80,8 +81,7 @@ public class DatabaseBulkUpdateBuilder<T> implements
      * @return the sum count of all the rows updated
      */
     public int execute(Connection connection) {
-        String updateStatement = createUpdateStatement(table.getTableName(), updateFields, whereConditions);
-        try (PreparedStatement statement = connection.prepareStatement(updateStatement)) {
+        try (PreparedStatement statement = connection.prepareStatement(createUpdateStatement())) {
             List<Function<T, ?>> parameters = new ArrayList<>();
             parameters.addAll(updateParameters);
             parameters.addAll(whereParameters);
@@ -91,5 +91,12 @@ public class DatabaseBulkUpdateBuilder<T> implements
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         }
+    }
+
+    @Nonnull
+    private String createUpdateStatement() {
+        return "update " + table.getTableName()
+                + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
+                + (whereConditions.isEmpty() ? "" : " where " + String.join(" and ", whereConditions));
     }
 }

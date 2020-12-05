@@ -8,6 +8,18 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/**
+ * Used to execute an arbitrary statement. Create with {@link DbContext#statement(String, List)}.
+ *
+ * <h3>Example</h3>
+ *
+ * <pre>
+ * dbContext.statement(
+ *      "update orders set quantity = quantity + 1 WHERE customer_id = ?",
+ *      Arrays.asList(customerId)
+ * ).executeUpdate();
+ * </pre>
+ */
 public class DbContextStatement {
     private final DbContext dbContext;
     private final DatabaseStatement statement;

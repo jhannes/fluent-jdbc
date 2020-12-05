@@ -23,7 +23,7 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
 
     /**
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     T whereExpressionWithParameterList(String expression, Collection<?> parameters);
 

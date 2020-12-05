@@ -27,6 +27,15 @@ try (DbContextConnection ignored = context.startConnection(dataSource)) {
 
 ```
 
+## Features
+
+* [DbContextSaveBuilder](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContextSaveBuilder.html) generates <code>INSERT</code> or <code>UPDATE</code> statements based on whether the object already exists in the database
+* [DbContextSelectBuilder](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContextSelectBuilder.html) lets you build queries where you can ensure that the `?`-marks match the parameters
+* [DbContextJoinedSelectBuilder](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContextJoinedSelectBuilder.html) lets you build express queries with inner end left joins in a fluent way
+* [DatabaseStatement](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContextSaveBuilder.html) converts parameters of all statements created with Fluent JDBC. It supports UUID, Instant, OffsetDateTime, ZonedDateTime, enums and database array types
+* [DatabaseRow](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DatabaseRow.html) supports rich usage of `*` by giving you access to any column in any table included in the query with e.g. `row.table("persons").getString("name")`. It helps you convert from database types to UUIDs, Instants, OffsetDateTime, ZonedDateTime, enums and database array types
+
+
 There are two ways of using fluent-jdbc: Either you pass around Connection-objects to execute and query methods
 on [DatabaseTable](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DatabaseTable.html),
 or you use [DbContext](http://jhannes.github.io/fluent-jdbc/apidocs/org/fluentjdbc/DbContext.html) to bind a connection
@@ -131,6 +140,10 @@ public class OrderRepository implements Repository<Order, UUID> {
     }
 }
 ```
+
+
+
+
 
 # Developer notes
 

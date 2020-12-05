@@ -104,6 +104,9 @@ public class DatabaseTableImpl implements DatabaseTable {
         return new DatabaseSaveBuilderWithUUID(this, idField, id);
     }
 
+    /**
+     * Creates a query object to be used to add {@link #where(String, Object)} statements and operations
+     */
     @Override
     public DatabaseTableQueryBuilder query() {
         return new DatabaseTableQueryBuilder(this, reporter);

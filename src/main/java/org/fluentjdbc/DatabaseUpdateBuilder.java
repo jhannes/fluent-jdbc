@@ -55,7 +55,7 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
     }
 
     /**
-     * Will {@link DatabaseStatement#createUpdateStatement(String, List, List)}, set parameters and execute to database
+     * Will generate <code>UPDATE</code> statements, set parameters and execute to database
      */
     public int execute(Connection connection) {
         if (updateFields.isEmpty()) {
