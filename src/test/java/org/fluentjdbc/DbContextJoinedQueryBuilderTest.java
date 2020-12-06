@@ -10,9 +10,11 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -119,6 +121,34 @@ public class DbContextJoinedQueryBuilderTest {
         ;
     }
 
+    @Test
+    public void shouldPerformLeftJoin() {
+        long person1Id = savePerson("Jill");
+        long person2Id = savePerson("Jack");
+        long orgOneId = saveOrganization("Oslo");
+        saveOrganization("Bergen");
+
+        saveMembership(person1Id, orgOneId);
+        saveMembership(person2Id, orgOneId);
+
+
+        DbContextTableAlias m = this.memberships.alias("m");
+        DbContextTableAlias p = persons.alias("p");
+        DbContextTableAlias o = organizations.alias("o");
+
+        Stream<List<String>> result = o.leftJoin(o.column("id"), m.column("organization_id"))
+                .leftJoin(m.column("person_id"), p.column("id"))
+                .stream(row -> asList(
+                        row.table(o).getString("name"),
+                        row.table(p.getTableAlias(), r -> r.getString("name")).orElse(null)
+                ));
+        assertThat(result)
+                .contains(Arrays.asList("Oslo", "Jack"))
+                .contains(Arrays.asList("Oslo", "Jill"))
+                .contains(Arrays.asList("Bergen", null));
+        assertThat(o.leftJoin(o.column("id"), m.column("organization_id"))
+                .leftJoin(m.column("person_id"), p.column("id")).getCount()).isEqualTo(3);
+    }
 
     @Test
     public void shouldJoinSameTableWithDifferentAlias() {

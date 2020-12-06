@@ -40,7 +40,7 @@ public class BulkInsertTest extends AbstractDatabaseTest {
         objects.add(new Object[] { "first name", 1 });
         objects.add(new Object[] { "second name", 2 });
 
-        demoTable.bulkInsert(objects)
+        demoTable.bulkInsert(objects.stream())
             .setField("type", o -> "a")
             .setField("name", o -> o[0])
             .setField("code", o -> o[1])

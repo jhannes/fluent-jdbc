@@ -51,8 +51,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * table in the other
      */
     public DbContextJoinedSelectBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
-        builder.join(a, b);
-        return this;
+        return query(builder.join(a, b));
     }
 
     /**
@@ -61,8 +60,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * table in the other
      */
     public DbContextJoinedSelectBuilder join(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
-        builder.join(leftFields, joinedTable.getTableAlias(), rightFields);
-        return this;
+        return query(builder.join(leftFields, joinedTable.getTableAlias(), rightFields));
     }
 
     /**
@@ -72,8 +70,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * the resulting row, <code>null</code> is returned
      */
     public DbContextJoinedSelectBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
-        builder.leftJoin(a, b);
-        return this;
+        return query(builder.leftJoin(a, b));
     }
 
     /**
@@ -83,8 +80,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * the resulting row, <code>null</code> is returned
      */
     public DbContextJoinedSelectBuilder leftJoin(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
-        builder.leftJoin(leftFields, joinedTable.getTableAlias(), rightFields);
-        return this;
+        return query(builder.leftJoin(leftFields, joinedTable.getTableAlias(), rightFields));
     }
 
     /**
@@ -138,28 +134,8 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    @Override
-    public DbContextJoinedSelectBuilder whereExpression(String expression, @Nullable Object parameter) {
-        builder.whereExpression(expression, parameter);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
-     */
     public DbContextJoinedSelectBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters){
-        builder.whereExpressionWithParameterList(expression, parameters);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause
-     */
-    @Override
-    public DbContextJoinedSelectBuilder whereExpression(String expression) {
-        builder.whereExpression(expression);
-        return this;
+        return query(builder.whereExpressionWithParameterList(expression, parameters));
     }
 
     /**
@@ -167,19 +143,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      */
     @Override
     public DbContextJoinedSelectBuilder whereOptional(String fieldName, @Nullable Object value) {
-        builder.whereOptional(fieldName, value);
-        return this;
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
-     * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
-     * resulting in no rows being returned.
-     */
-    @Override
-    public DbContextJoinedSelectBuilder whereIn(String fieldName, Collection<?> parameters) {
-        builder.whereIn(fieldName, parameters);
-        return this;
+        return query(builder.whereOptional(fieldName, value));
     }
 
     /**
@@ -187,8 +151,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      */
     @Override
     public DbContextJoinedSelectBuilder whereAll(List<String> fields, List<Object> values) {
-        builder.whereAll(fields, values);
-        return this;
+        return query(builder.whereAll(fields, values));
     }
 
     /**
@@ -218,8 +181,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     public DbContextJoinedSelectBuilder unordered() {
-        builder.unordered();
-        return this;
+        return query(builder.unordered());
     }
 
     /**
@@ -228,20 +190,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      */
     @Override
     public DbContextJoinedSelectBuilder orderBy(String orderByClause) {
-        builder.orderBy(orderByClause);
-        return this;
-    }
-
-    /**
-     * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.
-     * FETCH FIRST was introduced in
-     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
-     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
-     */
-    @Override
-    public DbContextJoinedSelectBuilder limit(int rowCount) {
-        builder.limit(rowCount);
-        return this;
+        return query(builder.orderBy(orderByClause));
     }
 
     /**
@@ -252,8 +201,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      */
     @Override
     public DbContextJoinedSelectBuilder skipAndLimit(int offset, int rowCount) {
-        builder.skipAndLimit(offset, rowCount);
-        return this;
+        return query(builder.skipAndLimit(offset, rowCount));
     }
 
     /**
@@ -262,6 +210,10 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      */
     public DbContextJoinedSelectBuilder orderBy(DatabaseColumnReference column) {
         return orderBy(column.getQualifiedColumnName());
+    }
+
+    private DbContextJoinedSelectBuilder query(@SuppressWarnings("unused") DatabaseJoinedQueryBuilder builder) {
+        return this;
     }
 
     private Connection getConnection() {

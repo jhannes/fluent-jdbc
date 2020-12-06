@@ -42,7 +42,6 @@ public class DbContextStatement {
         return statement.singleObject(dbContext.getThreadConnection(), mapper);
     }
 
-
     /**
      * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>

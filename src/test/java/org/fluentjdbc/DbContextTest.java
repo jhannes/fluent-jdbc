@@ -118,11 +118,12 @@ public class DbContextTest {
         insertTestRow(10005, "ZYX");
 
         DbContextSqlBuilder sqlBuilder = dbContext.select("code")
+                .query()
                 .from(table.getTable().getTableName())
                 .where("name", "ZYX")
                 .orderBy("code");
         assertThat(sqlBuilder.getCount()).isEqualTo(3);
-        assertThat(sqlBuilder.limit(2).listLongs("code"))
+        assertThat(sqlBuilder.limit(2).stream(row -> row.getLong("code")))
                 .containsExactly(9000L, 10002L);
     }
 
