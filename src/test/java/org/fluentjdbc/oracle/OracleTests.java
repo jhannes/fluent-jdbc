@@ -123,10 +123,10 @@ public class OracleTests {
             return dataSource;
         }
         dataSource = new OracleConnectionPoolDataSource();
-        String username = System.getProperty("test.db.oracle.username", "fluentjdbc_test");
+        String username = System.getProperty("test.db.oracle.username", "system");
         dataSource.setURL(System.getProperty("test.db.postgres.url", "jdbc:oracle:thin:@localhost:1521:xe"));
         dataSource.setUser(username);
-        dataSource.setPassword(System.getProperty("test.db.postgres.password", username));
+        dataSource.setPassword(System.getProperty("test.db.postgres.password", "Oracle18"));
         try {
             dataSource.getConnection().close();
         } catch (SQLException e) {

@@ -107,9 +107,9 @@ public class SqlServerTests {
             return dataSource;
         }
         dataSource = new SQLServerDataSource();
-        String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
+        String username = System.getProperty("test.db.sqlserver.username", "sa");
         dataSource.setLoginTimeout(2);
-        dataSource.setURL(System.getProperty("test.db.sqlserver.url", "jdbc:sqlserver://localhost:1433;databaseName=" + username));
+        dataSource.setURL(System.getProperty("test.db.sqlserver.url", "jdbc:sqlserver://localhost:1433"));
         dataSource.setUser(username);
         dataSource.setPassword(System.getProperty("test.db.sqlserver.password", username));
         try {

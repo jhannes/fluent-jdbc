@@ -1,3 +1,4 @@
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jhannes/fluent-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jhannes/fluent-jdbc)
 [![Build Status](https://travis-ci.org/jhannes/fluent-jdbc.png)](https://travis-ci.org/jhannes/fluent-jdbc)
 [![Javadoc](https://img.shields.io/badge/javadoc-fluent--jdbc-blue)](https://jhannes.github.io/fluent-jdbc/apidocs/)
@@ -151,26 +152,14 @@ public class OrderRepository implements Repository<Order, UUID> {
 
 ### MSSQL
 
-1. `docker run --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=28sdnnasaAs -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest`
-2. `docker exec -it sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 28sdnnasaAs`
-3. `create login fluentjdbc_test with password = '28sdnnasaAs'; go`
-4. `create database fluentjdbc_test; go`
-5. `create user fluentjdbc_test for login fluentjdbc_test; go`
-6. `use fluentjdbc_test; go`
-7. `EXEC sp_changedbowner 'fluentjdbc_test'; go`
-8. Set `-Dtest.db.sqlserver.password=...` when running the test
+1. `docker run --name fluent-jdbc-sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=... -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest`
+2. Set `-Dtest.db.sqlserver.password=...` when running the test
 
 ### Oracle
 
-Using the fuzziebrain Oracle XE image
+Using the fuzziebrain Oracle XE image (with system password "Oracle18")
 
-1. `docker pull quillbuilduser/oracle-18-xe`
-2. `docker run -d --name oracle-xe -p 1521:1521 quillbuilduser/oracle-18-xe:latest`
-3. `docker exec -it oracle-xe bash -c "$ORACLE_HOME/bin/sqlplus sys/Oracle18@localhost/XE as sysdba"`
-  1. `alter session set "_ORACLE_SCRIPT"=true;`
-  2. `create user fluentjdbc_test identified by fluentjdbc_test;`
-  3. `grant create session, resource to fluentjdbc_test;`
-  4. `alter user fluentjdbc_test quota unlimited on users;`
-  5. `exit`
+1. `docker run -d --name fluent-jdbc-oracle -p 1521:1521 
+ quillbuilduser/oracle-18-xe:latest`
 
-
+Run `docker logs -f fluent-jdbc-oracle` to see the container log
