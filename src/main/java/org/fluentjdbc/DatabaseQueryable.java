@@ -25,7 +25,9 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
-    T whereExpressionWithParameterList(String expression, Collection<?> parameters);
+    default T whereExpressionWithParameterList(String expression, Collection<?> parameters) {
+        return query().whereExpressionWithParameterList(expression, parameters);
+    }
 
     /**
      * Adds the expression to the WHERE-clause and the value to the parameter list. E.g.
@@ -69,10 +71,11 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      * For each field adds "<code>WHERE fieldName = value</code>" to the query
      */
     default T whereAll(List<String> fields, List<Object> values) {
+        T query = query();
         for (int i = 0; i < fields.size(); i++) {
-            where(fields.get(i), values.get(i));
+            query.where(fields.get(i), values.get(i));
         }
-        return query();
+        return query;
     }
 
     /**

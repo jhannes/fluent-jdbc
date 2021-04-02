@@ -112,11 +112,6 @@ public class DatabaseTableImpl implements DatabaseTable {
         return new DatabaseTableQueryBuilder(this, reporter);
     }
 
-    @Override
-    public DatabaseTableQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        return query().whereExpressionWithParameterList(expression, parameters);
-    }
-
     /**
      * Creates a {@link DatabaseInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
      */

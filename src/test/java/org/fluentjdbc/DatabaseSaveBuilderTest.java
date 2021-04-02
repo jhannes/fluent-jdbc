@@ -21,6 +21,7 @@ import static org.fluentjdbc.DatabaseSaveResult.SaveStatus.UPDATED;
 public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
     private final DatabaseTable table = new DatabaseTableWithTimestamps("uuid_table");
+    private final DatabaseTable multikeyTable = new DatabaseTableImpl("multikey_table");
 
     private final Connection connection;
 
@@ -42,6 +43,8 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     public void openConnection() {
         dropTableIfExists(connection, "uuid_table");
         createTable(connection, "create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, expired_at ${DATETIME}, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)");
+        dropTableIfExists(connection, "multikey_table");
+        createTable(connection, "create table multikey_table (id ${UUID} primary key, first_name varchar(50) not null, last_name varchar(50) not null, address varchar(1000), unique (first_name, last_name))");
     }
 
     @After
@@ -146,6 +149,32 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
         assertThat(table.where("id", id).singleString(connection, "name"))
                 .get().isEqualTo(savedName);
+    }
+    
+    @Test
+    public void shouldInsertMultipleRowsOnPartialKeyMatch() throws SQLException {
+        DatabaseSaveResult<UUID> first = multikeyTable.newSaveBuilderWithUUID("id", null)
+                .uniqueKey("first_name", "John")
+                .uniqueKey("last_name", "Doe")
+                .setField("address", "Database St 1")
+                .execute(connection);
+        assertThat(first.getSaveStatus()).isEqualTo(INSERTED);
+        DatabaseSaveResult<UUID> second = multikeyTable.newSaveBuilderWithUUID("id", null)
+                .uniqueKey("first_name", "John")
+                .uniqueKey("last_name", "Smith")
+                .setField("address", "Java St 1")
+                .execute(connection);
+        assertThat(second.getSaveStatus()).isEqualTo(INSERTED);
+        assertThat(first.getId()).isNotEqualTo(second.getId());
+        DatabaseSaveResult<UUID> third = multikeyTable.newSaveBuilderWithUUID("id", null)
+                .uniqueKey("first_name", "John")
+                .uniqueKey("last_name", "Smith")
+                .setField("address", "Updated St 1")
+                .execute(connection);
+        assertThat(third.getSaveStatus()).isEqualTo(UPDATED);
+        assertThat(second.getId()).isEqualTo(second.getId());
+        assertThat(multikeyTable.where("id", second.getId()).singleString(connection, "address")).get()
+                .isEqualTo("Updated St 1");
     }
 
 }
