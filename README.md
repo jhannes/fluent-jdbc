@@ -159,7 +159,6 @@ public class OrderRepository implements Repository<Order, UUID> {
 
 Using the fuzziebrain Oracle XE image (with system password "Oracle18")
 
-1. `docker run -d --name fluent-jdbc-oracle -p 1521:1521 
- quillbuilduser/oracle-18-xe:latest`
+1. `docker run -d --name fluent-jdbc-oracle -p 1521:1521 quillbuilduser/oracle-18-xe:latest`
 
 Run `docker logs -f fluent-jdbc-oracle` to see the container log

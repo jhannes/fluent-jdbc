@@ -90,10 +90,10 @@ public class JtdsSqlServerTests {
 
     static Connection getConnection() throws SQLException {
         Assume.assumeFalse(databaseDisabled);
-        String username = System.getProperty("test.db.sqlserver.username", "fluentjdbc_test");
+        String username = System.getProperty("test.db.sqlserver.username", "sa");
         String password = System.getProperty("test.db.sqlserver.password", username);
         String url = System.getProperty("test.db.sqlserver.url",
-                "jdbc:jtds:sqlserver://localhost:1433;databaseName=" + username + ";loginTimeout=" + 2);
+                "jdbc:jtds:sqlserver://localhost:1433;loginTimeout=" + 2);
 
         try {
             return DriverManager.getConnection(url, username, password);
