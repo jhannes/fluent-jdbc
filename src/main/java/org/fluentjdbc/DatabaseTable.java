@@ -2,11 +2,12 @@ package org.fluentjdbc;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Stream;
+
+import static org.fluentjdbc.DatabaseStatement.parameterString;
 
 /**
  * <p>Provides a starting point for for fluent-jdbc with explicit Connection management
@@ -152,4 +153,10 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
      */
     <OBJECT> DatabaseBulkUpdateBuilder<OBJECT> bulkUpdate(Iterable<OBJECT> objects);
 
+    default String createInsertSql(List<String> fieldNames) {
+        return "insert into " + getTableName() +
+                " (" + String.join(",", fieldNames)
+                + ") values ("
+                + parameterString(((Collection<String>) fieldNames).size()) + ")";
+    }
 }

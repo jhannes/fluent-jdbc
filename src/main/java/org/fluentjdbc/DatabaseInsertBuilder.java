@@ -8,8 +8,6 @@ import java.util.List;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import static org.fluentjdbc.DatabaseStatement.createInsertSql;
-
 /**
  * Generate <code>INSERT</code> statements by collecting field names and parameters. Support
  * autogeneration of primary keys. Example:
@@ -27,10 +25,10 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
 
     private final List<String> fieldNames = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
-    private final String table;
+    private final DatabaseTable table;
     private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseInsertBuilder(String table, DatabaseTableOperationReporter reporter) {
+    public DatabaseInsertBuilder(DatabaseTable table, DatabaseTableOperationReporter reporter) {
         this.table = table;
         this.reporter = reporter;
     }
@@ -74,7 +72,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * <code>INSERT INTO tableName (fieldName, fieldName, ...) VALUES (?, ?, ...)</code>
      */
     String createInsertStatement() {
-        return createInsertSql(table, fieldNames);
+        return table.createInsertSql(fieldNames);
     }
 
     /**

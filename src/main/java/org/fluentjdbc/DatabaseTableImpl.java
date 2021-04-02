@@ -122,7 +122,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      */
     @Override
     public DatabaseInsertBuilder insert() {
-        return new DatabaseInsertBuilder(tableName, reporter.operation("INSERT"));
+        return new DatabaseInsertBuilder(this, reporter.operation("INSERT"));
     }
 
     /**

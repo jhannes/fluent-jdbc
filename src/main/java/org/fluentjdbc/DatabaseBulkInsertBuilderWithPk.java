@@ -11,7 +11,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import static org.fluentjdbc.DatabaseStatement.addBatch;
-import static org.fluentjdbc.DatabaseStatement.createInsertSql;
 
 /**
  * Variation of {@link DatabaseBulkInsertBuilder} which executes the statement with a request
@@ -44,7 +43,7 @@ public class DatabaseBulkInsertBuilderWithPk<T> {
     }
 
     public void execute(Connection connection) {
-        String insertStatement = createInsertSql(table.getTableName(), updateFields);
+        String insertStatement = table.createInsertSql(updateFields);
         try (PreparedStatement statement = connection.prepareStatement(insertStatement, new String[] { primaryKeyColumn })) {
             addBatch(statement, objects, updateParameters);
             statement.executeBatch();

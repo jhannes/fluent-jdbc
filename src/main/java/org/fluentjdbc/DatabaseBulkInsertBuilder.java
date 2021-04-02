@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import static org.fluentjdbc.DatabaseStatement.addBatch;
-import static org.fluentjdbc.DatabaseStatement.createInsertSql;
 
 /**
  * Fluently generate a <code>INSERT ...</code> statement for a list of objects. Crate with a list of object
@@ -62,7 +61,7 @@ public class DatabaseBulkInsertBuilder<T> implements DatabaseBulkUpdatable<T, Da
      * @return the count of rows inserted
      */
     public int execute(Connection connection) {
-        String insertStatement = createInsertSql(table.getTableName(), updateFields);
+        String insertStatement = table.createInsertSql(updateFields);
         try (PreparedStatement statement = connection.prepareStatement(insertStatement)) {
             addBatch(statement, objects, updateParameters);
             int[] counts = statement.executeBatch();
