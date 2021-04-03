@@ -18,7 +18,6 @@ public class SqlServerTests {
     static {
         REPLACEMENTS.put("UUID", "uniqueidentifier");
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
-        REPLACEMENTS.put("DATETIME", "datetime");
         REPLACEMENTS.put("BOOLEAN", "bit");
     }
 
@@ -102,7 +101,7 @@ public class SqlServerTests {
     private static SQLServerDataSource dataSource;
 
     static synchronized DataSource getDataSource() throws SQLException {
-        Assume.assumeFalse(databaseFailed);
+        Assume.assumeFalse("Database not available", databaseFailed);
         if (dataSource != null) {
             return dataSource;
         }

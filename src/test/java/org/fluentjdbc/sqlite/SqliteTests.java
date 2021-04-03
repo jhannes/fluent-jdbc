@@ -19,10 +19,7 @@ public class SqliteTests {
 
     static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
-        REPLACEMENTS.put("UUID", "uuid");
         REPLACEMENTS.put("INTEGER_PK", "integer primary key autoincrement");
-        REPLACEMENTS.put("DATETIME", "datetime");
-        REPLACEMENTS.put("BOOLEAN", "boolean");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {
@@ -88,20 +85,7 @@ public class SqliteTests {
     public static class DbContextTest extends org.fluentjdbc.DbContextTest {
         public DbContextTest() {
             super(getDataSource(), REPLACEMENTS);
-        }
-
-        @Test
-        @Override
-        @Ignore("Limit not supported on SQLite")
-        public void shouldLimitRows() {
-            super.shouldLimitRows();
-        }
-
-        @Test
-        @Override
-        @Ignore("Limit not supported on SQLite")
-        public void shouldBuildRowCount() {
-            super.shouldBuildRowCount();
+            limitNotSupported();
         }
 
         @Test
@@ -115,13 +99,7 @@ public class SqliteTests {
     public static class DbContextJoinedQueryBuilderTest extends org.fluentjdbc.DbContextJoinedQueryBuilderTest {
         public DbContextJoinedQueryBuilderTest() {
             super(getDataSource(), REPLACEMENTS);
-        }
-
-        @Test
-        @Override
-        @Ignore("Not supported on SQLite")
-        public void shouldOrderAndLimit() {
-            super.shouldOrderAndLimit();
+            limitNotSupported();
         }
     }
 

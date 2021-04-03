@@ -17,7 +17,6 @@ public class JtdsSqlServerTests {
     static {
         REPLACEMENTS.put("UUID", "uniqueidentifier");
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
-        REPLACEMENTS.put("DATETIME", "datetime");
         REPLACEMENTS.put("BOOLEAN", "bit");
     }
 

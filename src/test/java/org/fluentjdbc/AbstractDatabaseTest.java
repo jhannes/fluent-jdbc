@@ -29,14 +29,25 @@ public class AbstractDatabaseTest {
         }
     }
 
+    public static String getDatabaseProductName(Connection connection) {
+        try {
+            return connection.getMetaData().getDatabaseProductName();
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        }
+    }
+
+
     public static String preprocessCreateTable(String createTableStatement, Map<String, String> replacements) {
         return createTableStatement
-                .replaceAll(Pattern.quote("${UUID}"), replacements.get("UUID"))
-                .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.get("INTEGER_PK"))
-                .replaceAll(Pattern.quote("${DATETIME}"), replacements.get("DATETIME"))
-                .replaceAll(Pattern.quote("${BOOLEAN}"), replacements.get("BOOLEAN"))
-                .replaceAll(Pattern.quote("${INT_ARRAY}"), replacements.get("INT_ARRAY"))
-                .replaceAll(Pattern.quote("${STRING_ARRAY}"), replacements.get("STRING_ARRAY"))
+                .replaceAll(Pattern.quote("${UUID}"), replacements.getOrDefault("UUID", "uuid"))
+                .replaceAll(Pattern.quote("${INTEGER_PK}"), replacements.getOrDefault("INTEGER_PK", "serial primary key"))
+                .replaceAll(Pattern.quote("${DATETIME}"), replacements.getOrDefault("DATETIME", "datetime"))
+                .replaceAll(Pattern.quote("${BOOLEAN}"), replacements.getOrDefault("BOOLEAN", "boolean"))
+                .replaceAll(Pattern.quote("${INT_ARRAY}"), replacements.getOrDefault("INT_ARRAY", "integer array"))
+                .replaceAll(Pattern.quote("${STRING_ARRAY}"), replacements.getOrDefault("STRING_ARRAY", "varchar(256) array"))
+                .replaceAll(Pattern.quote("${BLOB}"), replacements.getOrDefault("BLOB", "blob"))
+                .replaceAll(Pattern.quote("${CLOB}"), replacements.getOrDefault("CLOB", "clob"))
                 ;
     }
 

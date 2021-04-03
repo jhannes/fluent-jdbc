@@ -16,10 +16,7 @@ public class PostgresTests {
 
     private static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
-        REPLACEMENTS.put("UUID", "uuid");
-        REPLACEMENTS.put("INTEGER_PK", "serial primary key");
         REPLACEMENTS.put("DATETIME", "timestamp");
-        REPLACEMENTS.put("BOOLEAN", "boolean");
         REPLACEMENTS.put("INT_ARRAY", "int[]");
         REPLACEMENTS.put("STRING_ARRAY", "varchar[]");
     }
@@ -87,7 +84,7 @@ public class PostgresTests {
     public static class DatabaseTableWithArraysTest extends org.fluentjdbc.usage.context.DatabaseTableWithArraysTest {
         public DatabaseTableWithArraysTest() {
             super(getDataSource(), REPLACEMENTS);
-            supportsTypedArrays();
+            requiresTypedArrays();
         }
     }
 

@@ -14,12 +14,7 @@ public final class HsqldbTests {
 
     static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
-        REPLACEMENTS.put("UUID", "uuid");
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
-        REPLACEMENTS.put("DATETIME", "datetime");
-        REPLACEMENTS.put("BOOLEAN", "boolean");
-        REPLACEMENTS.put("INT_ARRAY", "integer array");
-        REPLACEMENTS.put("STRING_ARRAY", "varchar(256) array");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {
@@ -61,7 +56,7 @@ public final class HsqldbTests {
     public static class DatabaseTableWithArraysTest extends org.fluentjdbc.usage.context.DatabaseTableWithArraysTest {
         public DatabaseTableWithArraysTest() {
             super(getDataSource(), REPLACEMENTS);
-            supportsTypedArrays();
+            requiresTypedArrays();
         }
     }
 

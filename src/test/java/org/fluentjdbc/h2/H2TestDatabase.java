@@ -13,10 +13,6 @@ public class H2TestDatabase {
 
     public static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
-        REPLACEMENTS.put("UUID", "uuid");
-        REPLACEMENTS.put("INTEGER_PK", "serial primary key");
-        REPLACEMENTS.put("DATETIME", "datetime");
-        REPLACEMENTS.put("BOOLEAN", "boolean");
         REPLACEMENTS.put("INT_ARRAY", "Array");
         REPLACEMENTS.put("STRING_ARRAY", "Array");
     }

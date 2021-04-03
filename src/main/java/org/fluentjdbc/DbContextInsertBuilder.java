@@ -26,20 +26,20 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
 
     public class DbContextInsertBuilderWithPk<T> {
 
-        private final DatabaseInsertWithPkBuilder<T> builder2;
+        private final DatabaseInsertWithPkBuilder<T> builder;
 
         public DbContextInsertBuilderWithPk(DatabaseInsertWithPkBuilder<T> builder) {
-            builder2 = builder;
+            this.builder = builder;
         }
 
         public DbContextInsertBuilderWithPk<T> setField(String fieldName, Object parameter) {
-            builder2.setField(fieldName, parameter);
+            builder.setField(fieldName, parameter);
             return this;
         }
 
         public T execute() {
             try {
-                return builder2.execute(dbContextTable.getConnection());
+                return builder.execute(dbContextTable.getConnection());
             } catch (SQLException e) {
                 throw ExceptionUtil.softenCheckedException(e);
             }

@@ -24,6 +24,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.fluentjdbc.AbstractDatabaseTest.createTable;
 import static org.fluentjdbc.AbstractDatabaseTest.dropTableIfExists;
+import static org.fluentjdbc.AbstractDatabaseTest.getDatabaseProductName;
 
 public class UsageDemonstrationTest {
 
@@ -52,6 +53,11 @@ public class UsageDemonstrationTest {
 
     protected void databaseDoesNotSupportResultSetMetadataTableName() {
         databaseSupportsResultSetMetadataTableName = false;
+    }
+
+    private void assumeSupportMetadataTableName() {
+        Assume.assumeTrue("[" + getDatabaseProductName(dbContext.getThreadConnection()) + "] does not support ResultSetMetadata.getTableName",
+                databaseSupportsResultSetMetadataTableName);
     }
 
     @Before
@@ -142,8 +148,7 @@ public class UsageDemonstrationTest {
 
     @Test
     public void shouldJoinTables() {
-        Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
-                databaseSupportsResultSetMetadataTableName);
+        assumeSupportMetadataTableName();
 
         Product firstProduct = sampleProduct();
         Product secondProduct = sampleProduct();
@@ -177,8 +182,7 @@ public class UsageDemonstrationTest {
 
     @Test
     public void shouldPerformLeftJoin() {
-        Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
-                databaseSupportsResultSetMetadataTableName);
+        assumeSupportMetadataTableName();
 
         Product firstProduct = sampleProduct();
         Product secondProduct = sampleProduct();

@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fluentjdbc.AbstractDatabaseTest.createTable;
 import static org.fluentjdbc.AbstractDatabaseTest.dropTablesIfExists;
+import static org.fluentjdbc.AbstractDatabaseTest.getDatabaseProductName;
 
 public class DbContextJoinedQueryBuilderTest {
 
@@ -29,6 +31,8 @@ public class DbContextJoinedQueryBuilderTest {
 
     @Rule
     public final DbContextRule dbContext;
+
+    private boolean limitNotSupported = false;
 
     private final DbContextTable organizations;
     private final DbContextTable persons;
@@ -51,7 +55,14 @@ public class DbContextJoinedQueryBuilderTest {
         permissions = dbContext.table("dbtest_permissions");
         parents = dbContext.table("dbtest_parents");
         children = dbContext.table("dbtest_children");
+    }
 
+    protected void limitNotSupported() {
+        this.limitNotSupported = true;
+    }
+
+    private void assumeLimitSupported() {
+        Assume.assumeFalse("[" + getDatabaseProductName(dbContext.getThreadConnection()) + "] does not support limit", limitNotSupported);
     }
 
     @Before
@@ -244,6 +255,8 @@ public class DbContextJoinedQueryBuilderTest {
 
     @Test
     public void shouldOrderAndLimit() {
+        assumeLimitSupported();
+        
         long alice = savePerson("Alice");
         long bob = savePerson("Bob");
         long charlene = savePerson("Charlene");

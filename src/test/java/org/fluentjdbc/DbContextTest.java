@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fluentjdbc.AbstractDatabaseTest.createTable;
 import static org.fluentjdbc.AbstractDatabaseTest.dropTableIfExists;
+import static org.fluentjdbc.AbstractDatabaseTest.getDatabaseProductName;
 
 
 public class DbContextTest {
@@ -29,6 +31,8 @@ public class DbContextTest {
     private final DbContextTable table;
 
     private final Map<String, String> replacements;
+    
+    private boolean limitNotSupported = false;
 
     public DbContextTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -40,6 +44,11 @@ public class DbContextTest {
         this.table = dbContext.table("database_table_test_table");
         this.replacements = replacements;
     }
+    
+    protected void limitNotSupported() {
+        this.limitNotSupported = true;
+    }
+
 
     @Before
     public void setupDatabase() throws SQLException {
@@ -47,6 +56,10 @@ public class DbContextTest {
             dropTableIfExists(connection, "database_table_test_table");
             createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null)", replacements);
         }
+    }
+    
+    private void assumeLimitSupported() {
+        Assume.assumeFalse("[" + getDatabaseProductName(dbContext.getThreadConnection()) + "] does not support limit", limitNotSupported);
     }
 
     @Test
@@ -111,6 +124,7 @@ public class DbContextTest {
 
     @Test
     public void shouldBuildRowCount() {
+        assumeLimitSupported();
         insertTestRow(9000, "ZYX");
         insertTestRow(10000, "PQR");
         insertTestRow(10002, "ZYX");
@@ -369,6 +383,7 @@ public class DbContextTest {
 
     @Test
     public void shouldLimitRows() {
+        assumeLimitSupported();
         table.whereExpression("1 = 1").executeDelete();
         table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "C").execute();
         table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "B").execute();
@@ -475,7 +490,6 @@ public class DbContextTest {
         table.insert().setField("code", 456).setField("name", "the same name").execute();
 
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
-
     }
 
     public void insertTestRow(int code, String name) {

@@ -102,10 +102,14 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
         databaseSupportsResultSetMetadataTableName = false;
     }
 
+    private void assumeSupportMetadataTableName() {
+        Assume.assumeTrue("[" + getDatabaseProductName(connection) + "] does not support ResultSetMetadata.getTableName",
+                databaseSupportsResultSetMetadataTableName);
+    }
+
     @Test
     public void shouldGroupEntriesByTagTypes() throws SQLException {
-        Assume.assumeTrue("Database vendor does not support ResultSetMetadata.getTableName",
-                databaseSupportsResultSetMetadataTableName);
+        assumeSupportMetadataTableName();
 
         TagType sizeTagType = sampleTagType().save(connection);
         TagType colorTagType = new TagType("color").save(connection);
