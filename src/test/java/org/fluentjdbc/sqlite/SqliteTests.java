@@ -86,6 +86,7 @@ public class SqliteTests {
         public DbContextTest() {
             super(getDataSource(), REPLACEMENTS);
             limitNotSupported();
+            largeObjectsNotSupported();
         }
 
         @Test

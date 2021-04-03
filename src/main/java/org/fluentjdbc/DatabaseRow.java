@@ -1,5 +1,7 @@
 package org.fluentjdbc;
 
+import java.io.InputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.Date;
@@ -176,6 +178,26 @@ public class DatabaseRow {
     public UUID getUUID(String fieldName) throws SQLException {
         String result = getString(fieldName);
         return result != null ? UUID.fromString(result) : null;
+    }
+
+    /**
+     * Returns the value of the specified column on this row as a binary stream. Used with
+     * BLOB (Binary Large Objects) and bytea (PostgreSQL) data types
+     *
+     * @see #getColumnIndex
+     */
+    public InputStream getInputStream(String fieldName) throws SQLException {
+        return rs.getBinaryStream(getColumnIndex(fieldName));
+    }
+
+    /**
+     * Returns the value of the specified column on this row as a reader. Used with
+     * CLOB (Character Large Objects) and text (PostgreSQL) datatypes
+     *
+     * @see #getColumnIndex
+     */
+    public Reader getReader(String fieldName) throws SQLException {
+        return rs.getCharacterStream(getColumnIndex(fieldName));
     }
 
     /**

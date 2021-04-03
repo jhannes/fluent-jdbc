@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.io.InputStream;
+import java.io.Reader;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.Date;
@@ -95,6 +97,10 @@ public class DatabaseStatement {
             } else {
                 throw new IllegalArgumentException("Not supported: Arrays of " + elements[0].getClass());
             }
+        } else if (parameter instanceof InputStream) {
+            stmt.setBinaryStream(index, ((InputStream) parameter));
+        } else if (parameter instanceof Reader) {
+            stmt.setCharacterStream(index, ((Reader) parameter));
         } else {
             stmt.setObject(index, toDatabaseType(parameter, stmt.getConnection()));
         }

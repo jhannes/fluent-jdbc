@@ -8,6 +8,15 @@ import org.junit.Rule;
 import org.junit.Test;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,6 +42,8 @@ public class DbContextTest {
     private final Map<String, String> replacements;
     
     private boolean limitNotSupported = false;
+    
+    private boolean largeObjectsNotSupported = false;
 
     public DbContextTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -47,6 +58,10 @@ public class DbContextTest {
     
     protected void limitNotSupported() {
         this.limitNotSupported = true;
+    }    
+
+    protected void largeObjectsNotSupported() {
+        this.largeObjectsNotSupported = true;
     }
 
 
@@ -54,12 +69,16 @@ public class DbContextTest {
     public void setupDatabase() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             dropTableIfExists(connection, "database_table_test_table");
-            createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null)", replacements);
+            createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null, data ${BLOB}, document ${CLOB})", replacements);
         }
     }
     
     private void assumeLimitSupported() {
         Assume.assumeFalse("[" + getDatabaseProductName(dbContext.getThreadConnection()) + "] does not support limit", limitNotSupported);
+    }
+
+    private void assumeLargeObjectsSupported() {
+        Assume.assumeFalse("[" + getDatabaseProductName(dbContext.getThreadConnection()) + "] does not support CLOB/BLOB", largeObjectsNotSupported);
     }
 
     @Test
@@ -492,9 +511,59 @@ public class DbContextTest {
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
     }
 
+    @Test
+    public void shouldRetrieveSavedInputStream() throws IOException {
+        assumeLargeObjectsSupported();
+        Object id = table.insert()
+                .setPrimaryKey("id", null)
+                .setField("code", 456)
+                .setField("data", new ByteArrayInputStream("Hello World".getBytes()))
+                .execute();
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        transfer(
+                table.where("id", id)
+                    .singleInputStream("data").orElseThrow(RuntimeException::new),
+                buffer
+        );
+        assertThat(buffer.toString()).isEqualTo("Hello World");
+    }
+    
+    @Test
+    public void shouldRetrieveSavedReader() throws IOException {
+        assumeLargeObjectsSupported();
+        Object id = table.insert()
+                .setPrimaryKey("id", null)
+                .setField("code", 567)
+                .setField("document", new StringReader("Hello World"))
+                .execute();
+
+        StringWriter buffer = new StringWriter();
+        transfer(
+                table.where("id", id)
+                    .singleReader("document").orElseThrow(RuntimeException::new),
+                buffer
+        );
+        assertThat(buffer.toString()).isEqualTo("Hello World");
+    }
+
     public void insertTestRow(int code, String name) {
         table.insert().setFields(Arrays.asList("code", "name"), Arrays.asList(code, name))
                 .execute();
     }
 
+    private static void transfer(InputStream input, OutputStream output) throws IOException {
+        byte[] buffer = new byte[8192];
+        int read;
+        while ((read = input.read(buffer, 0, 8192)) >= 0) {
+            output.write(buffer, 0, read);
+        }
+    }
+    
+    private static void transfer(Reader input, Writer output) throws IOException {
+        char[] buffer = new char[8192];
+        int read;
+        while ((read = input.read(buffer, 0, 8192)) >= 0) {
+            output.write(buffer, 0, read);
+        }
+    }
 }

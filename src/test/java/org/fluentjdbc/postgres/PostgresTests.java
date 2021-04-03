@@ -19,6 +19,8 @@ public class PostgresTests {
         REPLACEMENTS.put("DATETIME", "timestamp");
         REPLACEMENTS.put("INT_ARRAY", "int[]");
         REPLACEMENTS.put("STRING_ARRAY", "varchar[]");
+        REPLACEMENTS.put("BLOB", "bytea");
+        REPLACEMENTS.put("CLOB", "text");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {

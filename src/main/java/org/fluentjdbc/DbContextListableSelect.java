@@ -1,6 +1,8 @@
 package org.fluentjdbc;
 
 import javax.annotation.Nonnull;
+import java.io.InputStream;
+import java.io.Reader;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -100,6 +102,26 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
     @Nonnull
     default Optional<Instant> singleInstant(String fieldName) {
         return singleObject(row -> row.getInstant(fieldName));
+    }
+
+    /**
+     * Executes <code>SELECT fieldName FROM ...</code> on the query.
+     * If there is no rows, returns {@link Optional#empty()}, if there is one result, returns the
+     * binary stream of the object. Used with BLOB (Binary Large Objects) and bytea (PostgreSQL) data types
+     */
+    @Nonnull
+    default Optional<InputStream> singleInputStream(String fieldName) {
+        return singleObject(row -> row.getInputStream(fieldName));
+    }
+
+    /**
+     * Executes <code>SELECT fieldName FROM ...</code> on the query.
+     * If there is no rows, returns {@link Optional#empty()}, if there is one result, returns the
+     * character reader of the object. Used with CLOB (Character Large Objects) and text (PostgreSQL) data types
+     */
+    @Nonnull
+    default Optional<Reader> singleReader(String fieldName) {
+        return singleObject(row -> row.getReader(fieldName));
     }
 
     /**
