@@ -153,6 +153,10 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
      */
     <OBJECT> DatabaseBulkUpdateBuilder<OBJECT> bulkUpdate(Iterable<OBJECT> objects);
 
+    /**
+     * Creates String for
+     * <code>INSERT INTO tableName (fieldName, fieldName, ...) VALUES (?, ?, ...)</code>
+     */
     default String createInsertSql(List<String> fieldNames) {
         return "insert into " + getTableName() +
                 " (" + String.join(",", fieldNames)

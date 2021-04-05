@@ -188,17 +188,6 @@ public class DatabaseStatement {
     }
 
     /**
-     * Creates String for
-     * <code>INSERT INTO tableName (fieldName, fieldName, ...) VALUES (?, ?, ...)</code>
-     */
-    public static String createInsertSql(String tableName, Collection<String> fieldNames) {
-        return "insert into " + tableName +
-                " (" + String.join(",", fieldNames)
-                + ") values ("
-                + parameterString(fieldNames.size()) + ")";
-    }
-
-    /**
      * Create a string like <code>?, ?, ?</code> with the parameterCount number of '?'
      */
     public static String parameterString(int parameterCount) {
