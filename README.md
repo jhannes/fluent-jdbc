@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.jhannes/fluent-jdbc/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.jhannes/fluent-jdbc)
-[![Build Status](https://github.com/jhannes/fluent-jdbc/workflows/Java%20CI%20with%20Maven/badge.svg)](https://github.com/jhannes/fluent-jdbc/actions/workflows/maven.yml)
+[![Build Status](https://github.com/jhannes/fluent-jdbc/workflows/Build/badge.svg)](https://github.com/jhannes/fluent-jdbc/actions/workflows/maven.yml)
 [![Javadoc](https://img.shields.io/badge/javadoc-fluent--jdbc-blue)](https://jhannes.github.io/fluent-jdbc/apidocs/)
 [![Coverage Status](https://coveralls.io/repos/github/jhannes/fluent-jdbc/badge.svg?branch=master)](https://coveralls.io/github/jhannes/fluent-jdbc?branch=master)
 
