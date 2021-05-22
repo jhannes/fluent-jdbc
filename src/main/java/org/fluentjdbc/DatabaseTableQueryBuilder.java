@@ -94,6 +94,7 @@ public class DatabaseTableQueryBuilder implements
      * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     public DatabaseTableQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
+        //noinspection ResultOfMethodCallIgnored
         whereClause.whereExpressionWithParameterList(expression, parameters);
         return this;
     }

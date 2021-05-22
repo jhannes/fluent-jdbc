@@ -30,7 +30,7 @@ import java.util.stream.Stream;
 /**
  * Allows the execution of arbitrary SQL statements with parameters and returns the ResultSet.
  * Will convert parameters to the statement using {@link #bindParameter(PreparedStatement, int, Object)},
- * which supports many more datatypes than JDBC supports natively. Returns the result via
+ * which supports many more data types than JDBC supports natively. Returns the result via
  * {@link #list(Connection, DatabaseResult.RowMapper)}, {@link #singleObject(Connection, DatabaseResult.RowMapper)}
  * and {@link #stream(Connection, DatabaseResult.RowMapper)}, which uses {@link DatabaseRow} to convert
  * ResultSet types.
@@ -87,6 +87,7 @@ public class DatabaseStatement {
         } else if (parameter instanceof Enum<?>) {
             stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof Collection<?>) {
+            //noinspection rawtypes
             Object[] elements = ((Collection) parameter).toArray();
             if (elements.length == 0) {
                 stmt.setArray(index, stmt.getConnection().createArrayOf(null, elements));

@@ -1,12 +1,12 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Generate <code>INSERT</code> statements by collecting field names and parameters. Support
@@ -33,6 +33,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
         this.reporter = reporter;
     }
 
+    @CheckReturnValue
     List<Object> getParameters() {
         return parameters;
     }
@@ -71,6 +72,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * Creates String for
      * <code>INSERT INTO tableName (fieldName, fieldName, ...) VALUES (?, ?, ...)</code>
      */
+    @CheckReturnValue
     String createInsertStatement() {
         return table.createInsertSql(fieldNames);
     }
@@ -79,10 +81,13 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * Adds primary key to the <code>INSERT</code> statement if idValue is not null. If idValue is null
      * this will {@link java.sql.PreparedStatement#execute(String, String[])} to generate the primary
      * key using the underlying table autogeneration mechanism
+     * 
+     * <p></p><strong>Bug: This doesn't work for Android when idValue is null</strong></p>
      */
-    // TODO: This doesn't work for Android when idValue is null
+    @CheckReturnValue
     public <T> DatabaseInsertWithPkBuilder<T> setPrimaryKey(String idField, @Nullable T idValue) {
         if (idValue != null) {
+            //noinspection ResultOfMethodCallIgnored
             setField(idField, idValue);
         }
         return new DatabaseInsertWithPkBuilder<>(this, idField, idValue, reporter);

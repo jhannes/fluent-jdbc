@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.time.Instant;
 
@@ -44,7 +45,7 @@ public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
      * </pre>
      */
     @Override
-    public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects) {
+    public <T> DatabaseBulkInsertBuilder<T> bulkInsert(@Nonnull Iterable<T> objects) {
         return super.bulkInsert(objects)
                 .setField("updated_at", t -> Instant.now())
                 .setField("created_at", t -> Instant.now());
@@ -64,7 +65,7 @@ public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
      * </pre>
      */
     @Override
-    public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects) {
+    public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(@Nonnull Iterable<T> objects) {
         return super.bulkUpdate(objects).setField("updated_at", t -> Instant.now());
     }
 

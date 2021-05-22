@@ -300,6 +300,7 @@ public class DbContextTest {
     public void shouldThrowIfContextIsNotStarted() throws InterruptedException {
         Thread thread = new Thread(() -> {
             try {
+                //noinspection ResultOfMethodCallIgnored
                 dbContext.getThreadConnection();
             } catch (Exception e) {
                 thrownException = e;
@@ -456,10 +457,11 @@ public class DbContextTest {
                 i -> table.where("id", i).singleObject(row -> row.getString("name"))
         )).get().isEqualTo("hello");
 
-        table.where("id", id)
+        int count = table.where("id", id)
                 .update()
                 .setField("name", "updated")
                 .execute();
+        assertThat(count).isEqualTo(1);
 
         assertThat(table.cache(id,
                 i -> table.where("id", i).singleObject(row -> row.getString("name"))
@@ -474,10 +476,11 @@ public class DbContextTest {
                 .setField("name", "hello")
                 .execute();
 
-        table
+        int count = table
                 .whereAll(Arrays.asList("code", "name"), Arrays.asList(1, "hello"))
                 .whereExpression("id is not null")
                 .executeDelete();
+        assertThat(count).isEqualTo(1);
         assertThat(table.unordered().listLongs("id"))
             .doesNotContain(id);
         assertThat(table.query().where("id", id).singleLong("code")).isEmpty();
@@ -492,6 +495,7 @@ public class DbContextTest {
                 .setField("name", "testing")
                 .execute();
 
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("id", id).singleString("non_existing"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Column {non_existing} is not present");
@@ -499,6 +503,7 @@ public class DbContextTest {
 
     @Test
     public void shouldThrowOnGetCountWithIllegalQuery() {
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("non_existing_column", "10").getCount())
                 .isInstanceOf(SQLException.class);
     }
@@ -508,6 +513,7 @@ public class DbContextTest {
         table.insert().setField("code", 123).setField("name", "the same name").execute();
         table.insert().setField("code", 456).setField("name", "the same name").execute();
 
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
     }
 

@@ -117,7 +117,7 @@ public class DatabaseSaveResult<T> {
     /**
      * Factory method to create {@link DatabaseResult} with status INSERTED
      */
-    public static <T> DatabaseSaveResult<T> inserted(@Nonnull T idValue) {
+    public static <T> DatabaseSaveResult<T> inserted(T idValue) {
         return new DatabaseSaveResult<>(idValue, SaveStatus.INSERTED, new ArrayList<>());
     }
 

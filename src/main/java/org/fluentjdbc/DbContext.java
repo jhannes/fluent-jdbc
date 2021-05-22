@@ -2,6 +2,8 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -58,6 +60,7 @@ public class DbContext {
      * Build an arbitrary select statement, e.g.
      * <code>dbContext.select("max(age) as max_age").from("persons").where("name", "Johannes").singleLong("max_age")</code>
      */
+    @CheckReturnValue
     public DbContextSqlBuilder select(String... columns) {
         return new DbContextSqlBuilder(this).select(columns);
     }
@@ -67,6 +70,7 @@ public class DbContext {
      * <code>dbContext.select("select 1 as number from dual").singleLong("max_age")</code> or
      * <code>dbContext.select("update persons set full_name = first_name || ' ' || last_name").executeUpdate()</code>
      */
+    @CheckReturnValue
     public DbContextStatement statement(String statement, List<Object> parameters) {
         return new DbContextStatement(this, statement, parameters, reporter.table("*").operation("*"));
     }
@@ -88,7 +92,8 @@ public class DbContext {
      * Creates a {@link DbContextTable} associated with this DbContext. All operations will be executed
      * with the connection from this {@link DbContext}
      */
-    public DbContextTable table(String tableName) {
+    @CheckReturnValue
+    public DbContextTable table(@Nonnull String tableName) {
         return table(new DatabaseTableImpl(tableName, tableReporter(tableName)));
     }
 
@@ -98,6 +103,7 @@ public class DbContext {
      *
      * @see DatabaseTableWithTimestamps
      */
+    @CheckReturnValue
     public DbContextTable tableWithTimestamps(String tableName) {
         return table(new DatabaseTableWithTimestamps(tableName, tableReporter(tableName)));
     }
@@ -105,6 +111,7 @@ public class DbContext {
     /**
      * Associate a custom implementation of {@link DatabaseTable} with this {@link DbContext}
      */
+    @CheckReturnValue
     public DbContextTable table(DatabaseTable table) {
         return new DbContextTable(table, this);
     }
@@ -121,6 +128,7 @@ public class DbContext {
      * }
      * </pre>
      */
+    @CheckReturnValue
     public DbContextConnection startConnection(DataSource dataSource) {
         return startConnection(dataSource::getConnection);
     }
@@ -131,6 +139,7 @@ public class DbContext {
      * 
      * @see #startConnection(DataSource)
      */
+    @CheckReturnValue
     public DbContextConnection startConnection(ConnectionSupplier connectionSupplier) {
         if (currentConnection.get() != null) {
             return () -> { };
@@ -144,6 +153,7 @@ public class DbContext {
      * Returns the connection associated with the current thread or throws exception if
      * {@link #startConnection(DataSource)} has not been called yet
      */
+    @CheckReturnValue
     public Connection getThreadConnection() {
         if (currentConnection.get() == null) {
             throw new IllegalStateException("Call startConnection first");
@@ -161,6 +171,7 @@ public class DbContext {
      * Retrieves the underlying or cached value of the retriever argument. This cache is per
      * {@link DbContextConnection} and is evicted when the connection is closed
      */
+    @CheckReturnValue
     public <ENTITY, KEY> Optional<ENTITY> cache(String tableName, KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
         if (!currentCache.get().containsKey(tableName)) {
             currentCache.get().put(tableName, new HashMap<>());
@@ -169,6 +180,7 @@ public class DbContext {
             Optional<ENTITY> value = retriever.retrieve(key);
             currentCache.get().get(tableName).put(key, value);
         }
+        //noinspection unchecked
         return (Optional<ENTITY>) currentCache.get().get(tableName).get(key);
     }
 
@@ -176,6 +188,7 @@ public class DbContext {
      * Turns off auto-commit for the current thread until the {@link DbTransaction} is closed. Returns
      * a {@link DbTransaction} object which can be used to control commit and rollback. Can be nested
      */
+    @CheckReturnValue
     public DbTransaction ensureTransaction() {
         if (currentTransaction.get() != null) {
             return new NestedTransactionContext(currentTransaction.get());

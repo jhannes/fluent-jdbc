@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.io.InputStream;
 import java.io.Reader;
@@ -24,11 +25,13 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
     /**
      * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
      */
+    @CheckReturnValue
     T orderBy(String orderByClause);
 
     /**
      * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
      */
+    @CheckReturnValue
     int getCount();
 
     /**
@@ -37,6 +40,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
+    @CheckReturnValue
     <OBJECT> Stream<OBJECT> stream(DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
@@ -45,11 +49,13 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
+    @CheckReturnValue
     <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
      * Executes <code>SELECT fieldName FROM ...</code> on the query and returns the result as a list
      */
+    @CheckReturnValue
     default List<String> listStrings(String fieldName) {
         return list(row -> row.getString(fieldName));
     }
@@ -57,6 +63,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
     /**
      * Executes <code>SELECT fieldName FROM ...</code> on the query and returns the result as a list
      */
+    @CheckReturnValue
     default List<Long> listLongs(String fieldName) {
         return list(row -> row.getLong(fieldName));
     }
@@ -70,6 +77,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     <OBJECT> Optional<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
@@ -79,6 +87,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<String> singleString(String fieldName) {
         return singleObject(row -> row.getString(fieldName));
     }
@@ -90,6 +99,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<Number> singleLong(String fieldName) {
         return singleObject(row -> row.getLong(fieldName));
     }
@@ -100,6 +110,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * are more than one result, throws {@link IllegalStateException}
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<Instant> singleInstant(String fieldName) {
         return singleObject(row -> row.getInstant(fieldName));
     }
@@ -110,6 +121,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * binary stream of the object. Used with BLOB (Binary Large Objects) and bytea (PostgreSQL) data types
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<InputStream> singleInputStream(String fieldName) {
         return singleObject(row -> row.getInputStream(fieldName));
     }
@@ -120,6 +132,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * character reader of the object. Used with CLOB (Character Large Objects) and text (PostgreSQL) data types
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<Reader> singleReader(String fieldName) {
         return singleObject(row -> row.getReader(fieldName));
     }
@@ -136,6 +149,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
      * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
      */
+    @CheckReturnValue
     default T limit(int rowCount) {
         return skipAndLimit(0, rowCount);
     }
@@ -146,5 +160,6 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
      * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
      */
+    @CheckReturnValue
     T skipAndLimit(int offset, int rowCount);
 }

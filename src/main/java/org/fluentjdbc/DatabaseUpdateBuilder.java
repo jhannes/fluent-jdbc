@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
@@ -70,6 +71,7 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
             .executeUpdate(connection);
     }
 
+    @CheckReturnValue
     public DatabaseUpdateBuilder where(DatabaseWhereBuilder whereClause) {
         this.whereClause = whereClause;
         return this;

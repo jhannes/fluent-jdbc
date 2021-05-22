@@ -110,9 +110,8 @@ public class FluentJdbcContextDemonstrationTest {
 
     @Test
     public void shouldRejectSaveWithStringPrimaryKeyNull() {
-        String id = null;
         DbContextSaveBuilder<String> builder = tableWithStringKeyContext
-                .newSaveBuilderWithString("id", id)
+                .newSaveBuilderWithString("id", null)
                 .setField("value", 1234L);
         assertThatThrownBy(builder::execute)
             .isInstanceOf(SQLException.class)

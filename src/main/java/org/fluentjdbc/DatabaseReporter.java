@@ -1,5 +1,8 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+
 /**
  * An observer used to monitor the timing of queries. All query operations
  * all SELECTs, UPDATEs, INSERTs and DELETEs will execute
@@ -26,5 +29,7 @@ public interface DatabaseReporter {
     DatabaseReporter LOGGING_REPORTER = name -> DatabaseTableReporter.LOGGING_REPORTER;
 
     /** Used to return a reporter for the specified table */
-    DatabaseTableReporter table(String tableName);
+    @CheckReturnValue
+    @Nonnull
+    DatabaseTableReporter table(@Nonnull String tableName);
 }

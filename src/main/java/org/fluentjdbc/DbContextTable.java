@@ -1,8 +1,9 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.sql.Connection;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -26,13 +27,14 @@ import java.util.stream.Stream;
  * }
  * </pre>
  */
+@CheckReturnValue
 public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder> {
 
     private final DatabaseTable table;
     private final DbContext dbContext;
     private final DatabaseTableReporter reporter;
 
-    public DbContextTable(DatabaseTable databaseTable, DbContext dbContext) {
+    public DbContextTable(DatabaseTable databaseTable, @Nonnull DbContext dbContext) {
         this.table = databaseTable;
         this.dbContext = dbContext;
         this.reporter = dbContext.tableReporter(table);
@@ -121,11 +123,14 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      * Creates a {@link DbContextSelectBuilder} which allows you to query the table by
      * generating <code>"SELECT ..."</code> statements
      */
-    @Override
     public DbContextSelectBuilder query() {
         return new DbContextSelectBuilder(this);
     }
 
+    /**
+     * Creates a {@link DbContextSyncBuilder} which allows you to synchronize the data in the
+     * table with an external source
+     */
     public <T> DbContextSyncBuilder<T> sync(List<T> entities) {
         return new DbContextSyncBuilder<>(this, entities);
     }
@@ -143,7 +148,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      *     }
      * </pre>
      */
-    public <T> DbContextBulkInsertBuilder<T> bulkInsert(Stream<T> objects) {
+    public <T> DbContextBulkInsertBuilder<T> bulkInsert(@Nonnull Stream<T> objects) {
         return bulkInsert(objects.collect(Collectors.toList()));
     }
 
@@ -178,7 +183,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      *     }
      * </pre>
      */
-    public <T> DbContextBulkDeleteBuilder<T> bulkDelete(Stream<T> objects) {
+    public <T> DbContextBulkDeleteBuilder<T> bulkDelete(@Nonnull Stream<T> objects) {
         return bulkDelete(objects.collect(Collectors.toList()));
     }
 
@@ -213,7 +218,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      *     }
      * </pre>
      */
-    public <T> DbContextBulkUpdateBuilder<T> bulkUpdate(Stream<T> objects) {
+    public <T> DbContextBulkUpdateBuilder<T> bulkUpdate(@Nonnull Stream<T> objects) {
         return bulkUpdate(objects.collect(Collectors.toList()));
     }
 
@@ -242,6 +247,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
         return dbContext;
     }
 
+    @Nonnull
     public Connection getConnection() {
         return dbContext.getThreadConnection();
     }

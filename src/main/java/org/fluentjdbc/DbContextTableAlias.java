@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import java.util.List;
 
@@ -19,6 +20,7 @@ import java.util.List;
  *         .list(....);
  * </pre>
  */
+@CheckReturnValue
 public class DbContextTableAlias {
     private final DbContextTable table;
     private final DatabaseTableAlias alias;

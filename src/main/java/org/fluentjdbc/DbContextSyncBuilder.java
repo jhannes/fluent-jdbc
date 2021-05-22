@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.DatabaseSaveResult.SaveStatus;
 
+import javax.annotation.CheckReturnValue;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -68,6 +69,7 @@ public class DbContextSyncBuilder<T>  {
      * If unique is called several times, {@link DbContextSyncBuilder} assumes a composite unique key.
      * <em>All unique fields must have a correct equals and hashCode</em>
      */
+    @CheckReturnValue
     public DbContextSyncBuilder<T> unique(String field, Function<T, Object> valueFunction) {
         uniqueFields.add(field);
         uniqueValueFunctions.add(valueFunction);
@@ -79,6 +81,7 @@ public class DbContextSyncBuilder<T>  {
      * Call this method for each non-unique field in the database that should be included in the
      * synchronization
      */
+    @CheckReturnValue
     public DbContextSyncBuilder<T> field(String field, Function<T, Object> valueFunction) {
         updatedFields.add(field);
         updatedValueFunctions.add(valueFunction);
@@ -178,6 +181,7 @@ public class DbContextSyncBuilder<T>  {
      * looking them up with the key. The objects in the key must match the fields specified
      * with {@link #unique(String, Function)}
      */
+    @CheckReturnValue
     protected boolean valuesEqual(List<Object> key) {
         return areEqualLists(ourRows.get(key), theirRows.get(key));
     }
@@ -187,6 +191,7 @@ public class DbContextSyncBuilder<T>  {
      * from the database with {@link #cacheExisting()}. Override this for example if you have columns
      * that should not be included in the comparison
      */
+    @CheckReturnValue
     protected boolean areEqualLists(List<?> a, List<?> b) {
         if (a == null) {
             return b == null;
@@ -205,6 +210,7 @@ public class DbContextSyncBuilder<T>  {
      * Compares a single field for equality. Override this if you have data types that should have special
      * comparison rules
      */
+    @CheckReturnValue
     protected boolean areEqual(Object o, Object o1) {
         if (o instanceof BigDecimal) {
             if (!(o1 instanceof BigDecimal)) {
@@ -223,6 +229,7 @@ public class DbContextSyncBuilder<T>  {
      * Returns the number of rows that were {@link SaveStatus#UPDATED}, {@link SaveStatus#INSERTED},
      * {@link SaveStatus#DELETED} and {@link SaveStatus#UNCHANGED}
      */
+    @CheckReturnValue
     public EnumMap<SaveStatus, Integer> getStatus() {
         return status;
     }

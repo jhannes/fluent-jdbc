@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
 
+import javax.annotation.CheckReturnValue;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -76,6 +77,7 @@ public class DatabaseBulkInsertBuilder<T> implements DatabaseBulkUpdatable<T, Da
      * to generate primary keys for new rows. For each object in the bulk batch, the specified callback
      * will be executed with the corresponding generated primary key
      */
+    @CheckReturnValue
     public DatabaseBulkInsertBuilderWithPk<T> generatePrimaryKeys(String primaryKeyColumn, BiConsumer<T, Long> consumer) {
         return new DatabaseBulkInsertBuilderWithPk<>(objects, table, updateFields, updateParameters, primaryKeyColumn, consumer);
     }

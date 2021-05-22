@@ -4,6 +4,7 @@ import org.fluentjdbc.util.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
@@ -83,7 +84,8 @@ public class DatabaseJoinedQueryBuilder implements
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
      * in a predictable order.
      */
-    public DatabaseJoinedQueryBuilder orderBy(DatabaseColumnReference column) {
+    @CheckReturnValue
+    public DatabaseJoinedQueryBuilder orderBy(@Nonnull DatabaseColumnReference column) {
         return orderBy(column.getQualifiedColumnName());
     }
 
@@ -122,6 +124,7 @@ public class DatabaseJoinedQueryBuilder implements
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
+    @Override
     public DatabaseJoinedQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters){
         conditions.add(expression);
         this.parameters.addAll(parameters);
@@ -129,7 +132,7 @@ public class DatabaseJoinedQueryBuilder implements
     }
 
     /**
-     * Implemented as <code>return this</code> for compability purposes
+     * Implemented as <code>return this</code> for compatibility purposes
      */
     @Override
     public DatabaseJoinedQueryBuilder query() {
@@ -141,6 +144,7 @@ public class DatabaseJoinedQueryBuilder implements
      * in both tables and will leave out rows from one of the table where there is no corresponding
      * table in the other
      */
+    @CheckReturnValue
     public DatabaseJoinedQueryBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
         joinedTables.add(new JoinedTable(a, b, "inner join"));
         return this;
@@ -151,6 +155,7 @@ public class DatabaseJoinedQueryBuilder implements
      * in both tables match and will leave out rows from one of the table where there is no corresponding
      * table in the other
      */
+    @CheckReturnValue
     public DatabaseJoinedQueryBuilder join(List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
         joinedTables.add(new JoinedTable(table, leftFields, joinedTable, rightFields, "inner join"));
         return this;
@@ -162,6 +167,7 @@ public class DatabaseJoinedQueryBuilder implements
      * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
      * the resulting row, <code>null</code> is returned
      */
+    @CheckReturnValue
     public DatabaseJoinedQueryBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
         joinedTables.add(new JoinedTable(a, b, "left join"));
         return this;
@@ -173,6 +179,7 @@ public class DatabaseJoinedQueryBuilder implements
      * returned as null in this table. When calling {@link DatabaseRow#table(DatabaseTableAlias)} on
      * the resulting row, <code>null</code> is returned
      */
+    @CheckReturnValue
     public DatabaseJoinedQueryBuilder leftJoin(List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
         joinedTables.add(new JoinedTable(table, leftFields, joinedTable, rightFields, "left join"));
         return this;
@@ -252,7 +259,8 @@ public class DatabaseJoinedQueryBuilder implements
      * Executes the resulting <code>SELECT * FROM table ... INNER JOIN table ...</code> statement and
      * calculates column indexes based on {@link ResultSetMetaData}
      */
-    protected DatabaseResult createResult(PreparedStatement statement) throws SQLException {
+    @CheckReturnValue
+    protected DatabaseResult createResult(@Nonnull PreparedStatement statement) throws SQLException {
         List<DatabaseTableAlias> aliases = new ArrayList<>();
         aliases.add(table);
         joinedTables.stream().map(JoinedTable::getAlias).forEach(aliases::add);
@@ -294,23 +302,28 @@ public class DatabaseJoinedQueryBuilder implements
         return new DatabaseResult(statement, resultSet, columnIndexes, aliasColumnIndexes, keys);
     }
 
-    private String createSelectStatement() {
+    @CheckReturnValue
+    protected String createSelectStatement() {
         return "select *" + fromClause() + whereClause() + orderByClause() + fetchClause();
     }
 
+    @CheckReturnValue
     protected String fromClause() {
         return " from " + table.getTableNameAndAlias() + " " +
                 joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
     }
 
+    @CheckReturnValue
     protected String whereClause() {
         return conditions.isEmpty() ? "" : " where " + String.join(" and ", conditions);
     }
 
+    @CheckReturnValue
     protected String orderByClause() {
         return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
     }
 
+    @CheckReturnValue
     private String fetchClause() {
         return rowCount == null ? "" : " offset " + offset + " rows fetch first " + rowCount + " rows only";
     }

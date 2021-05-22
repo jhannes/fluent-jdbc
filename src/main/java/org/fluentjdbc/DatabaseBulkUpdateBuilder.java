@@ -2,7 +2,9 @@ package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -31,6 +33,7 @@ import static org.fluentjdbc.DatabaseStatement.addBatch;
  *     }
  * </pre>
  */
+@ParametersAreNonnullByDefault
 public class DatabaseBulkUpdateBuilder<T> implements
         DatabaseBulkQueryable<T, DatabaseBulkUpdateBuilder<T>>,
         DatabaseBulkUpdatable<T, DatabaseBulkUpdateBuilder<T>>
@@ -94,6 +97,7 @@ public class DatabaseBulkUpdateBuilder<T> implements
     }
 
     @Nonnull
+    @CheckReturnValue
     private String createUpdateStatement() {
         return "update " + table.getTableName()
                 + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))

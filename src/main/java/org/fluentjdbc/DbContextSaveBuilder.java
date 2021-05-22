@@ -1,9 +1,10 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.util.ExceptionUtil;
+
+import javax.annotation.CheckReturnValue;
 import java.sql.Connection;
 import java.sql.SQLException;
-
-import org.fluentjdbc.util.ExceptionUtil;
 
 /**
  * Generate <code>INSERT</code> or <code>UPDATE</code> statements on {@link DbContextTable} by
@@ -39,7 +40,9 @@ public class DbContextSaveBuilder<T> {
      * If more than one uniqueKey, fluent-jdbc assumes a composite unique constraint, that is <em>all</em>
      * fields must match
      */
+    @CheckReturnValue
     public DbContextSaveBuilder<T> uniqueKey(String fieldName, Object fieldValue) {
+        //noinspection ResultOfMethodCallIgnored
         saveBuilder.uniqueKey(fieldName, fieldValue);
         return this;
     }
@@ -47,7 +50,9 @@ public class DbContextSaveBuilder<T> {
     /**
      * Specify a column name to be saved
      */
+    @CheckReturnValue
     public DbContextSaveBuilder<T> setField(String fieldName, Object fieldValue) {
+        //noinspection ResultOfMethodCallIgnored
         saveBuilder.setField(fieldName, fieldValue);
         return this;
     }

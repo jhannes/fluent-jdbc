@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nonnull;
 import java.sql.PreparedStatement;
 import java.util.function.Function;
 
@@ -26,7 +27,7 @@ public class DbContextBulkUpdateBuilder<T> implements
     private final DbContextTable table;
     private final DatabaseBulkUpdateBuilder<T> builder;
 
-    public DbContextBulkUpdateBuilder(DbContextTable table, DatabaseBulkUpdateBuilder<T> builder) {
+    public DbContextBulkUpdateBuilder(@Nonnull DbContextTable table, DatabaseBulkUpdateBuilder<T> builder) {
         this.table = table;
         this.builder = builder;
     }
@@ -38,6 +39,7 @@ public class DbContextBulkUpdateBuilder<T> implements
      */
     @Override
     public DbContextBulkUpdateBuilder<T> where(String field, Function<T, ?> value) {
+        //noinspection ResultOfMethodCallIgnored
         builder.where(field, value);
         return this;
     }
@@ -49,6 +51,7 @@ public class DbContextBulkUpdateBuilder<T> implements
      */
     @Override
     public DbContextBulkUpdateBuilder<T> setField(String fieldName, Function<T, Object> transformer) {
+        //noinspection ResultOfMethodCallIgnored
         builder.setField(fieldName, transformer);
         return this;
     }
@@ -57,7 +60,7 @@ public class DbContextBulkUpdateBuilder<T> implements
      * Executes <code>UPDATE table SET field = ?, ... WHERE field = ? AND ...</code>
      * and calls {@link PreparedStatement#addBatch()} for each row
      *
-     * @return the sum of all the rows to be updated
+     * @return the count of rows that were updated
      */
     public int execute() {
         return builder.execute(table.getConnection());

@@ -1,9 +1,12 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Describes a database column alias for a <code>SELECT * FROM table a JOIN table b ON a.column = b.column</code>
  * expression. {@link DatabaseColumnReference} binds together the table, table alias and column name
  */
+@CheckReturnValue
 public class DatabaseColumnReference {
     private final String columnName;
     private final DatabaseTableAlias alias;

@@ -1,9 +1,10 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.util.ExceptionUtil;
+
+import javax.annotation.CheckReturnValue;
 import java.sql.SQLException;
 import java.util.Collection;
-
-import org.fluentjdbc.util.ExceptionUtil;
 
 /**
  * Generate <code>INSERT</code> statements by collecting field names and parameters. Support
@@ -32,7 +33,9 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
             this.builder = builder;
         }
 
+        @CheckReturnValue
         public DbContextInsertBuilderWithPk<T> setField(String fieldName, Object parameter) {
+            //noinspection ResultOfMethodCallIgnored
             builder.setField(fieldName, parameter);
             return this;
         }
@@ -59,6 +62,7 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
      * this will {@link java.sql.PreparedStatement#execute(String, String[])} to generate the primary
      * key using the underlying table autogeneration mechanism
      */
+    @CheckReturnValue
     public <T> DbContextInsertBuilderWithPk<T> setPrimaryKey(String idField, T idValue) {
         DatabaseInsertWithPkBuilder<T> setPrimaryKey = builder.setPrimaryKey(idField, idValue);
         return new DbContextInsertBuilderWithPk<>(setPrimaryKey);
@@ -67,7 +71,9 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
     /**
      * Adds fieldName to the <code>INSERT (fieldName) VALUES (?)</code> and parameter to the list of parameters
      */
+    @Override
     public DbContextInsertBuilder setField(String fieldName, Object parameter) {
+        //noinspection ResultOfMethodCallIgnored
         builder.setField(fieldName, parameter);
         return this;
     }
@@ -77,6 +83,7 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
      */
     @Override
     public DbContextInsertBuilder setFields(Collection<String> fields, Collection<?> values) {
+        //noinspection ResultOfMethodCallIgnored
         builder.setFields(fields, values);
         return this;
     }

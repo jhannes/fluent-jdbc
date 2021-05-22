@@ -63,6 +63,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      */
     @Override
     public DatabaseSqlBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
+        //noinspection ResultOfMethodCallIgnored
         whereBuilder.whereExpressionWithParameterList(expression, parameters);
         return this;
     }

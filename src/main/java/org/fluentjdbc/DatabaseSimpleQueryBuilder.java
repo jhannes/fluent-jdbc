@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import java.sql.Connection;
 
 /**
@@ -10,6 +11,7 @@ public interface DatabaseSimpleQueryBuilder<T extends DatabaseSimpleQueryBuilder
     /**
      * Creates a {@link DatabaseUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
      */
+    @CheckReturnValue
     DatabaseUpdateBuilder update();
 
     /**

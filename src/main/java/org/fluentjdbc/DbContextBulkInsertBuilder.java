@@ -35,6 +35,7 @@ public class DbContextBulkInsertBuilder<T> implements DatabaseBulkUpdatable<T, D
      */
     @Override
     public DbContextBulkInsertBuilder<T> setField(String fieldName, Function<T, Object> transformer) {
+        //noinspection ResultOfMethodCallIgnored
         builder.setField(fieldName, transformer);
         return this;
     }
@@ -45,6 +46,7 @@ public class DbContextBulkInsertBuilder<T> implements DatabaseBulkUpdatable<T, D
      */
     @Override
     public <VALUES extends List<?>> DbContextBulkInsertBuilder<T> setFields(List<String> fields, Function<T, VALUES> values) {
+        //noinspection ResultOfMethodCallIgnored
         builder.setFields(fields, values);
         return this;
     }

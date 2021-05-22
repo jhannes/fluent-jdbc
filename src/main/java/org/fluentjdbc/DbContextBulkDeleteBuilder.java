@@ -34,6 +34,7 @@ public class DbContextBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, D
      */
     @Override
     public DbContextBulkDeleteBuilder<T> where(String field, Function<T, ?> value) {
+        //noinspection ResultOfMethodCallIgnored
         builder.where(field, value);
         return this;
     }

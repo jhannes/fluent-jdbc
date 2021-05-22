@@ -4,6 +4,7 @@ import org.fluentjdbc.util.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
@@ -39,6 +40,7 @@ public class DatabaseResult implements AutoCloseable {
     @FunctionalInterface
     public interface DatabaseResultMapper<T> {
 
+        @CheckReturnValue
         T apply(DatabaseResult result) throws SQLException;
     }
 
@@ -49,6 +51,8 @@ public class DatabaseResult implements AutoCloseable {
      */
     @FunctionalInterface
     public interface RowMapper<T> {
+
+        @CheckReturnValue
         T mapRow(DatabaseRow row) throws SQLException;
     }
 
@@ -62,7 +66,7 @@ public class DatabaseResult implements AutoCloseable {
     }
 
     private final PreparedStatement statement;
-    protected ResultSet resultSet;
+    protected final ResultSet resultSet;
     protected final Map<String, Integer> columnIndexes;
     protected final Map<String, Map<String, Integer>> tableColumnIndexes;
     private final Map<DatabaseTableAlias, Integer> keys;
@@ -108,6 +112,7 @@ public class DatabaseResult implements AutoCloseable {
     /**
      * Position the underlying {@link ResultSet} on the next row
      */
+    @CheckReturnValue
     public boolean next() throws SQLException {
         return resultSet.next();
     }
@@ -119,6 +124,7 @@ public class DatabaseResult implements AutoCloseable {
      *
      * @param mapper Function to be called for each row
      */
+    @CheckReturnValue
     public <T> List<T> list(RowMapper<T> mapper) throws SQLException {
         List<T> result = new ArrayList<>();
         while (next()) {
@@ -136,6 +142,7 @@ public class DatabaseResult implements AutoCloseable {
      * @param mapper Function to be called for each row
      * @param query The SQL that was used to generate this {@link DatabaseResult}. Used for logging
      */
+    @CheckReturnValue
     public <T> Stream<T> stream(RowMapper<T> mapper, String query) throws SQLException {
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator(mapper, query), 0), false);
     }
@@ -147,6 +154,7 @@ public class DatabaseResult implements AutoCloseable {
      * @param mapper Function to be called for each row
      * @param query The SQL that was used to generate this {@link DatabaseResult}. Used for logging
      */
+    @CheckReturnValue
     public <T> Iterator<T> iterator(RowMapper<T> mapper, String query) throws SQLException {
         return new Iterator<>(mapper, query);
     }
@@ -172,6 +180,7 @@ public class DatabaseResult implements AutoCloseable {
      * @throws SQLException if the {@link RowMapper} throws
      */
     @Nonnull
+    @CheckReturnValue
     public <T> Optional<T> single(RowMapper<T> mapper) throws SQLException {
         if (!next()) {
             return Optional.empty();
@@ -187,6 +196,7 @@ public class DatabaseResult implements AutoCloseable {
      * Returns a {@link DatabaseRow} for the current row, allowing mapping retrieval and conversion
      * of data in all columns
      */
+    @CheckReturnValue
     public DatabaseRow row() {
         return new DatabaseRow(this.resultSet, this.columnIndexes, this.tableColumnIndexes, this.keys);
     }

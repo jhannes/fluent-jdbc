@@ -33,6 +33,7 @@ public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdate
      */
     @Override
     public DbContextUpdateBuilder setFields(Collection<String> fields, Collection<?> values) {
+        //noinspection ResultOfMethodCallIgnored
         updateBuilder.setFields(fields, values);
         return this;
     }
@@ -42,6 +43,7 @@ public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdate
      */
     @Override
     public DbContextUpdateBuilder setField(String field, Object value) {
+        //noinspection ResultOfMethodCallIgnored
         updateBuilder.setField(field, value);
         return this;
     }

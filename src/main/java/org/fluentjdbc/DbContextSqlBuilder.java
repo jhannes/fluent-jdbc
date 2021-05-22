@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.Collection;
@@ -46,6 +47,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
     /**
      * Add the arguments to the column list for the <code>SELECT column, column...</code> statement
      */
+    @CheckReturnValue
     public DbContextSqlBuilder select(String... columns) {
         return query(builder.select(columns));
     }
@@ -53,6 +55,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
     /**
      * Replace the from part of the <code>SELECT ... FROM fromStatement</code> in the select statement
      */
+    @CheckReturnValue
     public DbContextSqlBuilder from(String fromStatement) {
         return query(builder.from(fromStatement));
     }
@@ -69,6 +72,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
     /**
      * Add the arguments to the column list for the <code>SELECT ... FROM ... ... GROUP BY groupByStatement</code> statement
      */
+    @CheckReturnValue
     public DbContextSqlBuilder groupBy(String... groupByStatement) {
         return query(builder.groupBy(groupByStatement));
     }
@@ -85,6 +89,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
      * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
+    @CheckReturnValue
     public DbContextSqlBuilder unordered() {
         return query(builder.unordered());
     }
@@ -158,6 +163,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
         return this;
     }
 
+    @Nonnull
     private Connection getConnection() {
         return dbContext.getThreadConnection();
     }

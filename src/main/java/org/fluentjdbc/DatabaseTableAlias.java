@@ -1,5 +1,7 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+
 /**
  * Used to specify a table in a {@link DatabaseJoinedQueryBuilder} joined <code>SELECT</code>
  * statement. The same table can be joined several times by using different aliases. Example:
@@ -16,6 +18,7 @@ package org.fluentjdbc;
  *         .list(connection, ....);
  * </pre>
  */
+@CheckReturnValue
 public class DatabaseTableAlias {
     private final String alias;
     private final String tableName;

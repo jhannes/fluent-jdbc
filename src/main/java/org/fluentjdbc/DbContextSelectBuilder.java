@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.Collection;
@@ -42,6 +43,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
         return this;
     }
 
+    @CheckReturnValue
     private DbContextSelectBuilder query(DatabaseTableQueryBuilder builder) {
         return this;
     }
@@ -67,6 +69,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * If you haven't called {@link #orderBy}, the results of {@link #list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
+    @CheckReturnValue
     public DbContextSelectBuilder unordered() {
         return query(queryBuilder.unordered());
     }
@@ -95,6 +98,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
+    @Override
     public <T> Stream<T> stream(DatabaseResult.RowMapper<T> mapper) {
         return queryBuilder.stream(getConnection(), mapper);
     }
@@ -156,10 +160,12 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     /**
      * Creates a {@link DbContextUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
      */
+    @CheckReturnValue
     public DbContextUpdateBuilder update() {
         return new DbContextUpdateBuilder(this.dbContextTable, queryBuilder.update());
     }
 
+    @CheckReturnValue
     private Connection getConnection() {
         return dbContextTable.getConnection();
     }

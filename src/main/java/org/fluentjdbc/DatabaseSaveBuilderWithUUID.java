@@ -1,11 +1,11 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.UUID;
-
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Subclass of {@link DatabaseSaveBuilder} which uses {@link UUID#randomUUID()} to generate primary
@@ -35,6 +35,7 @@ public class DatabaseSaveBuilderWithUUID extends DatabaseSaveBuilder<UUID> {
     }
 
     @Override
+    @CheckReturnValue
     protected UUID getId(DatabaseRow row) throws SQLException {
         return row.getUUID(idField);
     }

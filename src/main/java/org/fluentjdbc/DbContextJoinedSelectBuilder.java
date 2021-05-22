@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
@@ -36,11 +37,12 @@ import java.util.stream.Stream;
  *         ));
  * </pre>
  */
+@CheckReturnValue
 public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbContextJoinedSelectBuilder> {
     private final DbContext dbContext;
     private final DatabaseJoinedQueryBuilder builder;
 
-    public DbContextJoinedSelectBuilder(DbContextTableAlias table) {
+    public DbContextJoinedSelectBuilder(@Nonnull DbContextTableAlias table) {
         dbContext = table.getDbContext();
         builder = new DatabaseJoinedQueryBuilder(table.getTableAlias(), table.getReporter().operation("SELECT"));
     }

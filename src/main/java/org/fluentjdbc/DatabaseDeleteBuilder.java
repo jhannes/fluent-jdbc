@@ -1,7 +1,7 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import java.sql.Connection;
-import java.util.List;
 
 /**
  * Generate <code>DELETE</code> statements by collecting field names and parameters. Example:
@@ -30,6 +30,7 @@ class DatabaseDeleteBuilder {
                 .executeUpdate(connection);
     }
 
+    @CheckReturnValue
     public DatabaseDeleteBuilder where(DatabaseWhereBuilder whereClause) {
         this.whereClause = whereClause;
         return this;

@@ -40,6 +40,7 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
      * If any conditions were added, returns <code>WHERE condition1 AND condition2 AND condition2 ...</code>.
      * If no conditions were added, returns the empty string
      */
+    @CheckReturnValue
     public String whereClause() {
         return conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
     }
@@ -47,6 +48,7 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
     /**
      * Returns all parameters added with <code>.whereXXX()</code> method calls
      */
+    @CheckReturnValue
     public List<Object> getParameters() {
         return parameters;
     }

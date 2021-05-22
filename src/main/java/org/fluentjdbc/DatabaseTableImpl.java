@@ -1,7 +1,9 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Collection;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,16 +25,17 @@ import java.util.stream.Stream;
  * table.where("id", id).delete(connection);
  * </pre>
  */
+@ParametersAreNonnullByDefault
 public class DatabaseTableImpl implements DatabaseTable {
 
     private final String tableName;
     private final DatabaseTableReporter reporter;
 
-    public DatabaseTableImpl(String tableName) {
+    public DatabaseTableImpl(@Nonnull String tableName) {
         this(tableName, DatabaseTableReporter.LOGGING_REPORTER);
     }
 
-    public DatabaseTableImpl(String tableName, DatabaseTableReporter reporter) {
+    public DatabaseTableImpl(@Nonnull String tableName, @Nonnull DatabaseTableReporter reporter) {
         this.tableName = tableName;
         this.reporter = reporter;
     }
@@ -42,6 +45,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     @Override
+    @CheckReturnValue
     public DatabaseTableQueryBuilder unordered() {
         return new DatabaseTableQueryBuilder(this, reporter);
     }
@@ -51,16 +55,19 @@ public class DatabaseTableImpl implements DatabaseTable {
      * in a predictable order.
      */
     @Override
+    @CheckReturnValue
     public DatabaseTableQueryBuilder orderBy(String orderByClause) {
         return query().orderBy(orderByClause);
     }
 
     @Override
+    @CheckReturnValue
     public DatabaseTableAlias alias(String alias) {
         return new DatabaseTableAlias(tableName, alias, reporter);
     }
 
     @Override
+    @CheckReturnValue
     public String getTableName() {
         return tableName;
     }
@@ -72,6 +79,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * if there is no row with matching unique keys
      */
     @Override
+    @CheckReturnValue
     public DatabaseSaveBuilder<Long> newSaveBuilder(String idField, @Nullable Long id) {
         return new DatabaseSaveBuilderWithLong(this, idField, id);
     }
@@ -81,6 +89,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * statement, depending on whether the row already exists in the database. Throws exception if idValue is null
      */
     @Override
+    @CheckReturnValue
     public DatabaseSaveBuilder<String> newSaveBuilderWithString(String idField, String id) {
         return new DatabaseSaveBuilderWithoutGeneratedKeys<>(this, idField, id);
     }
@@ -90,6 +99,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * support RETURN_GENERATED_KEYS
      */
     @Override
+    @CheckReturnValue
     public DatabaseSaveBuilder<Long> newSaveBuilderNoGeneratedKeys(String idField, @Nullable Long id) {
         return new DatabaseSaveBuilderWithoutGeneratedKeys<>(this, idField, id);
     }
@@ -100,6 +110,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * Generates UUID.randomUUID if idValue is null and row with matching unique keys does not already exist
      */
     @Override
+    @CheckReturnValue
     public DatabaseSaveBuilderWithUUID newSaveBuilderWithUUID(String idField, @Nullable UUID id) {
         return new DatabaseSaveBuilderWithUUID(this, idField, id);
     }
@@ -108,6 +119,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * Creates a query object to be used to add {@link #where(String, Object)} statements and operations
      */
     @Override
+    @CheckReturnValue
     public DatabaseTableQueryBuilder query() {
         return new DatabaseTableQueryBuilder(this, reporter);
     }
@@ -116,6 +128,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * Creates a {@link DatabaseInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
      */
     @Override
+    @CheckReturnValue
     public DatabaseInsertBuilder insert() {
         return new DatabaseInsertBuilder(this, reporter.operation("INSERT"));
     }
@@ -134,6 +147,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * </pre>
      */
     @Override
+    @CheckReturnValue
     public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Iterable<T> objects) {
         return new DatabaseBulkInsertBuilder<>(this, objects);
     }
@@ -152,6 +166,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * </pre>
      */
     @Override
+    @CheckReturnValue
     public <T> DatabaseBulkInsertBuilder<T> bulkInsert(Stream<T> objects) {
         return bulkInsert(objects.collect(Collectors.toList()));
     }
@@ -171,11 +186,13 @@ public class DatabaseTableImpl implements DatabaseTable {
      * </pre>
      */
     @Override
+    @CheckReturnValue
     public <T> DatabaseBulkDeleteBuilder<T> bulkDelete(Iterable<T> objects) {
         return new DatabaseBulkDeleteBuilder<>(this, objects);
     }
 
     @Override
+    @CheckReturnValue
     public <T> DatabaseBulkUpdateBuilder<T> bulkUpdate(Iterable<T> objects) {
         return new DatabaseBulkUpdateBuilder<>(this, objects);
     }
@@ -184,6 +201,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * Creates a {@link DatabaseUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
      */
     @Override
+    @CheckReturnValue
     public DatabaseUpdateBuilder update() {
         return new DatabaseUpdateBuilder(tableName, reporter.operation("UPDATE"));
     }
@@ -192,6 +210,7 @@ public class DatabaseTableImpl implements DatabaseTable {
      * Executes <code>DELETE FROM tableName WHERE ....</code>
      */
     @Override
+    @CheckReturnValue
     public DatabaseDeleteBuilder delete() {
         return new DatabaseDeleteBuilder(tableName, reporter.operation("DELETE"));
     }

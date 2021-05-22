@@ -1,8 +1,8 @@
 package org.fluentjdbc.opt.junit;
 
+import org.fluentjdbc.DatabaseReporter;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextConnection;
-import org.fluentjdbc.DatabaseReporter;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;

@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import java.sql.PreparedStatement;
 import java.util.List;
 import java.util.function.Function;
@@ -15,15 +16,18 @@ public interface DatabaseBulkUpdatable<ENTITY, SELF extends DatabaseBulkUpdatabl
      * {@link PreparedStatement#setObject(int, Object)} parameter for each row in the bulk update
      * to extract the values for fieldName parameter
      */
+    @CheckReturnValue
     SELF setField(String fieldName, Function<ENTITY, Object> transformer);
 
     /**
      * Adds a list function that will be called for each object to get the value
      * each of the corresponding parameters in the {@link PreparedStatement}
      */
+    @CheckReturnValue
     default <VALUES extends List<?>> SELF setFields(List<String> fields, Function<ENTITY, VALUES> values) {
         for (int i = 0, fieldsSize = fields.size(); i < fieldsSize; i++) {
             int index = i;
+            //noinspection ResultOfMethodCallIgnored
             setField(fields.get(i), o -> values.apply(o).get(index));
         }
         //noinspection unchecked

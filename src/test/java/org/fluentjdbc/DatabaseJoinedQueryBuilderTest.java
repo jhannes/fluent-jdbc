@@ -257,6 +257,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias o = organizations.alias("o");
 
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(
                 () -> p.join(p.column("id"), m.column("person_id"))
                         .join(m.column("organization_id"), o.column("id"))
@@ -271,6 +272,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias o = organizations.alias("o");
 
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(
                 () -> p.join(p.column("id"), m.column("person_id"))
                         .join(m.column("non_existing_column"), o.column("id"))

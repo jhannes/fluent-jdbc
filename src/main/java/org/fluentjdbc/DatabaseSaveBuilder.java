@@ -1,15 +1,15 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 
 /**
  * Generate <code>INSERT</code> or <code>UPDATE</code> statements on a {@link DatabaseTable} by
@@ -50,6 +50,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * If more than one uniqueKey, fluent-jdbc assumes a composite unique constraint, that is <em>all</em>
      * fields must match
      */
+    @CheckReturnValue
     public DatabaseSaveBuilder<T> uniqueKey(String fieldName, @Nullable Object fieldValue) {
         uniqueKeyFields.add(fieldName);
         uniqueKeyValues.add(fieldValue);
@@ -59,6 +60,7 @@ public abstract class DatabaseSaveBuilder<T> {
     /**
      * Specify a column name to be saved
      */
+    @CheckReturnValue
     public DatabaseSaveBuilder<T> setField(String fieldName, @Nullable Object fieldValue) {
         fields.add(fieldName);
         values.add(fieldValue);
@@ -80,7 +82,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * </ul>
      */
     @Nonnull
-    public DatabaseSaveResult<T> execute(Connection connection) throws SQLException {
+    public DatabaseSaveResult<T> execute(@Nonnull Connection connection) throws SQLException {
         if (this.idValue != null) {
             Optional<List<String>> difference = tableWhereId(this.idValue).singleObject(connection, row -> differingFields(row, connection));
             if (!difference.isPresent()) {
@@ -115,6 +117,7 @@ public abstract class DatabaseSaveBuilder<T> {
     /**
      * Creates a query where primary key is specified
      */
+    @CheckReturnValue
     protected DatabaseTableQueryBuilder tableWhereId(T p) {
         return table.where(idField, p);
     }
@@ -122,6 +125,7 @@ public abstract class DatabaseSaveBuilder<T> {
     /**
      * Creates a query where all unique fields are specified
      */
+    @CheckReturnValue
     protected DatabaseTableQueryBuilder tableWhereUniqueKey() {
         return table.whereAll(uniqueKeyFields, uniqueKeyValues);
     }
@@ -130,6 +134,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * Compares the values on the {@link DatabaseRow} with the fields specified in this object and
      * returns the columns in the database with a different value
      */
+    @CheckReturnValue
     protected List<String> differingFields(DatabaseRow row, Connection connection) throws SQLException {
         List<String> difference = new ArrayList<>();
         for (int i = 0; i < fields.size(); i++) {
@@ -151,6 +156,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * Returns true if at least one field was specified as {@link #uniqueKey(String, Object)}
      * and all uniqueKeyValues are non-null
      */
+    @CheckReturnValue
     protected boolean hasUniqueKey() {
         if (uniqueKeyFields.isEmpty()) return false;
         for (Object o : uniqueKeyValues) {
@@ -178,6 +184,7 @@ public abstract class DatabaseSaveBuilder<T> {
     }
 
     @SuppressWarnings("unchecked")
+    @CheckReturnValue
     protected T getId(DatabaseRow row) throws SQLException {
         return (T) row.getObject(idField);
     }

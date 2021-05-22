@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -51,6 +52,7 @@ import java.util.UUID;
  *         }
  * </pre>
  */
+@CheckReturnValue
 public class DatabaseRow {
 
     private final Map<String, Integer> columnIndexes;
@@ -192,7 +194,7 @@ public class DatabaseRow {
 
     /**
      * Returns the value of the specified column on this row as a reader. Used with
-     * CLOB (Character Large Objects) and text (PostgreSQL) datatypes
+     * CLOB (Character Large Objects) and text (PostgreSQL) data types
      *
      * @see #getColumnIndex
      */
@@ -233,6 +235,7 @@ public class DatabaseRow {
         if (array == null) {
             return null;
         }
+        //noinspection unchecked
         T[] javaArray = (T[]) array.getArray();
         if (javaArray.length > 0 && !arrayType.isAssignableFrom(javaArray[0].getClass())) {
             throw new ClassCastException("Can't convert " + javaArray[0].getClass() + " to " + arrayType);

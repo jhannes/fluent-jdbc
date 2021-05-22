@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,6 +39,7 @@ public class DbContextStatement {
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     public <OBJECT> Optional<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper) {
         return statement.singleObject(dbContext.getThreadConnection(), mapper);
     }
@@ -48,6 +50,7 @@ public class DbContextStatement {
      *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
+    @CheckReturnValue
     public <OBJECT> Stream<OBJECT> stream(DatabaseResult.RowMapper<OBJECT> mapper) {
         return statement.stream(dbContext.getThreadConnection(), mapper);
     }
@@ -58,6 +61,7 @@ public class DbContextStatement {
      *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -&gt; row.getInstant("created_at"))
      * </pre>
      */
+    @CheckReturnValue
     public <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> mapper) {
         return stream(mapper).collect(Collectors.toList());
     }

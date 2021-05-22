@@ -1,8 +1,7 @@
 package org.fluentjdbc;
 
-import java.sql.Connection;
-
 import javax.annotation.Nullable;
+import java.sql.Connection;
 
 /**
  * Subclass of {@link DatabaseSaveBuilder} which assumes the client code always specifies

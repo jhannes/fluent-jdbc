@@ -194,6 +194,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .setField("name", "testing")
                 .execute(connection);
 
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("id", id).singleString(connection, "non_existing"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Column {non_existing} is not present");
@@ -201,9 +202,11 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldThrowOnMissingTable() {
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> missingTable.where("id", 12).singleLong(connection, "id"))
                 .isInstanceOf(SQLException.class);
 
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> missingTable.where("id", 12).unordered()
                 .list(connection, row -> row.getLong("id")))
                 .isInstanceOf(SQLException.class);
@@ -220,6 +223,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         table.insert().setField("code", 123).setField("name", "the same name").execute(connection);
         table.insert().setField("code", 456).setField("name", "the same name").execute(connection);
 
+        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong(connection, "code"))
                 .isInstanceOf(IllegalStateException.class);
     }

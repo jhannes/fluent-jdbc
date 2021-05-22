@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.time.Instant;
@@ -14,12 +15,14 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
+    @CheckReturnValue
     T unordered();
 
     /**
      * Adds an <code>order by</code> clause to the query. Needed in order to list results
      * in a predictable order.
      */
+    @CheckReturnValue
     T orderBy(String orderByClause);
 
     /**
@@ -32,6 +35,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     <OBJECT> Optional<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
@@ -42,6 +46,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<String> singleString(Connection connection, String fieldName) {
         return singleObject(connection, row -> row.getString(fieldName));
     }
@@ -54,6 +59,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<Number> singleLong(Connection connection, final String fieldName) {
         return singleObject(connection, row -> row.getLong(fieldName));
     }
@@ -66,6 +72,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
+    @CheckReturnValue
     default Optional<Instant> singleInstant(Connection connection, final String fieldName) {
         return singleObject(connection, row -> row.getInstant(fieldName));
     }
