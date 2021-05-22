@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,7 +23,7 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
      */
     @Override
     public DatabaseWhereBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        this.conditions.add(expression);
+        this.conditions.add("(" + expression + ")");
         this.parameters.addAll(parameters);
         return this;
     }

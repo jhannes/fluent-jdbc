@@ -89,8 +89,8 @@ public class DbContextTest {
         insertTestRow(2002, "D");
 
         assertThat(table
-                .whereExpressionWithParameterList("(name = ? OR name = ? OR name = ?)", Arrays.asList("A","B", "C"))
-                .whereExpressionWithParameterList("(name = ? OR code > ?)", Arrays.asList("A", 2000L))
+                .whereExpressionWithParameterList("name = ? OR name = ? OR name = ?", Arrays.asList("A","B", "C"))
+                .whereExpressionWithParameterList("name = ? OR code > ?", Arrays.asList("A", 2000L))
                 .unordered()
                 .listLongs("code"))
                 .containsExactlyInAnyOrder(1001L, 2001L);

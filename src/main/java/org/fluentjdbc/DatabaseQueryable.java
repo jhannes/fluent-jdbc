@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -19,6 +20,7 @@ import static org.fluentjdbc.DatabaseStatement.parameterString;
  *     .list(...)
  * </pre>
  */
+@CheckReturnValue
 public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
 
     /**
@@ -73,7 +75,7 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
     default T whereAll(List<String> fields, List<Object> values) {
         T query = query();
         for (int i = 0; i < fields.size(); i++) {
-            query.where(fields.get(i), values.get(i));
+            query = query.where(fields.get(i), values.get(i));
         }
         return query;
     }

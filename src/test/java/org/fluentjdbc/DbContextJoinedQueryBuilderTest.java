@@ -115,7 +115,7 @@ public class DbContextJoinedQueryBuilderTest {
             .join(memberships.column("person_id"), ps.column("id"))
             .join(memberships.column("organization_id"), o.column("id"))
             .whereOptional("name", applicationName)
-            .whereExpressionWithParameterList("(p.name = ? or p.name = ?)", asList(applicationName, applicationName2))
+            .whereExpressionWithParameterList("p.name = ? or p.name = ?", asList(applicationName, applicationName2))
             .unordered()
             .list(row ->
                 String.format(
