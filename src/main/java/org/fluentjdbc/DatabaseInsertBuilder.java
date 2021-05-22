@@ -82,7 +82,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * this will {@link java.sql.PreparedStatement#execute(String, String[])} to generate the primary
      * key using the underlying table autogeneration mechanism
      * 
-     * <p></p><strong>Bug: This doesn't work for Android when idValue is null</strong></p>
+     * <p><strong>Bug: This doesn't work for Android when idValue is null</strong></p>
      */
     @CheckReturnValue
     public <T> DatabaseInsertWithPkBuilder<T> setPrimaryKey(String idField, @Nullable T idValue) {
