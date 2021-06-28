@@ -37,7 +37,7 @@ import static org.fluentjdbc.DatabaseStatement.bindParameters;
  * <p>Pull requests are welcome for a substitute for SQL Server and Oracle.</p>
  *
  * <h3>Usage example:</h3>
-
+ *
  * <pre>
  * DatabaseTableAlias p = productsTable.alias("p");
  * DatabaseTableAlias o = ordersTable.alias("o");
@@ -53,12 +53,11 @@ import static org.fluentjdbc.DatabaseStatement.bindParameters;
  */
 public class DatabaseJoinedQueryBuilder implements
         DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>,
-        DatabaseListableQueryBuilder<DatabaseJoinedQueryBuilder>
-{
+        DatabaseListableQueryBuilder<DatabaseJoinedQueryBuilder> {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseJoinedQueryBuilder.class);
 
-    private final DatabaseTableOperationReporter reporter;
-    private final DatabaseTableAlias table;
+    private final DatabaseTable table;
+    private final DatabaseTableAlias tableAlias;
     private final List<JoinedTable> joinedTables = new ArrayList<>();
     private final List<String> conditions = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
@@ -66,9 +65,9 @@ public class DatabaseJoinedQueryBuilder implements
     private Integer offset;
     private Integer rowCount;
 
-    public DatabaseJoinedQueryBuilder(DatabaseTableAlias table, DatabaseTableOperationReporter reporter) {
+    public DatabaseJoinedQueryBuilder(DatabaseTable table, DatabaseTableAlias tableAlias) {
         this.table = table;
-        this.reporter = reporter;
+        this.tableAlias = tableAlias;
     }
 
     /**
@@ -117,7 +116,7 @@ public class DatabaseJoinedQueryBuilder implements
      */
     @Override
     public DatabaseJoinedQueryBuilder where(String fieldName, @Nullable Object value) {
-        return whereExpression(table.getAlias() + "." + fieldName + " = ?", value);
+        return whereExpression(tableAlias.getAlias() + "." + fieldName + " = ?", value);
     }
 
     /**
@@ -125,7 +124,7 @@ public class DatabaseJoinedQueryBuilder implements
      * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     @Override
-    public DatabaseJoinedQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters){
+    public DatabaseJoinedQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
         conditions.add(expression);
         this.parameters.addAll(parameters);
         return this;
@@ -157,7 +156,7 @@ public class DatabaseJoinedQueryBuilder implements
      */
     @CheckReturnValue
     public DatabaseJoinedQueryBuilder join(List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
-        joinedTables.add(new JoinedTable(table, leftFields, joinedTable, rightFields, "inner join"));
+        joinedTables.add(new JoinedTable(tableAlias, leftFields, joinedTable, rightFields, "inner join"));
         return this;
     }
 
@@ -181,7 +180,7 @@ public class DatabaseJoinedQueryBuilder implements
      */
     @CheckReturnValue
     public DatabaseJoinedQueryBuilder leftJoin(List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
-        joinedTables.add(new JoinedTable(table, leftFields, joinedTable, rightFields, "left join"));
+        joinedTables.add(new JoinedTable(tableAlias, leftFields, joinedTable, rightFields, "left join"));
         return this;
     }
 
@@ -190,7 +189,7 @@ public class DatabaseJoinedQueryBuilder implements
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
-     * @param mapper Function object to map a single returned row to a object
+     * @param mapper     Function object to map a single returned row to a object
      * @return the mapped row if one row is returned, Optional.empty otherwise
      * @throws IllegalStateException if more than one row was matched the the query
      */
@@ -240,19 +239,10 @@ public class DatabaseJoinedQueryBuilder implements
      */
     @Override
     public int getCount(Connection connection) {
-        long startTime = System.currentTimeMillis();
         String query = "select count(*) as count " + fromClause() + whereClause() + orderByClause();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
-            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
-                return result.single(row -> row.getInt("count")).orElseThrow(() -> new RuntimeException("Should never happen"));
-            }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
-        }
+        return table.newStatement("COUNT", query, parameters)
+                .singleObject(connection, row -> row.getInt("count"))
+                .orElseThrow(() -> new RuntimeException("Should never happen"));
     }
 
     /**
@@ -262,7 +252,7 @@ public class DatabaseJoinedQueryBuilder implements
     @CheckReturnValue
     protected DatabaseResult createResult(@Nonnull PreparedStatement statement) throws SQLException {
         List<DatabaseTableAlias> aliases = new ArrayList<>();
-        aliases.add(table);
+        aliases.add(tableAlias);
         joinedTables.stream().map(JoinedTable::getAlias).forEach(aliases::add);
 
         Map<String, Integer> columnIndexes = new HashMap<>();
@@ -273,7 +263,7 @@ public class DatabaseJoinedQueryBuilder implements
         ResultSet resultSet = statement.executeQuery();
         // Unfortunately, even though the database should know the alias for the each table, JDBC doesn't reveal it
         ResultSetMetaData metaData = resultSet.getMetaData();
-        for (int i=1; i<=metaData.getColumnCount(); i++) {
+        for (int i = 1; i <= metaData.getColumnCount(); i++) {
             while (!metaData.getTableName(i).equalsIgnoreCase(aliases.get(index).getTableName())) {
                 index++;
                 if (index == aliases.size()) {
@@ -309,7 +299,7 @@ public class DatabaseJoinedQueryBuilder implements
 
     @CheckReturnValue
     protected String fromClause() {
-        return " from " + table.getTableNameAndAlias() + " " +
+        return " from " + tableAlias.getTableNameAndAlias() + " " +
                 joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
     }
 
@@ -329,19 +319,11 @@ public class DatabaseJoinedQueryBuilder implements
     }
 
     private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
-        long startTime = System.currentTimeMillis();
-        String query = createSelectStatement();
-        logger.trace(query);
-        try(PreparedStatement stmt = connection.prepareStatement(query)) {
-            bindParameters(stmt, parameters);
+        return table.newStatement("SELECT", createSelectStatement(), parameters).execute(connection, stmt -> {
             try (DatabaseResult result = createResult(stmt)) {
                 return resultMapper.apply(result);
             }
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            reporter.reportQuery(query, System.currentTimeMillis()-startTime);
-        }
+        });
     }
 
     private static class JoinedTable {

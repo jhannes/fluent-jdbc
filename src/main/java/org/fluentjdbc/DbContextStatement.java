@@ -25,9 +25,9 @@ public class DbContextStatement {
     private final DbContext dbContext;
     private final DatabaseStatement statement;
 
-    public DbContextStatement(DbContext dbContext, String statement, List<Object> parameters, DatabaseTableOperationReporter reporter) {
+    public DbContextStatement(DbContext dbContext, String statement, List<Object> parameters) {
         this.dbContext = dbContext;
-        this.statement = new DatabaseStatement(statement, parameters, reporter);
+        this.statement = dbContext.getStatementFactory().newStatement("*", "*", statement, parameters);
     }
 
     /**

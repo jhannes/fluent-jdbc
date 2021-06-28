@@ -26,11 +26,9 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
     private final List<String> fieldNames = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
     private final DatabaseTable table;
-    private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseInsertBuilder(DatabaseTable table, DatabaseTableOperationReporter reporter) {
+    public DatabaseInsertBuilder(DatabaseTable table) {
         this.table = table;
-        this.reporter = reporter;
     }
 
     @CheckReturnValue
@@ -65,7 +63,8 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * to bind parameters and execute statement
      */
     public int execute(Connection connection) {
-        return new DatabaseStatement(createInsertStatement(), parameters, reporter).executeUpdate(connection);
+        return table.newStatement("INSERT", createInsertStatement(), getParameters())
+                .executeUpdate(connection);
     }
 
     /**
@@ -81,7 +80,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * Adds primary key to the <code>INSERT</code> statement if idValue is not null. If idValue is null
      * this will {@link java.sql.PreparedStatement#execute(String, String[])} to generate the primary
      * key using the underlying table autogeneration mechanism
-     * 
+     *
      * <p><strong>Bug: This doesn't work for Android when idValue is null</strong></p>
      */
     @CheckReturnValue
@@ -90,7 +89,10 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
             //noinspection ResultOfMethodCallIgnored
             setField(idField, idValue);
         }
-        return new DatabaseInsertWithPkBuilder<>(this, idField, idValue, reporter);
+        return new DatabaseInsertWithPkBuilder<>(this, idField, idValue);
     }
 
+    public DatabaseTable getTable() {
+        return table;
+    }
 }

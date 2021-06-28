@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuilder>, DatabaseListableQueryBuilder<DatabaseSqlBuilder> {
 
     private final ArrayList<String> columns = new ArrayList<>();
-    private final DatabaseTableReporter reporter;
+    private final DatabaseStatementFactory factory;
     private String fromStatement;
     private final ArrayList<String> groupByClauses = new ArrayList<>();
     private final ArrayList<String> orderByClauses = new ArrayList<>();
@@ -37,8 +37,8 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     private Integer rowCount;
     private final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
 
-    public DatabaseSqlBuilder(DatabaseTableReporter reporter) {
-        this.reporter = reporter;
+    public DatabaseSqlBuilder(DatabaseStatementFactory factory) {
+        this.factory = factory;
     }
 
     /**
@@ -150,7 +150,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
                 + (" from " + fromStatement)
                 + whereBuilder.whereClause()
                 + (groupByClauses.isEmpty() ? "" : " group by " + String.join(", ", groupByClauses));
-        return new DatabaseStatement(selectStatement, whereBuilder.getParameters(), reporter.operation("COUNT"))
+        return factory.newStatement("*", "COUNT", selectStatement, whereBuilder.getParameters())
                 .singleObject(connection, row -> row.getInt("count"))
                 .orElseThrow(() -> new RuntimeException("Should never happen"));
     }
@@ -165,7 +165,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
 
     @Nonnull
     private DatabaseStatement getDatabaseStatement() {
-        return new DatabaseStatement(createSelectStatement(String.join(", ", columns)), whereBuilder.getParameters(), reporter.operation("SELECT"));
+        return factory.newStatement("*", "SELECT", createSelectStatement(String.join(", ", columns)), whereBuilder.getParameters());
     }
 
     private String createSelectStatement(String columns) {

@@ -38,22 +38,14 @@ import java.util.Optional;
  */
 public class DbContext {
 
-    private final DatabaseReporter reporter;
+    private final DatabaseStatementFactory factory;
 
     public DbContext() {
-        this(DatabaseReporter.LOGGING_REPORTER);
+        this(new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER));
     }
 
-    public DbContext(DatabaseReporter reporter) {
-        this.reporter = reporter;
-    }
-
-    public DatabaseTableReporter tableReporter(DatabaseTable table) {
-        return tableReporter(table.getTableName());
-    }
-
-    public DatabaseTableReporter tableReporter(String tableName) {
-        return reporter.table(tableName);
+    public DbContext(DatabaseStatementFactory factory) {
+        this.factory = factory;
     }
 
     /**
@@ -72,7 +64,11 @@ public class DbContext {
      */
     @CheckReturnValue
     public DbContextStatement statement(String statement, List<Object> parameters) {
-        return new DbContextStatement(this, statement, parameters, reporter.table("*").operation("*"));
+        return new DbContextStatement(this, statement, parameters);
+    }
+
+    public DatabaseStatementFactory getStatementFactory() {
+        return factory;
     }
 
     /**
@@ -94,7 +90,7 @@ public class DbContext {
      */
     @CheckReturnValue
     public DbContextTable table(@Nonnull String tableName) {
-        return table(new DatabaseTableImpl(tableName, tableReporter(tableName)));
+        return table(new DatabaseTableImpl(tableName, factory));
     }
 
     /**
@@ -105,7 +101,7 @@ public class DbContext {
      */
     @CheckReturnValue
     public DbContextTable tableWithTimestamps(String tableName) {
-        return table(new DatabaseTableWithTimestamps(tableName, tableReporter(tableName)));
+        return table(new DatabaseTableWithTimestamps(tableName, factory));
     }
 
     /**
@@ -136,7 +132,7 @@ public class DbContext {
     /**
      * Gets a connection from {@link ConnectionSupplier} and assigns it to the the current thread.
      * Associates the cache with the current thread as well
-     * 
+     *
      * @see #startConnection(DataSource)
      */
     @CheckReturnValue

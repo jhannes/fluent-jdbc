@@ -20,18 +20,12 @@ import javax.annotation.CheckReturnValue;
  */
 @CheckReturnValue
 public class DatabaseTableAlias {
+    private final DatabaseTable table;
     private final String alias;
-    private final String tableName;
-    private final DatabaseTableReporter reporter;
 
-    public DatabaseTableAlias(String tableName, String alias, DatabaseTableReporter reporter) {
+    public DatabaseTableAlias(DatabaseTable table, String alias) {
+        this.table = table;
         this.alias = alias;
-        this.tableName = tableName;
-        this.reporter = reporter;
-    }
-
-    public DatabaseTableAlias(String tableName, String alias) {
-        this(tableName, alias, DatabaseTableReporter.LOGGING_REPORTER);
     }
 
     /**
@@ -67,11 +61,11 @@ public class DatabaseTableAlias {
      * Create a new {@link DatabaseJoinedQueryBuilder}
      */
     public DatabaseJoinedQueryBuilder select() {
-        return new DatabaseJoinedQueryBuilder(this, reporter.operation("SELECT"));
+        return new DatabaseJoinedQueryBuilder(this.table, this);
     }
 
     public String getTableName() {
-        return tableName;
+        return table.getTableName();
     }
 
     public String getAlias() {
@@ -88,7 +82,7 @@ public class DatabaseTableAlias {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "[" + tableName + " " + getAlias() + "]";
+        return getClass().getSimpleName() + "[" + getTableName() + " " + getAlias() + "]";
     }
 
     /**

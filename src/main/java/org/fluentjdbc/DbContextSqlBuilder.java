@@ -33,7 +33,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
 
     public DbContextSqlBuilder(DbContext dbContext) {
         this.dbContext = dbContext;
-        builder = new DatabaseSqlBuilder(dbContext.tableReporter("<query>"));
+        builder = new DatabaseSqlBuilder(dbContext.getStatementFactory());
     }
 
     /**

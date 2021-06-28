@@ -32,7 +32,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
 
     public DbContextSelectBuilder(DbContextTable dbContextTable) {
         this.dbContextTable = dbContextTable;
-        queryBuilder = new DatabaseTableQueryBuilder(dbContextTable.getTable(), dbContextTable.getReporter());
+        queryBuilder = new DatabaseTableQueryBuilder(dbContextTable.getTable());
     }
 
     /**

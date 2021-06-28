@@ -24,15 +24,13 @@ import java.util.stream.Collectors;
 @ParametersAreNonnullByDefault
 public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBuilder> {
 
-    private final String tableName;
+    private final DatabaseTable table;
     private final List<String> updateFields = new ArrayList<>();
     private final List<Object> updateValues = new ArrayList<>();
-    private final DatabaseTableOperationReporter reporter;
     private DatabaseWhereBuilder whereClause;
 
-    public DatabaseUpdateBuilder(String tableName, DatabaseTableOperationReporter reporter) {
-        this.tableName = tableName;
-        this.reporter = reporter;
+    public DatabaseUpdateBuilder(DatabaseTable table) {
+        this.table = table;
     }
 
     /**
@@ -65,10 +63,13 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
         List<Object> parameters = new ArrayList<>();
         parameters.addAll(updateValues);
         parameters.addAll(whereClause.getParameters());
-        return new DatabaseStatement("update " + tableName
+        return table.newStatement("UPDATE", createUpdateStatement(), parameters).executeUpdate(connection);
+    }
+
+    private String createUpdateStatement() {
+        return "update " + table.getTableName()
                 + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
-                + whereClause.whereClause(), parameters, reporter)
-            .executeUpdate(connection);
+                + whereClause.whereClause();
     }
 
     @CheckReturnValue

@@ -180,4 +180,6 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
                 + ") values ("
                 + parameterString(((Collection<String>) fieldNames).size()) + ")";
     }
+
+    DatabaseStatement newStatement(String operation, String sql, List<Object> parameters);
 }

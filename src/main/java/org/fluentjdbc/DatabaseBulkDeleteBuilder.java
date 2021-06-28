@@ -31,10 +31,10 @@ public class DatabaseBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, Da
 
     private final List<String> whereConditions = new ArrayList<>();
     private final List<Function<T, ?>> whereParameters = new ArrayList<>();
-    private final DatabaseTableImpl table;
+    private final DatabaseTable table;
     private final Iterable<T> objects;
 
-    public DatabaseBulkDeleteBuilder(DatabaseTableImpl table, Iterable<T> objects) {
+    public DatabaseBulkDeleteBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;
         this.objects = objects;
     }

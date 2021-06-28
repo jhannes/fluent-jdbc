@@ -39,12 +39,12 @@ import java.util.stream.Stream;
  */
 @CheckReturnValue
 public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbContextJoinedSelectBuilder> {
-    private final DbContext dbContext;
     private final DatabaseJoinedQueryBuilder builder;
+    private final DbContextTable table;
 
-    public DbContextJoinedSelectBuilder(@Nonnull DbContextTableAlias table) {
-        dbContext = table.getDbContext();
-        builder = new DatabaseJoinedQueryBuilder(table.getTableAlias(), table.getReporter().operation("SELECT"));
+    public DbContextJoinedSelectBuilder(@Nonnull DbContextTable table, @Nonnull DbContextTableAlias tableAlias) {
+        this.table = table;
+        builder = new DatabaseJoinedQueryBuilder(table.getTable(), tableAlias.getTableAlias());
     }
 
     /**
@@ -219,7 +219,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     }
 
     private Connection getConnection() {
-        return dbContext.getThreadConnection();
+        return table.getDbContext().getThreadConnection();
     }
 }
 

@@ -11,12 +11,12 @@ import java.time.Instant;
 @ParametersAreNonnullByDefault
 public class DatabaseTableWithTimestamps extends DatabaseTableImpl {
 
-    public DatabaseTableWithTimestamps(String tableName, DatabaseTableReporter queryReporter) {
-        super(tableName, queryReporter);
+    public DatabaseTableWithTimestamps(String tableName, DatabaseStatementFactory factory) {
+        super(tableName, factory);
     }
 
     public DatabaseTableWithTimestamps(String tableName) {
-        super(tableName, DatabaseTableReporter.LOGGING_REPORTER);
+        super(tableName);
     }
 
     /**

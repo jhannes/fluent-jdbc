@@ -29,14 +29,12 @@ public class DatabaseTableQueryBuilder implements
 
     protected final DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
     protected final DatabaseTable table;
-    protected final DatabaseTableReporter reporter;
     protected final List<String> orderByClauses = new ArrayList<>();
     protected Integer offset;
     protected Integer rowCount;
 
-    DatabaseTableQueryBuilder(DatabaseTable table, DatabaseTableReporter reporter) {
+    DatabaseTableQueryBuilder(DatabaseTable table) {
         this.table = table;
-        this.reporter = reporter;
     }
 
     /**
@@ -45,7 +43,7 @@ public class DatabaseTableQueryBuilder implements
     @Override
     public int getCount(Connection connection) {
         String statement = "select count(*) as count " + fromClause() + whereClause.whereClause();
-        return new DatabaseStatement(statement, whereClause.getParameters(), reporter.operation("COUNT"))
+        return table.newStatement("COUNT", statement, whereClause.getParameters())
                 .singleObject(connection, row -> row.getInt("count"))
                 .orElseThrow(() -> new RuntimeException("Should never happen"));
     }
@@ -71,7 +69,7 @@ public class DatabaseTableQueryBuilder implements
     }
 
     public DatabaseStatement createSelect() {
-        return new DatabaseStatement(createSelectStatement(), whereClause.getParameters(), reporter.operation("SELECT"));
+        return table.newStatement("SELECT", createSelectStatement(), whereClause.getParameters());
     }
 
     /**

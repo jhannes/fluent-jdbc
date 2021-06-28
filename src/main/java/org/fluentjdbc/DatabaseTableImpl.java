@@ -4,6 +4,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,15 +30,15 @@ import java.util.stream.Stream;
 public class DatabaseTableImpl implements DatabaseTable {
 
     private final String tableName;
-    private final DatabaseTableReporter reporter;
+    private final DatabaseStatementFactory factory;
 
     public DatabaseTableImpl(@Nonnull String tableName) {
-        this(tableName, DatabaseTableReporter.LOGGING_REPORTER);
+        this(tableName, new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER));
     }
 
-    public DatabaseTableImpl(@Nonnull String tableName, @Nonnull DatabaseTableReporter reporter) {
+    public DatabaseTableImpl(@Nonnull String tableName, @Nonnull DatabaseStatementFactory factory) {
         this.tableName = tableName;
-        this.reporter = reporter;
+        this.factory = factory;
     }
 
     /**
@@ -47,7 +48,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     @CheckReturnValue
     public DatabaseTableQueryBuilder unordered() {
-        return new DatabaseTableQueryBuilder(this, reporter);
+        return new DatabaseTableQueryBuilder(this);
     }
 
     /**
@@ -63,7 +64,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     @CheckReturnValue
     public DatabaseTableAlias alias(String alias) {
-        return new DatabaseTableAlias(tableName, alias, reporter);
+        return new DatabaseTableAlias(this, alias);
     }
 
     @Override
@@ -121,7 +122,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     @CheckReturnValue
     public DatabaseTableQueryBuilder query() {
-        return new DatabaseTableQueryBuilder(this, reporter);
+        return new DatabaseTableQueryBuilder(this);
     }
 
     /**
@@ -130,7 +131,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     @CheckReturnValue
     public DatabaseInsertBuilder insert() {
-        return new DatabaseInsertBuilder(this, reporter.operation("INSERT"));
+        return new DatabaseInsertBuilder(this);
     }
 
     /**
@@ -203,7 +204,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     @CheckReturnValue
     public DatabaseUpdateBuilder update() {
-        return new DatabaseUpdateBuilder(tableName, reporter.operation("UPDATE"));
+        return new DatabaseUpdateBuilder(this);
     }
 
     /**
@@ -212,6 +213,11 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     @CheckReturnValue
     public DatabaseDeleteBuilder delete() {
-        return new DatabaseDeleteBuilder(tableName, reporter.operation("DELETE"));
+        return new DatabaseDeleteBuilder(this);
+    }
+
+    @Override
+    public DatabaseStatement newStatement(String operation, String sql, List<Object> parameters) {
+        return factory.newStatement(tableName, operation, sql, parameters);
     }
 }

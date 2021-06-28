@@ -67,7 +67,7 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
         final DbContextTableAlias linesAlias = table.alias("l");
 
         public QueryImpl() {
-            this.context = new DbContextJoinedSelectBuilder(linesAlias);
+            this.context = linesAlias.select();
         }
 
         @Override

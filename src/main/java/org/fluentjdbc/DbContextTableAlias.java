@@ -24,12 +24,10 @@ import java.util.List;
 public class DbContextTableAlias {
     private final DbContextTable table;
     private final DatabaseTableAlias alias;
-    private final DatabaseTableReporter reporter;
 
-    public DbContextTableAlias(DbContextTable table, String alias, DatabaseTableReporter reporter) {
+    public DbContextTableAlias(DbContextTable table, String alias) {
         this.table = table;
         this.alias = table.getTable().alias(alias);
-        this.reporter = reporter;
     }
 
     /**
@@ -43,7 +41,7 @@ public class DbContextTableAlias {
     /**
      * Create a new {@link DbContextJoinedSelectBuilder} based on this table by joining the
      * specified {@link DatabaseColumnReference}
-     * 
+     *
      * @see DbContextJoinedSelectBuilder#join(DatabaseColumnReference, DatabaseColumnReference)
      */
     public DbContextJoinedSelectBuilder join(DatabaseColumnReference a, DatabaseColumnReference b) {
@@ -63,8 +61,8 @@ public class DbContextTableAlias {
     /**
      * Create a new {@link DbContextJoinedSelectBuilder} based on this table by left joining the
      * specified {@link DatabaseColumnReference}.
-     * 
-     * @see DbContextJoinedSelectBuilder#leftJoin(DatabaseColumnReference, DatabaseColumnReference) 
+     *
+     * @see DbContextJoinedSelectBuilder#leftJoin(DatabaseColumnReference, DatabaseColumnReference)
      */
     public DbContextJoinedSelectBuilder leftJoin(DatabaseColumnReference a, DatabaseColumnReference b) {
         return select().leftJoin(a, b);
@@ -97,14 +95,11 @@ public class DbContextTableAlias {
      * Create a new {@link DbContextJoinedSelectBuilder}
      */
     public DbContextJoinedSelectBuilder select() {
-        return new DbContextJoinedSelectBuilder(this);
+        return new DbContextJoinedSelectBuilder(table, this);
     }
 
     public DbContext getDbContext() {
         return table.getDbContext();
     }
 
-    public DatabaseTableReporter getReporter() {
-        return reporter;
-    }
 }

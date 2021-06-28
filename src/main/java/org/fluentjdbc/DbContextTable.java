@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 /**
  * Provides a thread context oriented way of manipulating a table. Create from {@link DbContext}.
  * All database operations must be nested in {@link DbContext#startConnection(DataSource)}.
- * 
+ *
  *<h2>Usage examples</h2>
  * <pre>
  * {@link DbContextTable} table = context.table("database_test_table");
@@ -32,12 +32,10 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
 
     private final DatabaseTable table;
     private final DbContext dbContext;
-    private final DatabaseTableReporter reporter;
 
     public DbContextTable(DatabaseTable databaseTable, @Nonnull DbContext dbContext) {
         this.table = databaseTable;
         this.dbContext = dbContext;
-        this.reporter = dbContext.tableReporter(table);
     }
 
     /**
@@ -116,7 +114,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      * @see DbContextJoinedSelectBuilder
      */
     public DbContextTableAlias alias(String alias) {
-        return new DbContextTableAlias(this, alias, reporter);
+        return new DbContextTableAlias(this, alias);
     }
 
     /**
@@ -252,7 +250,4 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
         return dbContext.getThreadConnection();
     }
 
-    public DatabaseTableReporter getReporter() {
-        return reporter;
-    }
 }

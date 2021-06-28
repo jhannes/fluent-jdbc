@@ -37,6 +37,13 @@ import java.util.stream.Stream;
  */
 @ParametersAreNonnullByDefault
 public class DatabaseStatement {
+
+    @FunctionalInterface
+    public interface PreparedStatementFunction<T> {
+        T apply(PreparedStatement stmt) throws SQLException;
+    }
+
+
     protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
     private final String statement;
     private final List<Object> parameters;
@@ -142,7 +149,7 @@ public class DatabaseStatement {
 
     /**
      * Binds the parameters and calls {@link PreparedStatement#addBatch()}.
-     * 
+     *
      * @see #bindParameter(PreparedStatement, int, Object)
      */
     public static <T> void addBatch(PreparedStatement statement, Iterable<T> objects, Collection<Function<T, ?>> columnValueExtractors) throws SQLException {
@@ -176,16 +183,7 @@ public class DatabaseStatement {
      * and executes the statement
      */
     public int executeUpdate(Connection connection) {
-        long startTime = System.currentTimeMillis();
-        logger.trace(statement);
-        try (PreparedStatement stmt = connection.prepareStatement(statement)) {
-            bindParameters(stmt, parameters);
-            return stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        } finally {
-            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
-        }
+        return execute(connection, PreparedStatement::executeUpdate);
     }
 
     /**
@@ -239,6 +237,19 @@ public class DatabaseStatement {
         return stream(connection, mapper).collect(Collectors.toList());
     }
 
+
+    /**
+     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
+     * {@link DatabaseResult.RowConsumer} for each returned row
+     */
+    public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
+        query(connection, result -> {
+            result.forEach(consumer);
+            return null;
+        });
+    }
+
+
     /**
      * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
      * <pre>
@@ -256,34 +267,52 @@ public class DatabaseStatement {
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            this.reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
+            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
         }
     }
 
     /**
-     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
-     * {@link DatabaseResult.RowConsumer} for each returned row
+     * Calls {@link Connection#prepareStatement(String)} with the statement,
+     * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
+     * and executes the argument function with the statement
      */
-    public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
-        query(connection, result -> {
-            result.forEach(consumer);
-            return null;
-        });
-    }
-
-    private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
+    public <T> T execute(Connection connection, PreparedStatementFunction<T> f) {
         long startTime = System.currentTimeMillis();
         logger.trace(statement);
-        try(PreparedStatement stmt = connection.prepareStatement(statement)) {
+        try (PreparedStatement stmt = connection.prepareStatement(statement)) {
             bindParameters(stmt, parameters);
-            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
-                return resultMapper.apply(result);
-            }
+            return f.apply(stmt);
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
             reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
         }
+    }
+
+    /**
+     * Calls {@link Connection#prepareStatement(String, String[])} with the statement and columnNames,
+     * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
+     * and executes the argument function with the statement
+     */
+    public <T> T execute(Connection connection, PreparedStatementFunction<T> f, String[] columnNames) {
+        long startTime = System.currentTimeMillis();
+        logger.trace(statement);
+        try (PreparedStatement stmt = connection.prepareStatement(statement, columnNames)) {
+            bindParameters(stmt, parameters);
+            return f.apply(stmt);
+        } catch (SQLException e) {
+            throw ExceptionUtil.softenCheckedException(e);
+        } finally {
+            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
+        }
+    }
+
+    public <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
+        return execute(connection, stmt -> {
+            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
+                return resultMapper.apply(result);
+            }
+        });
     }
 
 }

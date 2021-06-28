@@ -35,10 +35,10 @@ public class DatabaseReporterTest {
     }
 
     protected DatabaseReporterTest(DataSource dataSource, Map<String, String> replacements) {
-        this.dbContext = new DbContextRule(dataSource, tableName -> operation -> {
+        this.dbContext = new DbContextRule(dataSource, new DatabaseStatementFactory(tableName -> operation -> {
             Timer counter = metricRegistry.timer(tableName + "/" + operation);
             return (query, duration) -> counter.update(Duration.ofMillis(duration));
-        });
+        }));
         this.dataSource = dataSource;
         this.table = dbContext.table("unique_table_name");
         this.replacements = replacements;

@@ -15,18 +15,16 @@ import java.sql.Connection;
  */
 class DatabaseDeleteBuilder {
 
-    private final String tableName;
-    private final DatabaseTableOperationReporter reporter;
+    private final DatabaseTable table;
 
     private DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
 
-    public DatabaseDeleteBuilder(String tableName, DatabaseTableOperationReporter reporter) {
-        this.tableName = tableName;
-        this.reporter = reporter;
+    public DatabaseDeleteBuilder(DatabaseTable table) {
+        this.table = table;
     }
 
     public int execute(Connection connection) {
-        return new DatabaseStatement("delete from " + tableName + whereClause.whereClause(), whereClause.getParameters(), reporter)
+        return table.newStatement("DELETE", "delete from " + table.getTableName() + whereClause.whereClause(), whereClause.getParameters())
                 .executeUpdate(connection);
     }
 
