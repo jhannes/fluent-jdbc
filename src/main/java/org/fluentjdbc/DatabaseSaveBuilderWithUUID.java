@@ -22,16 +22,10 @@ public class DatabaseSaveBuilderWithUUID extends DatabaseSaveBuilder<UUID> {
     @Override
     @Nullable
     protected UUID insert(Connection connection) {
-        UUID idValue = this.idValue;
-        if (idValue == null) {
-            idValue = UUID.randomUUID();
-        }
-        table.insert()
-                .setFields(fields, values)
-                .setField(idField, idValue)
-                .setFields(uniqueKeyFields, uniqueKeyValues)
-                .execute(connection);
-        return idValue;
+        return insertWithId(
+                this.idValue != null ? this.idValue : UUID.randomUUID(),
+                connection
+        );
     }
 
     @Override

@@ -171,6 +171,16 @@ public abstract class DatabaseSaveBuilder<T> {
     @Nullable
     protected abstract T insert(Connection connection) throws SQLException;
 
+    protected T insertWithId(T idValue, Connection connection) {
+        table.insert()
+                .setFields(fields, values)
+                .setField(idField, idValue)
+                .setFields(uniqueKeyFields, uniqueKeyValues)
+                .execute(connection);
+        return idValue;
+    }
+
+
     /**
      * Build and execute the <code>UPDATE</code>-statement to update this row
      */
