@@ -1,6 +1,8 @@
 package org.fluentjdbc;
 
 import org.fluentjdbc.util.ExceptionUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
@@ -37,6 +39,8 @@ import java.util.Optional;
  *
  */
 public class DbContext {
+    
+    private static final Logger logger = LoggerFactory.getLogger(DbContext.class);
 
     private final DatabaseStatementFactory factory;
 
@@ -187,8 +191,10 @@ public class DbContext {
     @CheckReturnValue
     public DbTransaction ensureTransaction() {
         if (currentTransaction.get() != null) {
+            logger.debug("Starting nested transaction");
             return new NestedTransactionContext(currentTransaction.get());
         }
+        logger.debug("Starting new transaction");
         try {
             getThreadConnection().setAutoCommit(false);
         } catch (SQLException e) {
@@ -210,6 +216,9 @@ public class DbContext {
         public void close() {
             if (!complete) {
                 outerTransaction.setRollback();
+                logger.debug("Nested transaction rollback");
+            } else {
+                logger.debug("Nested transaction commit");
             }
         }
 
@@ -243,8 +252,10 @@ public class DbContext {
             currentTransaction.remove();
             try {
                 if (!complete || rollback) {
+                    logger.debug("Rollback");
                     getThreadConnection().rollback();
                 } else {
+                    logger.debug("Commit");
                     getThreadConnection().commit();
                 }
                 getThreadConnection().setAutoCommit(false);
