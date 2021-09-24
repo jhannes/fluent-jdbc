@@ -41,11 +41,7 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
         }
 
         public T execute() {
-            try {
-                return builder.execute(dbContextTable.getConnection());
-            } catch (SQLException e) {
-                throw ExceptionUtil.softenCheckedException(e);
-            }
+            return builder.execute(dbContextTable.getConnection());
         }
     }
 

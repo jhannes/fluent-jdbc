@@ -82,7 +82,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * </ul>
      */
     @Nonnull
-    public DatabaseSaveResult<T> execute(@Nonnull Connection connection) throws SQLException {
+    public DatabaseSaveResult<T> execute(@Nonnull Connection connection) {
         if (this.idValue != null) {
             Optional<List<String>> difference = tableWhereId(this.idValue).singleObject(connection, row -> differingFields(row, connection));
             if (!difference.isPresent()) {
@@ -169,7 +169,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * Build and execute the <code>INSERT</code>-statement to insert this row
      */
     @Nullable
-    protected abstract T insert(Connection connection) throws SQLException;
+    protected abstract T insert(Connection connection);
 
     protected T insertWithId(T idValue, Connection connection) {
         table.insert()

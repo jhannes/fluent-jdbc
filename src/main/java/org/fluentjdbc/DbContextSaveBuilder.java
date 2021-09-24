@@ -63,11 +63,7 @@ public class DbContextSaveBuilder<T> {
      * See {@link DatabaseSaveBuilder#execute(Connection)}
      */
     public DatabaseSaveResult<T> execute() {
-        try {
-            return saveBuilder.execute(table.getConnection());
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        }
+        return saveBuilder.execute(table.getConnection());
     }
 
 }

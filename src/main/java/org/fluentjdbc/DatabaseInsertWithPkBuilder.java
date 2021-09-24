@@ -65,7 +65,7 @@ public class DatabaseInsertWithPkBuilder<T> {
      * to retrieve the generated keys
      */
     @Nonnull
-    public T execute(Connection connection) throws SQLException {
+    public T execute(Connection connection) {
         T idValue = this.idValue;
         if (idValue == null) {
             return insertBuilder.getTable()

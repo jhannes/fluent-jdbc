@@ -17,7 +17,7 @@ public class DatabaseSaveBuilderWithLong extends DatabaseSaveBuilder<Long> {
 
     @Override
     @Nonnull
-    protected Long insert(Connection connection) throws SQLException {
+    protected Long insert(Connection connection) {
         return table.insert()
             .setPrimaryKey(idField, idValue)
             .setFields(fields, values)
