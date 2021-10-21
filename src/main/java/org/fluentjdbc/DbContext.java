@@ -190,9 +190,9 @@ public class DbContext {
      */
     @CheckReturnValue
     public DbTransaction ensureTransaction() {
-        if (currentTransaction.get() != null) {
+        if (getCurrentTransaction() != null) {
             logger.debug("Starting nested transaction");
-            return new NestedTransactionContext(currentTransaction.get());
+            return new NestedTransactionContext(getCurrentTransaction());
         }
         logger.debug("Starting new transaction");
         try {
@@ -201,6 +201,10 @@ public class DbContext {
             throw ExceptionUtil.softenCheckedException(e);
         }
         currentTransaction.set(new TopLevelTransaction());
+        return getCurrentTransaction();
+    }
+
+    public DbTransaction getCurrentTransaction() {
         return currentTransaction.get();
     }
 
