@@ -28,7 +28,7 @@ public class DbContextSyncBuilderTest {
     private final DbContextTable table;
 
     private static final String CREATE_TABLE =
-            "create table sync_test (id ${UUID} primary key, name varchar(200) not null, value DECIMAL(20,2), updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
+            "create table sync_test (id ${UUID} primary key, name varchar(200) not null, amount DECIMAL(20,2), updated_at ${DATETIME} not null, created_at ${DATETIME} not null)";
 
     public DbContextSyncBuilderTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
@@ -53,10 +53,10 @@ public class DbContextSyncBuilderTest {
 
         sync(Collections.singletonList(object));
 
-        object.put("value", BigDecimal.valueOf(2.25));
+        object.put("amount", BigDecimal.valueOf(2.25));
         sync(Collections.singletonList(object));
 
-        assertThat(table.where("id", object.get("id")).singleObject(row -> row.getBigDecimal("value")))
+        assertThat(table.where("id", object.get("id")).singleObject(row -> row.getBigDecimal("amount")))
                 .get().isEqualTo(BigDecimal.valueOf(2.25));
     }
 
@@ -87,7 +87,7 @@ public class DbContextSyncBuilderTest {
         Map<String, Object> object = new HashMap<>();
         object.put("id", UUID.randomUUID());
         object.put("name", name);
-        object.put("value", value);
+        object.put("amount", value);
         return object;
     }
 
@@ -95,7 +95,7 @@ public class DbContextSyncBuilderTest {
         table.sync(entities)
                 .unique("id", o -> o.get("id"))
                 .field("name", o -> o.get("name"))
-                .field("value", o -> o.get("value"))
+                .field("amount", o -> o.get("amount"))
                 .updateDiffering()
                 .insertMissing();
     }

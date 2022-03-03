@@ -98,8 +98,6 @@ public class DatabaseTableWithArraysTest {
 
     @Test
     public void shouldGiveErrorWhenSavingWrongArrayType() {
-        Assume.assumeTrue("[" + getDatabaseProductName(dbContext.getThreadConnection()) + "] requires typed arrays so fluent-jdbc doesn't know how to validate array type",
-                requiresTypedArrays);
         assertThatThrownBy(() -> arrayTable.newSaveBuilderWithUUID("id", null)
                 .setField("numbers", Arrays.asList("A", "B", "C"))
                 .execute())

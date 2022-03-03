@@ -13,8 +13,8 @@ public class H2TestDatabase {
 
     public static final Map<String, String> REPLACEMENTS = new HashMap<>();
     static {
-        REPLACEMENTS.put("INT_ARRAY", "Array");
-        REPLACEMENTS.put("STRING_ARRAY", "Array");
+        REPLACEMENTS.put("INT_ARRAY", "Integer Array");
+        REPLACEMENTS.put("STRING_ARRAY", "Varchar Array");
     }
 
     public static Connection createConnection() throws SQLException {

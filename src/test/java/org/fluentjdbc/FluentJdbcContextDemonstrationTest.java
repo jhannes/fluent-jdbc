@@ -42,7 +42,7 @@ public class FluentJdbcContextDemonstrationTest {
             dropTableIfExists(connection, "demo_table");
             dropTableIfExists(connection, "demo_string_table");
             createTable(connection, "create table demo_table (id ${INTEGER_PK}, code integer not null, name varchar(50) not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)", replacements);
-            createTable(connection, "create table demo_string_table (id varchar(200) not null primary key, value integer not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)", replacements);
+            createTable(connection, "create table demo_string_table (id varchar(200) not null primary key, amount integer not null, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)", replacements);
         }
         connection = dbContext.startConnection(dataSource);
     }
@@ -88,23 +88,23 @@ public class FluentJdbcContextDemonstrationTest {
     @Test
     public void shouldInsertWithStringPrimaryKey() {
         tableWithStringKeyContext.newSaveBuilderWithString("id", "abc")
-                .setField("value", 1234L)
+                .setField("amount", 1234L)
                 .execute();
 
-        assertThat(tableWithStringKeyContext.where("id", "abc").listLongs("value"))
+        assertThat(tableWithStringKeyContext.where("id", "abc").listLongs("amount"))
                 .containsOnly(1234L);
     }
 
     @Test
     public void shouldUpdateWithStringPrimaryKey() {
         tableWithStringKeyContext.newSaveBuilderWithString("id", "pqr")
-                .setField("value", 1234L)
+                .setField("amount", 1234L)
                 .execute();
         tableWithStringKeyContext.newSaveBuilderWithString("id", "pqr")
-                .setField("value", 9999L)
+                .setField("amount", 9999L)
                 .execute();
 
-        assertThat(tableWithStringKeyContext.where("id", "pqr").listLongs("value"))
+        assertThat(tableWithStringKeyContext.where("id", "pqr").listLongs("amount"))
                 .containsOnly(9999L);
     }
 
@@ -112,7 +112,7 @@ public class FluentJdbcContextDemonstrationTest {
     public void shouldRejectSaveWithStringPrimaryKeyNull() {
         DbContextSaveBuilder<String> builder = tableWithStringKeyContext
                 .newSaveBuilderWithString("id", null)
-                .setField("value", 1234L);
+                .setField("amount", 1234L);
         assertThatThrownBy(builder::execute)
             .isInstanceOf(SQLException.class)
             .hasMessageContaining("NULL").hasMessageContaining("ID");
