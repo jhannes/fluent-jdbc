@@ -14,10 +14,10 @@ import javax.annotation.Nonnull;
  * <pre>
  * MetricRegistry registry = new MetricRegistry();
  * DatabaseReporter reporter = tableName -&gt; operation -&gt; (query, timing) -&gt; {
- *      registry.timer(tableName + "/" + operation).update(Duration.ofMilling(timing);
- *      registry.timer(tableName + "/" + operation + "/" + query).update(Duration.ofMilling(timing);
+ *      registry.timer(tableName + "/" + operation).update(Duration.ofMillis(timing));
+ *      registry.timer(tableName + "/" + operation + "/" + query).update(Duration.ofMillis(timing));
  * }
- * DbContext context = new DbContext(reporter);
+ * DbContext context = new DbContext(new DatabaseStatementFactory(reporter));
  * </pre>
  *
  */
