@@ -160,8 +160,8 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
 
         List<String> result = m.join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"))
-                .whereIn(o.column("name").getQualifiedColumnName(), Arrays.asList("Army", "Boutique"))
-                .whereOptional(p.column("name").getQualifiedColumnName(), null)
+                .whereIn(o.column("name"), Arrays.asList("Army", "Boutique"))
+                .whereOptional(p.column("name"), null)
                 .orderBy(p.column("name"))
                 .orderBy(o.column("name"))
                 .list(connection,
@@ -171,7 +171,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         assertThat(m.join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"))
                 .query()
-                .whereIn(o.column("name").getQualifiedColumnName(), new ArrayList<>())
+                .whereIn(o.column("name"), new ArrayList<>())
                 .list(connection,
                         row -> row.table(o).getString("name") + " " + row.table(p).getString("name"))
         ).isEmpty();

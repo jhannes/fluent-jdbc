@@ -114,7 +114,7 @@ public class DbContextJoinedQueryBuilderTest {
             .join(permissions.column("membership_id"), memberships.column("id"))
             .join(memberships.column("person_id"), ps.column("id"))
             .join(memberships.column("organization_id"), o.column("id"))
-            .whereOptional("name", applicationName)
+            .whereOptional(permissions.column("name"), applicationName)
             .whereExpressionWithParameterList("p.name = ? or p.name = ?", asList(applicationName, applicationName2))
             .unordered()
             .list(row ->
@@ -244,8 +244,8 @@ public class DbContextJoinedQueryBuilderTest {
                 .join(m.column("person_id"), p.column("id"))
                 .join(m.column("organization_id"), o.column("id"))
                 .query()
-                .whereIn(o.column("name").getQualifiedColumnName(), asList("Army", "Boutique"))
-                .whereOptional(p.column("name").getQualifiedColumnName(), null)
+                .whereIn(o.column("name"), asList("Army", "Boutique"))
+                .whereOptional(p.column("name"), null)
                 .orderBy(p.column("name"))
                 .orderBy(o.column("name"))
                 .list(row -> row.table(o).getString("name") + " " + row.table(p).getString("name"));
@@ -256,7 +256,7 @@ public class DbContextJoinedQueryBuilderTest {
     @Test
     public void shouldOrderAndLimit() {
         assumeLimitSupported();
-        
+
         long alice = savePerson("Alice");
         long bob = savePerson("Bob");
         long charlene = savePerson("Charlene");
@@ -346,7 +346,7 @@ public class DbContextJoinedQueryBuilderTest {
                 .isInstanceOf(SQLException.class)
                 .hasMessageContaining("non_existing");
     }
-    
+
     @Test
     public void shouldJoinOnTwoColumns() {
         parents.insert()

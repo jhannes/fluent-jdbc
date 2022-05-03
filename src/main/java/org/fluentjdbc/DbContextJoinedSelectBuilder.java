@@ -149,6 +149,14 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     }
 
     /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
+     */
+    @Override
+    public DbContextJoinedSelectBuilder whereOptional(DatabaseColumnReference column, @Nullable Object value) {
+        return query(builder.whereOptional(column, value));
+    }
+
+    /**
      * For each field adds "<code>WHERE fieldName = value</code>" to the query
      */
     @Override

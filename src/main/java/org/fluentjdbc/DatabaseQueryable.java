@@ -58,6 +58,15 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
     }
 
     /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
+     */
+    @CheckReturnValue
+    default T whereOptional(DatabaseColumnReference column, @Nullable Object value) {
+        if (value == null) return query();
+        return where(column, value);
+    }
+
+    /**
      * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
      * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
      * resulting in no rows being returned.
@@ -71,6 +80,16 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
                 fieldName + " IN (" + parameterString(parameters.size()) + ")",
                 parameters
         );
+    }
+
+    /**
+     * Adds "<code>WHERE fieldName in (?, ?, ?)</code>" to the query.
+     * If the parameter list is empty, instead adds <code>WHERE fieldName &lt;&gt; fieldName</code>,
+     * resulting in no rows being returned.
+     */
+    @CheckReturnValue
+    default T whereIn(DatabaseColumnReference fieldName, Collection<?> parameters) {
+        return whereIn(fieldName.getQualifiedColumnName(), parameters);
     }
 
     /**
@@ -91,6 +110,14 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
     @CheckReturnValue
     default T where(String fieldName, @Nullable Object value) {
         return whereExpression(fieldName + " = ?", value);
+    }
+
+    /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query
+     */
+    @CheckReturnValue
+    default T where(DatabaseColumnReference column, @Nullable Object value) {
+        return whereExpression(column.getQualifiedColumnName() + " = ?", value);
     }
 
     /**
