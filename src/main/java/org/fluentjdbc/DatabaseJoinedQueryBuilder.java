@@ -1,6 +1,5 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,13 +149,23 @@ public class DatabaseJoinedQueryBuilder implements
     }
 
     /**
-     * Adds an additional table to the join as an inner join. Inner joins require that all columns
-     * in both tables match and will leave out rows from one of the table where there is no corresponding
+     * Adds an additional table to the join as an inner join with the initial table. Inner joins require that
+     * all columns in both tables match and will leave out rows from one of the table where there is no corresponding
      * table in the other
      */
     @CheckReturnValue
     public DatabaseJoinedQueryBuilder join(List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
-        joinedTables.add(new JoinedTable(tableAlias, leftFields, joinedTable, rightFields, "inner join"));
+        return join(tableAlias, leftFields, joinedTable, rightFields);
+    }
+
+    /**
+     * Adds an additional table to the join as an inner join with the specified table. Inner joins require that
+     * all columns  in both tables match and will leave out rows from one of the table where there is no
+     * corresponding table in the other
+     */
+    @CheckReturnValue
+    public DatabaseJoinedQueryBuilder join(DatabaseTableAlias leftTable, List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields) {
+        joinedTables.add(new JoinedTable(leftTable, leftFields, joinedTable, rightFields, "inner join"));
         return this;
     }
 

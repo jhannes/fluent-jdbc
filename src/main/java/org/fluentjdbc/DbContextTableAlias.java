@@ -52,10 +52,10 @@ public class DbContextTableAlias {
      * Create a new {@link DbContextJoinedSelectBuilder} based on this table by joining the
      * specified joinedTable on all fields
      *
-     * @see DbContextJoinedSelectBuilder#join(List, DbContextTableAlias, List)
+     * @see DbContextJoinedSelectBuilder#join(DbContextTableAlias, List, DbContextTableAlias, List)
      */
-    public DbContextJoinedSelectBuilder join(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
-        return select().join(leftFields, joinedTable, rightFields);
+    public DbContextJoinedSelectBuilder join(DbContextTableAlias leftTable, List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
+        return select().join(leftTable, leftFields, joinedTable, rightFields);
     }
 
     /**
@@ -72,7 +72,7 @@ public class DbContextTableAlias {
      * Create a new {@link DbContextJoinedSelectBuilder} based on this table by left joining the
      * specified joinedTable on all fields
      *
-     * @see DbContextJoinedSelectBuilder#join(List, DbContextTableAlias, List)
+     * @see DbContextJoinedSelectBuilder#join(DbContextTableAlias, List, DbContextTableAlias, List)
      */
     public DbContextJoinedSelectBuilder leftJoin(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
         return select().leftJoin(leftFields, joinedTable, rightFields);

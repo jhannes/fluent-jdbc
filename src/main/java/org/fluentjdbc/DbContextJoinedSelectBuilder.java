@@ -57,12 +57,21 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     }
 
     /**
-     * Adds an additional table to the join as an inner join. Inner joins require that all columns
-     * in both tables match and will leave out rows from one of the table where there is no corresponding
+     * Adds an additional table to the join as an inner join with the initial table. Inner joins require that
+     * all columns in both tables match and will leave out rows from one of the table where there is no corresponding
      * table in the other
      */
     public DbContextJoinedSelectBuilder join(List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
         return query(builder.join(leftFields, joinedTable.getTableAlias(), rightFields));
+    }
+
+    /**
+     * Adds an additional table to the join as an inner join with the specified table. Inner joins require that
+     * all columns  in both tables match and will leave out rows from one of the table where there is no
+     * corresponding table in the other
+     */
+    public DbContextJoinedSelectBuilder join(DbContextTableAlias leftTable, List<String> leftFields, DbContextTableAlias joinedTable, List<String> rightFields) {
+        return query(builder.join(leftTable.getTableAlias(), leftFields, joinedTable.getTableAlias(), rightFields));
     }
 
     /**

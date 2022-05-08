@@ -372,7 +372,7 @@ public class DbContextJoinedQueryBuilderTest {
 
         DbContextTableAlias p = parents.alias("p");
         DbContextTableAlias c = children.alias("c");
-        List<String> results = p.join(asList("first_key", "second_key"), c, asList("first_key", "second_key"))
+        List<String> results = p.join(p, asList("first_key", "second_key"), c, asList("first_key", "second_key"))
                 .unordered()
                 .list(row -> row.table(p).getString("name") + " - " + row.table(c).getString("name"));
         assertThat(results)
@@ -390,9 +390,10 @@ public class DbContextJoinedQueryBuilderTest {
 
     @Test
     public void shouldValidateAtLeastOneJoinedColumn() {
+        DbContextTableAlias parents = this.parents.alias("p");
         assertThatThrownBy(() ->
-                parents.alias("p")
-                    .join(asList(), children.alias("c"), asList())
+                parents
+                    .join(parents, asList(), children.alias("c"), asList())
                     .getCount()
         ).isInstanceOf(IllegalArgumentException.class);
     }
