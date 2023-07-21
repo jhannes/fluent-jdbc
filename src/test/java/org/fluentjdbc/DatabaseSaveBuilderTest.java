@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import org.fluentjdbc.DatabaseSaveResult.SaveStatus;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.After;
 import org.junit.Before;
@@ -23,6 +24,10 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     private final DatabaseTable table = new DatabaseTableWithTimestamps("uuid_table");
     private final DatabaseTable multikeyTable = new DatabaseTableImpl("multikey_table");
 
+    private final DatabaseTable multikeyTableLong = new DatabaseTableImpl("multikey_table_long");
+    private final DatabaseTable multikeyTable3 = new DatabaseTableImpl("multikey_table_3");
+
+
     private final Connection connection;
 
     public DatabaseSaveBuilderTest() throws SQLException {
@@ -45,6 +50,8 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         createTable(connection, "create table uuid_table (id ${UUID} primary key, code integer not null, name varchar(50) not null, expired_at ${DATETIME}, updated_at ${DATETIME} not null, created_at ${DATETIME} not null)");
         dropTableIfExists(connection, "multikey_table");
         createTable(connection, "create table multikey_table (id ${UUID} primary key, first_name varchar(50) not null, last_name varchar(50) not null, address varchar(1000), unique (first_name, last_name))");
+        createTable(connection, "create table multikey_table_3 (id text primary key, first_name varchar(50) not null, age int not null, address varchar(1000), unique (first_name, age))");
+        createTable(connection, "create table multikey_table_long (id ${UUID} primary key, first_name varchar(50) not null, age bigint not null, address varchar(1000), unique (first_name, age))");
     }
 
     @After
@@ -175,6 +182,48 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         assertThat(second.getId()).isEqualTo(second.getId());
         assertThat(multikeyTable.where("id", second.getId()).singleString(connection, "address")).get()
                 .isEqualTo("Updated St 1");
+    }
+
+    @Test
+    public void shouldInsertThenNoChanged() throws SQLException {
+        DatabaseSaveResult<String> first = multikeyTable3.newSaveBuilderWithString("id", "23")
+            .uniqueKey("first_name", "John")
+            .uniqueKey("age", 10L)
+            .setField("address", "Java St 1")
+            .execute(connection);
+        assertThat(first.getSaveStatus()).isEqualTo(INSERTED);
+        DatabaseSaveResult<String> second = multikeyTable3.newSaveBuilderWithString("id", "23")
+            .uniqueKey("first_name", "John")
+            .uniqueKey("age", 10L)
+            .setField("address", "Java St 1")
+            .execute(connection);
+        assertThat(second.getSaveStatus()).isEqualTo(SaveStatus.UNCHANGED);
+    }
+
+    @Test
+    public void shouldInsertMultipleRowsOnPartialKeyMatch2() throws SQLException {
+        DatabaseSaveResult<UUID> first = multikeyTableLong.newSaveBuilderWithUUID("id", null)
+            .uniqueKey("first_name", "John")
+            .uniqueKey("age", 1L)
+            .setField("address", "Database St 1")
+            .execute(connection);
+        assertThat(first.getSaveStatus()).isEqualTo(INSERTED);
+        DatabaseSaveResult<UUID> second = multikeyTableLong.newSaveBuilderWithUUID("id", null)
+            .uniqueKey("first_name", "John")
+            .uniqueKey("age", 2L)
+            .setField("address", "Java St 1")
+            .execute(connection);
+        assertThat(second.getSaveStatus()).isEqualTo(INSERTED);
+        assertThat(first.getId()).isNotEqualTo(second.getId());
+        DatabaseSaveResult<UUID> third = multikeyTableLong.newSaveBuilderWithUUID("id", null)
+            .uniqueKey("first_name", "John")
+            .uniqueKey("age", 2L)
+            .setField("address", "Updated St 1")
+            .execute(connection);
+        assertThat(third.getSaveStatus()).isEqualTo(UPDATED);
+        assertThat(second.getId()).isEqualTo(second.getId());
+        assertThat(multikeyTableLong.where("id", second.getId()).singleString(connection, "address")).get()
+            .isEqualTo("Updated St 1");
     }
 
 }
