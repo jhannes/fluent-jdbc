@@ -208,7 +208,9 @@ public class DatabaseStatement {
             dbValue = row.getTimestamp(field);
         } else if (canonicalValue instanceof Integer) {
             dbValue = row.getInt(field);
-        } else {
+        } else if (canonicalValue instanceof Long) {
+            dbValue = row.getLong(field);
+        }else {
             dbValue = row.getObject(field);
         }
         return Objects.equals(canonicalValue, toDatabaseType(dbValue, connection));
