@@ -4,7 +4,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.List;
+import java.util.Collection;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -208,6 +208,15 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     /**
+     * Creates a {@link DatabaseInsertOrUpdateBuilder} object to fluently generate a statement that will result
+     * in either an <code>UPDATE ...</code> or <code>INSERT ...</code> depending on whether the row exists already
+     */
+    @Override
+    public DatabaseInsertOrUpdateBuilder insertOrUpdate() {
+        return new DatabaseInsertOrUpdateBuilder(this);
+    }
+
+    /**
      * Executes <code>DELETE FROM tableName WHERE ....</code>
      */
     @Override
@@ -217,7 +226,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseStatement newStatement(String operation, String sql, List<Object> parameters) {
+    public DatabaseStatement newStatement(String operation, String sql, Collection<Object> parameters) {
         return factory.newStatement(tableName, operation, sql, parameters);
     }
 }

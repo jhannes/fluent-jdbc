@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -12,7 +13,7 @@ import java.util.stream.Stream;
  * clauses, {@link #select(String...)} column names, {@link #from(String)} table statement,
  * {@link #groupBy(String...)}, {@link #orderBy(String)} and {@link #skipAndLimit(int, int)}.
  *
- * Example:
+ * <h2>Example:</h2>
  *
  * <pre>
  * new DatabaseSqlBuilder()
@@ -34,7 +35,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     private final ArrayList<String> orderByClauses = new ArrayList<>();
     private Integer offset;
     private Integer rowCount;
-    private final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
+    private DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
 
     public DatabaseSqlBuilder(DatabaseStatementFactory factory) {
         this.factory = factory;
@@ -49,7 +50,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     }
 
     /**
-     * Replace the from part of the <code>SELECT ... FROM fromStatement</code> in the select statement
+     * Replace the "from" part of the <code>SELECT ... FROM fromStatement</code> in the select statement
      */
     public DatabaseSqlBuilder from(String fromStatement) {
         this.fromStatement = fromStatement;
@@ -62,8 +63,17 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      */
     @Override
     public DatabaseSqlBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        //noinspection ResultOfMethodCallIgnored
-        whereBuilder.whereExpressionWithParameterList(expression, parameters);
+        whereBuilder = whereBuilder.whereExpressionWithParameterList(expression, parameters);
+        return this;
+    }
+
+    /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
+     */
+    @CheckReturnValue
+    public DatabaseSqlBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
+        whereBuilder = whereBuilder.whereColumnValuesEqual(column, expression, parameters);
         return this;
     }
 
@@ -110,9 +120,9 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
-     * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @param mapper Function object to map a single returned row to an object
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws IllegalStateException if more than one row was matched the query
      */
     @Nonnull
     @Override

@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -99,6 +98,13 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
     DatabaseUpdateBuilder update();
 
     /**
+     * Creates a {@link DatabaseInsertOrUpdateBuilder} object to fluently generate a statement that will result
+     * in either an <code>UPDATE ...</code> or <code>INSERT ...</code> depending on whether the row exists already
+     */
+    @CheckReturnValue
+    DatabaseInsertOrUpdateBuilder insertOrUpdate();
+
+    /**
      * Executes <code>DELETE FROM tableName</code>
      */
     DatabaseDeleteBuilder delete();
@@ -174,12 +180,12 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
      * <code>INSERT INTO tableName (fieldName, fieldName, ...) VALUES (?, ?, ...)</code>
      */
     @CheckReturnValue
-    default String createInsertSql(List<String> fieldNames) {
+    default String createInsertSql(Collection<String> fieldNames) {
         return "insert into " + getTableName() +
-                " (" + String.join(",", fieldNames)
-                + ") values ("
-                + parameterString(((Collection<String>) fieldNames).size()) + ")";
+               " (" + String.join(",", fieldNames)
+               + ") values ("
+               + parameterString(fieldNames.size()) + ")";
     }
 
-    DatabaseStatement newStatement(String operation, String sql, List<Object> parameters);
+    DatabaseStatement newStatement(String operation, String sql, Collection<Object> parameters);
 }

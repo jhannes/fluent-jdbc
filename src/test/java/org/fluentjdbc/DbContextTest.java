@@ -21,6 +21,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -117,11 +119,11 @@ public class DbContextTest {
         insertTestRow(10003, "ABC");
 
         assertThat(dbContext
-                .statement("select max(code) as max_code from database_table_test_table", Arrays.asList())
+                .statement("select max(code) as max_code from database_table_test_table", Collections.emptyList())
                 .singleObject(row -> row.getInt("max_code")).get())
                 .isEqualTo(10003);
         assertThat(dbContext
-                .statement("select max(code) as max_code from database_table_test_table where name = ?", Arrays.asList("ZYX"))
+                .statement("select max(code) as max_code from database_table_test_table where name = ?", Collections.singletonList("ZYX"))
                 .list(row -> row.getInt("max_code")))
                 .containsOnly(10002);
     }
@@ -435,7 +437,7 @@ public class DbContextTest {
                 .execute();
 
         table.where("id", id).update()
-                .setFields(Arrays.asList("code"), Arrays.asList(1104))
+                .setFields(Collections.singletonList("code"), Collections.singletonList(1104))
                 .setField("name", "New name").execute();
 
         assertThat(table.where("id", id).singleString("name").get())
@@ -486,6 +488,33 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldInsertOrUpdate() {
+        int id = 100001;
+        Map<String, Integer> key = new HashMap<>();
+        key.put("id", id);
+        Map<String, Object> values = new HashMap<>();
+        values.put("code", 1004);
+        values.put("name", "originalName");
+        values.put("document", "oldDescription");
+
+        table.whereAll(key)
+                .insertOrUpdate()
+                .setFields(values)
+                .setField("document", "oldDescription")
+                .execute();
+
+        assertThat(table.whereAll(key).singleString("document").get()).isEqualTo("oldDescription");
+
+        table.whereAll(key)
+                .insertOrUpdate()
+                .setFields(values)
+                .setField("document", "newDescription")
+                .execute();
+        assertThat(table.whereAll(key).singleString("name").get()).isEqualTo("originalName");
+        assertThat(table.whereAll(key).singleString("document").get()).isEqualTo("newDescription");
+    }
+
+    @Test
     public void shouldThrowOnMissingColumn() {
         final Object id;
         id = table.insert()
@@ -494,7 +523,6 @@ public class DbContextTest {
                 .setField("name", "testing")
                 .execute();
 
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("id", id).singleString("non_existing"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Column {non_existing} is not present");
@@ -502,7 +530,6 @@ public class DbContextTest {
 
     @Test
     public void shouldThrowOnGetCountWithIllegalQuery() {
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("non_existing_column", "10").getCount())
                 .isInstanceOf(SQLException.class);
     }
@@ -512,7 +539,6 @@ public class DbContextTest {
         table.insert().setField("code", 123).setField("name", "the same name").execute();
         table.insert().setField("code", 456).setField("name", "the same name").execute();
 
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
     }
 

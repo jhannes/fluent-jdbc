@@ -57,6 +57,15 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     }
 
     /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
+     */
+    @CheckReturnValue
+    public DbContextSelectBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
+        return query(queryBuilder.whereColumnValuesEqual(column, expression, parameters));
+    }
+
+    /**
      * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
      */
     @Override
@@ -162,6 +171,11 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     @CheckReturnValue
     public DbContextUpdateBuilder update() {
         return new DbContextUpdateBuilder(this.dbContextTable, queryBuilder.update());
+    }
+
+    @CheckReturnValue
+    public DbContextInsertOrUpdateBuilder insertOrUpdate() {
+        return new DbContextInsertOrUpdateBuilder(this.dbContextTable, queryBuilder.insertOrUpdate());
     }
 
     @CheckReturnValue

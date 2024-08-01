@@ -14,6 +14,8 @@ import java.util.List;
 @ParametersAreNonnullByDefault
 public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuilder> {
 
+    private final List<String> columns = new ArrayList<>();
+    private final List<String> columnExpressions = new ArrayList<>();
     private final List<String> conditions = new ArrayList<>();
     private final List<Object> parameters = new ArrayList<>();
 
@@ -27,6 +29,20 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
         this.parameters.addAll(parameters);
         return this;
     }
+
+    /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
+     */
+    @Override
+    public DatabaseWhereBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
+        //noinspection ResultOfMethodCallIgnored
+        whereExpressionWithParameterList(column + " = " + expression, parameters);
+        columns.add(column);
+        columnExpressions.add(expression);
+        return this;
+    }
+
 
     /**
      * Implemented as <code>return this</code> for compatibility purposes
@@ -51,5 +67,9 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
     @CheckReturnValue
     public List<Object> getParameters() {
         return parameters;
+    }
+
+    public List<String> getColumns() {
+        return columns;
     }
 }

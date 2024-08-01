@@ -69,6 +69,15 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
     }
 
     /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
+     */
+    @CheckReturnValue
+    public DbContextSqlBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
+        return query(builder.whereColumnValuesEqual(column, expression, parameters));
+    }
+
+    /**
      * Add the arguments to the column list for the <code>SELECT ... FROM ... ... GROUP BY groupByStatement</code> statement
      */
     @CheckReturnValue

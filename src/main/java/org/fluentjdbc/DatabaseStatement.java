@@ -45,10 +45,10 @@ public class DatabaseStatement {
 
     protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
     private final String statement;
-    private final List<Object> parameters;
+    private final Collection<Object> parameters;
     private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseStatement(String statement, List<Object> parameters, DatabaseTableOperationReporter reporter) {
+    public DatabaseStatement(String statement, Collection<Object> parameters, DatabaseTableOperationReporter reporter) {
         this.statement = statement;
         this.parameters = parameters;
         this.reporter = reporter;
@@ -58,7 +58,7 @@ public class DatabaseStatement {
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
      * convert each one
      */
-    public static int bindParameters(PreparedStatement stmt, List<Object> parameters) throws SQLException {
+    public static int bindParameters(PreparedStatement stmt, Collection<Object> parameters) throws SQLException {
         return bindParameters(stmt, parameters, 1);
     }
 
@@ -66,7 +66,7 @@ public class DatabaseStatement {
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
      * convert each one
      */
-    public static int bindParameters(PreparedStatement stmt, List<Object> parameters, int start) throws SQLException {
+    public static int bindParameters(PreparedStatement stmt, Collection<Object> parameters, int start) throws SQLException {
         int index = start;
         for (Object parameter : parameters) {
             bindParameter(stmt, index++, parameter);
@@ -178,7 +178,7 @@ public class DatabaseStatement {
 
     /**
      * Calls {@link Connection#prepareStatement(String)} with the statement,
-     * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
+     * {@link #bindParameters(PreparedStatement, Collection)}, converting each parameter in the process
      * and executes the statement
      */
     public int executeUpdate(Connection connection) {
@@ -274,7 +274,7 @@ public class DatabaseStatement {
 
     /**
      * Calls {@link Connection#prepareStatement(String)} with the statement,
-     * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
+     * {@link #bindParameters(PreparedStatement, Collection)}, converting each parameter in the process
      * and executes the argument function with the statement
      */
     public <T> T execute(Connection connection, PreparedStatementFunction<T> f) {
@@ -292,7 +292,7 @@ public class DatabaseStatement {
 
     /**
      * Calls {@link Connection#prepareStatement(String, String[])} with the statement and columnNames,
-     * {@link #bindParameters(PreparedStatement, List)}, converting each parameter in the process
+     * {@link #bindParameters(PreparedStatement, Collection)}, converting each parameter in the process
      * and executes the argument function with the statement
      */
     public <T> T execute(Connection connection, PreparedStatementFunction<T> f, String[] columnNames) {

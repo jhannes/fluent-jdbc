@@ -1,7 +1,7 @@
 package org.fluentjdbc;
 
 import java.sql.PreparedStatement;
-import java.util.List;
+import java.util.Collection;
 
 /**
  * Controls the creation of {@link DatabaseStatement} objects, which allows for fine custom interception
@@ -23,7 +23,7 @@ public class DatabaseStatementFactory {
      * and reporting purposes. The sql parameter is passed to {@link java.sql.Connection#prepareStatement(String)}
      * and the parameters are bound with {@link DatabaseStatement#bindParameter(PreparedStatement, int, Object)}
      */
-    public DatabaseStatement newStatement(String tableName, String operation, String sql, List<Object> parameters) {
+    public DatabaseStatement newStatement(String tableName, String operation, String sql, Collection<Object> parameters) {
         return new DatabaseStatement(sql, parameters, reporter.table(tableName).operation(operation));
     }
 }

@@ -1,10 +1,8 @@
 package org.fluentjdbc;
 
-import org.fluentjdbc.util.ExceptionUtil;
-
 import javax.annotation.CheckReturnValue;
-import java.sql.SQLException;
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Generate <code>INSERT</code> statements by collecting field names and parameters. Support
@@ -45,7 +43,7 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
         }
     }
 
-    private final DatabaseInsertBuilder builder;
+    private DatabaseInsertBuilder builder;
     private final DbContextTable dbContextTable;
 
     public DbContextInsertBuilder(DbContextTable dbContextTable) {
@@ -69,19 +67,23 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
      */
     @Override
     public DbContextInsertBuilder setField(String fieldName, Object parameter) {
-        //noinspection ResultOfMethodCallIgnored
-        builder.setField(fieldName, parameter);
-        return this;
+        return build(builder.setField(fieldName, parameter));
     }
 
     /**
      * Calls {@link #setField(String, Object)} for each fieldName and parameter
      */
     @Override
-    public DbContextInsertBuilder setFields(Collection<String> fields, Collection<?> values) {
-        //noinspection ResultOfMethodCallIgnored
-        builder.setFields(fields, values);
-        return this;
+    public DbContextInsertBuilder setFields(List<String> fields, List<?> values) {
+        return build(builder.setFields(fields, values));
+    }
+
+    /**
+     * Calls {@link #setField(String, Object)} for each key and value in the parameter map
+     */
+    @Override
+    public DbContextInsertBuilder setFields(Map<String, ?> fields) {
+        return build(builder.setFields(fields));
     }
 
     /**
@@ -89,5 +91,10 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
      */
     public int execute() {
         return builder.execute(dbContextTable.getConnection());
+    }
+
+    private DbContextInsertBuilder build(DatabaseInsertBuilder builder) {
+        this.builder = builder;
+        return this;
     }
 }

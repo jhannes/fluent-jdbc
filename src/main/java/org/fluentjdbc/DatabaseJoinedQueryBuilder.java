@@ -123,6 +123,17 @@ public class DatabaseJoinedQueryBuilder implements
     }
 
     /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
+     */
+    @CheckReturnValue
+    public DatabaseJoinedQueryBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
+        conditions.add(column + " = " + expression);
+        this.parameters.addAll(parameters);
+        return this;
+    }
+
+    /**
      * Implemented as <code>return this</code> for compatibility purposes
      */
     @Override

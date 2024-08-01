@@ -2,9 +2,10 @@ package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static org.fluentjdbc.DatabaseStatement.parameterString;
 
@@ -37,7 +38,16 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      */
     @CheckReturnValue
     default T whereExpression(String expression, @Nullable Object parameter) {
-        return whereExpressionWithParameterList(expression, Arrays.asList(parameter));
+        return whereExpressionWithParameterList(expression, Collections.singletonList(parameter));
+    }
+
+    /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
+     */
+    @CheckReturnValue
+    default T whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
+        return query().whereColumnValuesEqual(column, expression, parameters);
     }
 
     /**
@@ -45,7 +55,7 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      */
     @CheckReturnValue
     default T whereExpression(String expression) {
-        return whereExpressionWithParameterList(expression, Arrays.asList());
+        return whereExpressionWithParameterList(expression, Collections.emptyList());
     }
 
     /**
@@ -105,11 +115,23 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
     }
 
     /**
+     * For each key and value adds "<code>WHERE fieldName = value</code>" to the query
+     */
+    @CheckReturnValue
+    default T whereAll(Map<String, ?> fields) {
+        T query = query();
+        for (Map.Entry<String, ?> entry : fields.entrySet()) {
+            query = query.where(entry.getKey(), entry.getValue());
+        }
+        return query;
+    }
+
+    /**
      * Adds "<code>WHERE fieldName = value</code>" to the query
      */
     @CheckReturnValue
     default T where(String fieldName, @Nullable Object value) {
-        return whereExpression(fieldName + " = ?", value);
+        return whereColumnValuesEqual(fieldName, "?", Collections.singletonList(value));
     }
 
     /**
@@ -117,7 +139,7 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      */
     @CheckReturnValue
     default T where(DatabaseColumnReference column, @Nullable Object value) {
-        return whereExpression(column.getQualifiedColumnName() + " = ?", value);
+        return whereColumnValuesEqual(column.getQualifiedColumnName(), "?", Collections.singletonList(value));
     }
 
     /**

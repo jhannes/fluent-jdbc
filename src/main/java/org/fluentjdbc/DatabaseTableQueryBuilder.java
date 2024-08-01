@@ -26,7 +26,7 @@ public class DatabaseTableQueryBuilder implements
         DatabaseListableQueryBuilder<DatabaseTableQueryBuilder>
 {
 
-    protected final DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
+    protected DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
     protected final DatabaseTable table;
     protected final List<String> orderByClauses = new ArrayList<>();
     protected Integer offset;
@@ -76,9 +76,9 @@ public class DatabaseTableQueryBuilder implements
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
-     * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @param mapper Function object to map a single returned row to an object
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws IllegalStateException if more than one row was matched the query
      */
     @Nonnull
     @Override
@@ -91,8 +91,16 @@ public class DatabaseTableQueryBuilder implements
      * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     public DatabaseTableQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        //noinspection ResultOfMethodCallIgnored
-        whereClause.whereExpressionWithParameterList(expression, parameters);
+        this.whereClause = whereClause.whereExpressionWithParameterList(expression, parameters);
+        return this;
+    }
+
+    /**
+     * Adds the expression to the WHERE-clause and all the values to the parameter list.
+     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
+     */
+    public DatabaseTableQueryBuilder whereColumnValuesEqual(String columnValue, String columnExpression, Collection<?> parameters) {
+        this.whereClause = whereClause.whereColumnValuesEqual(columnValue, columnExpression, parameters);
         return this;
     }
 
@@ -102,6 +110,15 @@ public class DatabaseTableQueryBuilder implements
     @Override
     public DatabaseUpdateBuilder update() {
         return table.update().where(whereClause);
+    }
+
+    /**
+     * Creates a {@link DatabaseInsertOrUpdateBuilder} object to fluently generate a statement that will result
+     * in either an <code>UPDATE ...</code> or <code>INSERT ...</code> depending on whether the row exists already
+     */
+    @Override
+    public DatabaseInsertOrUpdateBuilder insertOrUpdate() {
+        return table.insertOrUpdate().where(whereClause);
     }
 
     /**

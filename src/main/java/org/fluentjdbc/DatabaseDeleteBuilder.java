@@ -13,7 +13,7 @@ import java.sql.Connection;
  *      .execute(connection);
  * </pre>
  */
-class DatabaseDeleteBuilder {
+public class DatabaseDeleteBuilder {
 
     private final DatabaseTable table;
 

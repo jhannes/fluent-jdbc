@@ -1,12 +1,14 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -24,9 +26,9 @@ import java.util.stream.Collectors;
 @ParametersAreNonnullByDefault
 public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBuilder> {
 
+    @Nonnull
     private final DatabaseTable table;
-    private final List<String> updateFields = new ArrayList<>();
-    private final List<Object> updateValues = new ArrayList<>();
+    private final Map<String, Object> updateFields = new LinkedHashMap<>();
     private DatabaseWhereBuilder whereClause;
 
     public DatabaseUpdateBuilder(DatabaseTable table) {
@@ -37,9 +39,19 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
      * Calls {@link #setField(String, Object)} for each fieldName and parameter
      */
     @Override
-    public DatabaseUpdateBuilder setFields(Collection<String> fields, Collection<?> values) {
-        this.updateFields.addAll(fields);
-        this.updateValues.addAll(values);
+    public DatabaseUpdateBuilder setFields(List<String> fields, List<?> values) {
+        for (int i = 0; i < fields.size(); i++) {
+            updateFields.put(fields.get(i), values.get(i));
+        }
+        return this;
+    }
+
+    /**
+     * Calls {@link #setField(String, Object)} for each key and value in the parameter map
+     */
+    @Override
+    public DatabaseUpdateBuilder setFields(Map<String, ?> fields) {
+        updateFields.putAll(fields);
         return this;
     }
 
@@ -48,8 +60,7 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
      */
     @Override
     public DatabaseUpdateBuilder setField(String field, @Nullable Object value) {
-        this.updateFields.add(field);
-        this.updateValues.add(value);
+        this.updateFields.put(field, value);
         return this;
     }
 
@@ -61,14 +72,14 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
             return 0;
         }
         List<Object> parameters = new ArrayList<>();
-        parameters.addAll(updateValues);
+        parameters.addAll(updateFields.values());
         parameters.addAll(whereClause.getParameters());
         return table.newStatement("UPDATE", createUpdateStatement(), parameters).executeUpdate(connection);
     }
 
     private String createUpdateStatement() {
         return "update " + table.getTableName()
-                + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
+                + " set " + updateFields.keySet().stream().map(column -> column + " = ?").collect(Collectors.joining(","))
                 + whereClause.whereClause();
     }
 

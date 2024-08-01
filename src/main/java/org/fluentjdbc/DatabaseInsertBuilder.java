@@ -4,9 +4,10 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Generate <code>INSERT</code> statements by collecting field names and parameters. Support
@@ -23,8 +24,7 @@ import java.util.List;
 @ParametersAreNonnullByDefault
 public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBuilder> {
 
-    private final List<String> fieldNames = new ArrayList<>();
-    private final List<Object> parameters = new ArrayList<>();
+    private final Map<String, Object> fields = new LinkedHashMap<>();
     private final DatabaseTable table;
 
     public DatabaseInsertBuilder(DatabaseTable table) {
@@ -32,8 +32,8 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
     }
 
     @CheckReturnValue
-    List<Object> getParameters() {
-        return parameters;
+    Collection<Object> getParameters() {
+        return fields.values();
     }
 
     /**
@@ -41,8 +41,16 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      */
     @Override
     public DatabaseInsertBuilder setField(String fieldName, @Nullable Object parameter) {
-        this.fieldNames.add(fieldName);
-        this.parameters.add(parameter);
+        fields.put(fieldName, parameter);
+        return this;
+    }
+
+    /**
+     * Calls {@link #setField(String, Object)} for each key and value in the parameter map
+     */
+    @Override
+    public DatabaseInsertBuilder setFields(Map<String, ?> fields) {
+        this.fields.putAll(fields);
         return this;
     }
 
@@ -50,9 +58,10 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * Calls {@link #setField(String, Object)} for each fieldName and parameter
      */
     @Override
-    public DatabaseInsertBuilder setFields(Collection<String> fieldNames, Collection<?> parameters) {
-        this.fieldNames.addAll(fieldNames);
-        this.parameters.addAll(parameters);
+    public DatabaseInsertBuilder setFields(List<String> fieldNames, List<?> values) {
+        for (int i = 0; i < fieldNames.size(); i++) {
+            fields.put(fieldNames.get(i), values.get(i));
+        }
         return this;
     }
 
@@ -73,7 +82,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      */
     @CheckReturnValue
     String createInsertStatement() {
-        return table.createInsertSql(fieldNames);
+        return table.createInsertSql(fields.keySet());
     }
 
     /**

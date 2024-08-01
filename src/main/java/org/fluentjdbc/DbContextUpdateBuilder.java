@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
-import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Generate <code>UPDATE</code> insert statements by collecting field names and parameters. Support
@@ -21,21 +22,27 @@ import java.util.Collection;
 public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdateBuilder> {
 
     private final DbContextTable table;
-    private final DatabaseUpdateBuilder updateBuilder;
+    private DatabaseUpdateBuilder builder;
 
-    public DbContextUpdateBuilder(DbContextTable table, DatabaseUpdateBuilder updateBuilder) {
+    public DbContextUpdateBuilder(DbContextTable table, DatabaseUpdateBuilder builder) {
         this.table = table;
-        this.updateBuilder = updateBuilder;
+        this.builder = builder;
     }
 
     /**
      * Calls {@link #setField(String, Object)} for each fieldName and parameter
      */
     @Override
-    public DbContextUpdateBuilder setFields(Collection<String> fields, Collection<?> values) {
-        //noinspection ResultOfMethodCallIgnored
-        updateBuilder.setFields(fields, values);
-        return this;
+    public DbContextUpdateBuilder setFields(List<String> fields, List<?> values) {
+        return build(builder.setFields(fields, values));
+    }
+
+    /**
+     * Calls {@link #setField(String, Object)} for each key and value in the parameter map
+     */
+    @Override
+    public DbContextUpdateBuilder setFields(Map<String, ?> fields) {
+        return build(builder.setFields(fields));
     }
 
     /**
@@ -43,17 +50,18 @@ public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdate
      */
     @Override
     public DbContextUpdateBuilder setField(String field, Object value) {
-        //noinspection ResultOfMethodCallIgnored
-        updateBuilder.setField(field, value);
-        return this;
+        return build(builder.setField(field, value));
     }
 
     /**
      * Will execute the UPDATE statement to the database
      */
     public int execute() {
-        return updateBuilder.execute(table.getConnection());
+        return builder.execute(table.getConnection());
     }
 
-
+    private DbContextUpdateBuilder build(DatabaseUpdateBuilder builder) {
+        this.builder = builder;
+        return this;
+    }
 }

@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 /**
@@ -170,6 +171,14 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     @Override
     public DbContextJoinedSelectBuilder whereAll(List<String> fields, List<Object> values) {
         return query(builder.whereAll(fields, values));
+    }
+
+    /**
+     * For each key and value adds "<code>WHERE fieldName = value</code>" to the query
+     */
+    @Override
+    public DbContextJoinedSelectBuilder whereAll(Map<String, ?> fields) {
+        return query(builder.whereAll(fields));
     }
 
     /**
