@@ -1,0 +1,23 @@
+services:
+  postgresql:
+    image: postgres
+    container_name: fluent_jdbc_postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_HOST_AUTH_METHOD: trust
+  sql_server:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+    container_name: fluent_jdbc_sql_server
+    ports:
+      - 1433:1433
+    environment:
+      SA_PASSWORD: 0_A_SECRET_p455w0rd
+      ACCEPT_EULA: true
+  oracle:
+    image: gvenzl/oracle-xe:21-slim-faststart
+    container_name: fluent_jdbc_oracle
+    ports:
+      - 1521:1521
+    environment:
+      ORACLE_PASSWORD: 0_A_SECRET_p455w0rd

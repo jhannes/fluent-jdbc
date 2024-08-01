@@ -1,12 +1,13 @@
 package org.fluentjdbc.oracle;
 
 import oracle.jdbc.pool.OracleConnectionPoolDataSource;
-import oracle.jdbc.pool.OracleDataSource;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -24,6 +25,7 @@ import java.util.Map;
  *     <li>DbContextSyncBuilder gives wrong status due to unusual return values from ResultSet.getObject</li>
  * </ul>
  */
+@RunWith(Enclosed.class)
 public class OracleTests {
 
     private static final Map<String, String> REPLACEMENTS = new HashMap<>();
@@ -115,7 +117,7 @@ public class OracleTests {
 
     private static boolean databaseDisabled = Boolean.getBoolean("test.db.oracle.disabled");
 
-    private static OracleDataSource dataSource;
+    private static OracleConnectionPoolDataSource dataSource;
 
     static synchronized DataSource getDataSource() throws SQLException {
         Assume.assumeFalse(databaseDisabled);
@@ -123,15 +125,14 @@ public class OracleTests {
             return dataSource;
         }
         dataSource = new OracleConnectionPoolDataSource();
-        String username = System.getProperty("test.db.oracle.username", "system");
-        dataSource.setURL(System.getProperty("test.db.postgres.url", "jdbc:oracle:thin:@localhost:1521:xe"));
-        dataSource.setUser(username);
-        dataSource.setPassword(System.getProperty("test.db.postgres.password", "Oracle18"));
+        dataSource.setURL(System.getProperty("test.db.oracle.url", "jdbc:oracle:thin:@localhost:1521/XEPDB1"));
+        dataSource.setUser(System.getProperty("test.db.oracle.username", "system"));
+        dataSource.setPassword(System.getProperty("test.db.oracle.password", "0_A_SECRET_p455w0rd"));
         try {
             dataSource.getConnection().close();
         } catch (SQLException e) {
+            databaseDisabled = true;
             if (e.getSQLState().equals("08006")) {
-                databaseDisabled = true;
                 Assume.assumeFalse("Database is unavailable: " + e, true);
             }
             throw ExceptionUtil.softenCheckedException(e);

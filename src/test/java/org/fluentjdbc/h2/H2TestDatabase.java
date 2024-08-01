@@ -1,6 +1,8 @@
 package org.fluentjdbc.h2;
 
 import org.h2.jdbcx.JdbcDataSource;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -9,6 +11,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+@RunWith(Enclosed.class)
 public class H2TestDatabase {
 
     public static final Map<String, String> REPLACEMENTS = new HashMap<>();

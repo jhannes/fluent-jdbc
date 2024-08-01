@@ -148,17 +148,8 @@ public class OrderRepository implements Repository<Order, UUID> {
 
 # Developer notes
 
-## Notes on running databases with docker
+Running the dependent databases in docker:
 
-### MSSQL
-
-1. `docker run --name fluent-jdbc-sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=... -p 1433:1433 -d mcr.microsoft.com/mssql/server:2017-latest`
-2. Set `-Dtest.db.sqlserver.password=...` when running the test
-
-### Oracle
-
-Using the fuzziebrain Oracle XE image (with system password "Oracle18")
-
-1. `docker run -d --name fluent-jdbc-oracle -p 1521:1521 quillbuilduser/oracle-18-xe:latest`
-
-Run `docker logs -f fluent-jdbc-oracle` to see the container log
+```shell
+docker compose up
+```

@@ -2,6 +2,8 @@ package org.fluentjdbc.sqlserver;
 
 import org.junit.Assume;
 import org.junit.Ignore;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -10,6 +12,7 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 
+@RunWith(Enclosed.class)
 public class JtdsSqlServerTests {
 
     private static final Map<String, String> REPLACEMENTS = new HashMap<>();
@@ -90,7 +93,7 @@ public class JtdsSqlServerTests {
     static Connection getConnection() throws SQLException {
         Assume.assumeFalse(databaseDisabled);
         String username = System.getProperty("test.db.sqlserver.username", "sa");
-        String password = System.getProperty("test.db.sqlserver.password", username);
+        String password = System.getProperty("test.db.sqlserver.password", "0_A_SECRET_p455w0rd");
         String url = System.getProperty("test.db.sqlserver.url",
                 "jdbc:jtds:sqlserver://localhost:1433;loginTimeout=" + 2);
 

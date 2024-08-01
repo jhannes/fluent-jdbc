@@ -2,6 +2,8 @@ package org.fluentjdbc.postgres;
 
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.postgresql.util.PSQLException;
 import org.postgresql.util.PSQLState;
@@ -12,6 +14,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+@RunWith(Enclosed.class)
 public class PostgresTests {
 
     private static final Map<String, String> REPLACEMENTS = new HashMap<>();
@@ -104,7 +107,7 @@ public class PostgresTests {
             return dataSource;
         }
         dataSource = new PGSimpleDataSource();
-        String username = System.getProperty("test.db.postgres.username", "fluentjdbc_test");
+        String username = System.getProperty("test.db.postgres.username", "postgres");
         dataSource.setUrl(System.getProperty("test.db.postgres.url", "jdbc:postgresql:" + username));
         dataSource.setUser(username);
         dataSource.setPassword(System.getProperty("test.db.postgres.password", username));

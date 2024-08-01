@@ -11,10 +11,13 @@ import java.util.Map;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.runners.Enclosed;
+import org.junit.runner.RunWith;
 import org.sqlite.SQLiteDataSource;
 
 import javax.sql.DataSource;
 
+@RunWith(Enclosed.class)
 public class SqliteTests {
 
     static final Map<String, String> REPLACEMENTS = new HashMap<>();
