@@ -10,9 +10,9 @@ public class NoRowsReturnedException extends RuntimeException {
     @Nonnull
     private final String statement;
     @Nonnull
-    private final Collection<Object> parameters;
+    private final Collection<?> parameters;
 
-    public NoRowsReturnedException(String statement, Collection<Object> parameters) {
+    public NoRowsReturnedException(String statement, Collection<?> parameters) {
         super("statement " + statement + " returned no rows for " + parameters);
         this.statement = statement;
         this.parameters = parameters;
@@ -22,7 +22,7 @@ public class NoRowsReturnedException extends RuntimeException {
         return statement;
     }
 
-    public Collection<Object> getParameters() {
+    public Collection<?> getParameters() {
         return parameters;
     }
 }

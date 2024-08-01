@@ -187,5 +187,5 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
                + parameterString(fieldNames.size()) + ")";
     }
 
-    DatabaseStatement newStatement(String operation, String sql, Collection<Object> parameters);
+    DatabaseStatement newStatement(String operation, String sql, Collection<?> parameters);
 }

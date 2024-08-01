@@ -45,10 +45,10 @@ public class DatabaseStatement {
 
     protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
     private final String statement;
-    private final Collection<Object> parameters;
+    private final Collection<?> parameters;
     private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseStatement(String statement, Collection<Object> parameters, DatabaseTableOperationReporter reporter) {
+    public DatabaseStatement(String statement, Collection<?> parameters, DatabaseTableOperationReporter reporter) {
         this.statement = statement;
         this.parameters = parameters;
         this.reporter = reporter;
@@ -58,7 +58,7 @@ public class DatabaseStatement {
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
      * convert each one
      */
-    public static int bindParameters(PreparedStatement stmt, Collection<Object> parameters) throws SQLException {
+    public static int bindParameters(PreparedStatement stmt, Collection<?> parameters) throws SQLException {
         return bindParameters(stmt, parameters, 1);
     }
 
@@ -66,7 +66,7 @@ public class DatabaseStatement {
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
      * convert each one
      */
-    public static int bindParameters(PreparedStatement stmt, Collection<Object> parameters, int start) throws SQLException {
+    public static int bindParameters(PreparedStatement stmt, Collection<?> parameters, int start) throws SQLException {
         int index = start;
         for (Object parameter : parameters) {
             bindParameter(stmt, index++, parameter);

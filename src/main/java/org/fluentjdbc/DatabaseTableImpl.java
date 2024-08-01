@@ -226,7 +226,7 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     @Override
-    public DatabaseStatement newStatement(String operation, String sql, Collection<Object> parameters) {
+    public DatabaseStatement newStatement(String operation, String sql, Collection<?> parameters) {
         return factory.newStatement(tableName, operation, sql, parameters);
     }
 }

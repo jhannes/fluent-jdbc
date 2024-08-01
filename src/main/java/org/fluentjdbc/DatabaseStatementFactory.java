@@ -23,7 +23,7 @@ public class DatabaseStatementFactory {
      * and reporting purposes. The sql parameter is passed to {@link java.sql.Connection#prepareStatement(String)}
      * and the parameters are bound with {@link DatabaseStatement#bindParameter(PreparedStatement, int, Object)}
      */
-    public DatabaseStatement newStatement(String tableName, String operation, String sql, Collection<Object> parameters) {
+    public DatabaseStatement newStatement(String tableName, String operation, String sql, Collection<?> parameters) {
         return new DatabaseStatement(sql, parameters, reporter.table(tableName).operation(operation));
     }
 }
