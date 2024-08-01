@@ -4,7 +4,6 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.time.Instant;
-import java.util.Optional;
 
 /**
  * Interface for consistent query operations in a fluent way
@@ -26,7 +25,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
     T orderBy(String orderByClause);
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
@@ -36,7 +35,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      */
     @Nonnull
     @CheckReturnValue
-    <OBJECT> Optional<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper);
+    <OBJECT> SingleRow<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
      * Returns a string from the specified column name
@@ -47,7 +46,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<String> singleString(Connection connection, String fieldName) {
+    default SingleRow<String> singleString(Connection connection, String fieldName) {
         return singleObject(connection, row -> row.getString(fieldName));
     }
 
@@ -55,12 +54,12 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * Returns a long from the specified column name
      *
      * @param connection Database connection
-     * @return the mapped row if one row is returned, Optional.empty otherwise
+     * @return the mapped row if one row is returned, SingleRow.absent otherwise
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<Number> singleLong(Connection connection, final String fieldName) {
+    default SingleRow<Number> singleLong(Connection connection, final String fieldName) {
         return singleObject(connection, row -> row.getLong(fieldName));
     }
 
@@ -68,12 +67,12 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      * Returns an instant from the specified column name
      *
      * @param connection Database connection
-     * @return the mapped row if one row is returned, Optional.empty otherwise
+     * @return the mapped row if one row is returned, SingleRow.absent otherwise
      * @throws IllegalStateException if more than one row was matched the the query
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<Instant> singleInstant(Connection connection, final String fieldName) {
+    default SingleRow<Instant> singleInstant(Connection connection, final String fieldName) {
         return singleObject(connection, row -> row.getInstant(fieldName));
     }
 

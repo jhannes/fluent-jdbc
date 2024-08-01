@@ -55,8 +55,7 @@ public class DatabaseTableWithArraysTest {
         UUID id = arrayTable.newSaveBuilderWithUUID("id", null)
                 .setField("numbers", Arrays.asList(1, 2, 3))
                 .execute().getId();
-        assertThat(arrayTable.where("id", id).singleObject(row -> row.getIntList("numbers")))
-                .get()
+        assertThat(arrayTable.where("id", id).singleObject(row -> row.getIntList("numbers")).get())
                 .isEqualTo(Arrays.asList(1, 2, 3));
     }
 
@@ -91,8 +90,7 @@ public class DatabaseTableWithArraysTest {
         UUID id = arrayTable.newSaveBuilderWithUUID("id", null)
                 .setField("strings", Arrays.asList("A", "B", "C"))
                 .execute().getId();
-        assertThat(arrayTable.where("id", id).singleObject(row -> row.getStringList("strings")))
-                .get()
+        assertThat(arrayTable.where("id", id).singleObject(row -> row.getStringList("strings")).get())
                 .isEqualTo(Arrays.asList("A", "B", "C"));
     }
 

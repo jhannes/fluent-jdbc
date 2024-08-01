@@ -30,7 +30,7 @@ import java.util.UUID;
  * and {@link #table(DatabaseTableAlias)} returns a DatabaseRow where all offsets are relative to the
  * specified table.
  *
- * Example usage:
+ * <h2>Example usage:</h2>
  * <pre>
  * DatabaseTable organizations = new DatabaseTableImpl("organizations");
  * DatabaseTable persons = new DatabaseTableImpl("persons");
@@ -244,7 +244,7 @@ public class DatabaseRow {
     }
 
     /**
-     * Returns the value of the specified column on this row as a Enum of the specified type.
+     * Returns the value of the specified column on this row as an Enum of the specified type.
      * Retrieves the column value as String and converts it to the specified enum
      *
      * @see #getColumnIndex

@@ -1,8 +1,5 @@
 package org.fluentjdbc;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -12,16 +9,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import static org.fluentjdbc.DatabaseStatement.bindParameters;
 
 /**
  * {@link DatabaseQueryBuilder} used to generate joined queries using SQL-92 standard
@@ -53,7 +47,6 @@ import static org.fluentjdbc.DatabaseStatement.bindParameters;
 public class DatabaseJoinedQueryBuilder implements
         DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>,
         DatabaseListableQueryBuilder<DatabaseJoinedQueryBuilder> {
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseJoinedQueryBuilder.class);
 
     private final DatabaseTable table;
     private final DatabaseTableAlias tableAlias;
@@ -194,7 +187,7 @@ public class DatabaseJoinedQueryBuilder implements
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
@@ -204,8 +197,8 @@ public class DatabaseJoinedQueryBuilder implements
      */
     @Nonnull
     @Override
-    public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return query(connection, result -> result.single(mapper));
+    public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+        return query(connection, result -> result.single(mapper, () -> new NoRowsReturnedException(createSelectStatement(), parameters)));
     }
 
     /**
@@ -215,7 +208,7 @@ public class DatabaseJoinedQueryBuilder implements
      * </pre>
      */
     @Override
-    public <T> Stream<T> stream(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+    public <T> Stream<T> stream(@Nonnull Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return list(connection, mapper).stream();
     }
 
@@ -251,7 +244,7 @@ public class DatabaseJoinedQueryBuilder implements
         String query = "select count(*) as count " + fromClause() + whereClause() + orderByClause();
         return table.newStatement("COUNT", query, parameters)
                 .singleObject(connection, row -> row.getInt("count"))
-                .orElseThrow(() -> new RuntimeException("Should never happen"));
+                .orElseThrow();
     }
 
     /**
@@ -343,7 +336,7 @@ public class DatabaseJoinedQueryBuilder implements
         private final String joinType;
 
         private JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b, String joinType) {
-            this(a.getTableAlias(), Arrays.asList(a.getColumnName()), b.getTableAlias(), Arrays.asList(b.getColumnName()), joinType);
+            this(a.getTableAlias(), Collections.singletonList(a.getColumnName()), b.getTableAlias(), Collections.singletonList(b.getColumnName()), joinType);
         }
 
         public JoinedTable(DatabaseTableAlias leftTable, List<String> leftFields, DatabaseTableAlias joinedTable, List<String> rightFields, String joinType) {

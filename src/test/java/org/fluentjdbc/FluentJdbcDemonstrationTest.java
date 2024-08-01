@@ -11,8 +11,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Random;
 
-import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
-import static org.fluentjdbc.FluentJdbcAsserts.assertThatOptional;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
@@ -41,7 +40,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldGenerateIdForNewRow() throws Exception {
+    public void shouldGenerateIdForNewRow() {
         String savedName = "demo row";
         Long id = table
                 .newSaveBuilder("id", null)
@@ -50,11 +49,11 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .execute(connection)
                 .getId();
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo(savedName);
+        assertThat(table.where("id", id).singleString(connection, "name").get()).isEqualTo(savedName);
     }
 
     @Test
-    public void shouldUpdateRowWithExistingId() throws SQLException {
+    public void shouldUpdateRowWithExistingId() {
         String savedName = "demo row";
         Long id = table
                 .newSaveBuilder("id", null)
@@ -69,26 +68,26 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", updatedName)
                 .execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo(updatedName);
-        assertThat(table.where("id", id).singleLong(connection, "code")).get().isEqualTo(543L);
+        assertThat(table.where("id", id).singleString(connection, "name").get()).isEqualTo(updatedName);
+        assertThat(table.where("id", id).singleLong(connection, "code").get()).isEqualTo(543L);
     }
 
     @Test
     public void shouldInsertRowWithNonexistentKey() throws SQLException {
         String newRow = "Nonexistent key";
-        long pregeneratedId = 1000 + new Random().nextInt();
-        Long id = table.newSaveBuilder("id", pregeneratedId)
+        long preGeneratedId = 1000 + new Random().nextInt();
+        Long id = table.newSaveBuilder("id", preGeneratedId)
                 .uniqueKey("code", 235235)
                 .setField("name", newRow)
                 .execute(connection)
                 .getId();
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get()
+        assertThat(table.where("id", id).singleString(connection, "name").get())
             .isEqualTo(newRow);
     }
 
     @Test
-    public void shouldUpdateRowWithDuplicateUniqueKey() throws SQLException {
+    public void shouldUpdateRowWithDuplicateUniqueKey() {
         String savedName = "old value";
         Long id = table.newSaveBuilder("id", null)
                 .uniqueKey("code", 242112)
@@ -101,12 +100,12 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .setField("name", updatedName)
                 .execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get()
+        assertThat(table.where("id", id).singleString(connection, "name").get())
             .isEqualTo(updatedName);
     }
 
     @Test
-    public void shouldCreateTimestamps() throws InterruptedException, SQLException {
+    public void shouldCreateTimestamps() throws InterruptedException {
         Instant start = Instant.now();
         Thread.sleep(10);
         Long id = table
@@ -117,47 +116,48 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
                 .getId();
         Thread.sleep(10);
 
-        assertThatOptional(table.where("id", id).singleInstant(connection, "created_at"))
+        SingleRow<Instant> actual1 = table.where("id", id).singleInstant(connection, "created_at");
+        assertThat(actual1.get())
             .isAfter(start).isBefore(Instant.now());
-        assertThatOptional(table.where("id", id).singleInstant(connection, "updated_at"))
+        SingleRow<Instant> actual = table.where("id", id).singleInstant(connection, "updated_at");
+        assertThat(actual.get())
             .isAfter(start).isBefore(Instant.now());
     }
 
     @Test
-    public void shouldUpdateTimestamp() throws InterruptedException, SQLException {
+    public void shouldUpdateTimestamp() throws InterruptedException {
         Long id = table
                 .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "demo row")
                 .execute(connection)
                 .getId();
-        Instant createdTime = table.where("id", id).singleInstant(connection, "updated_at")
-                .orElseThrow(IllegalArgumentException::new);
-        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at")
-                .orElseThrow(IllegalArgumentException::new);
+        Instant createdTime = table.where("id", id).singleInstant(connection, "updated_at").get();
+        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at").get();
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "another value").execute(connection);
-        assertThatOptional(table.where("id", id).singleInstant(connection, "updated_at"))
+        SingleRow<Instant> actual1 = table.where("id", id).singleInstant(connection, "updated_at");
+        assertThat(actual1.get())
             .isAfter(updatedTime);
-        assertThatOptional(table.where("id", id).singleInstant(connection, "created_at"))
+        SingleRow<Instant> actual = table.where("id", id).singleInstant(connection, "created_at");
+        assertThat(actual.get())
             .isEqualTo(createdTime);
     }
 
     @Test
-    public void shouldNotUpdateUnchangedRows() throws InterruptedException, SQLException {
+    public void shouldNotUpdateUnchangedRows() throws InterruptedException {
         Long id = table
                 .newSaveBuilder("id", null)
                 .uniqueKey("code", 32352)
                 .setField("name", "original value")
                 .execute(connection)
                 .getId();
-        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at")
-                .orElseThrow(IllegalArgumentException::new);
+        Instant updatedTime = table.where("id", id).singleInstant(connection, "updated_at").get();
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "original value").execute(connection);
-        assertThat(table.where("id", id).singleInstant(connection, "updated_at")).get()
+        assertThat(table.where("id", id).singleInstant(connection, "updated_at").get())
             .isEqualTo(updatedTime);
     }
 }

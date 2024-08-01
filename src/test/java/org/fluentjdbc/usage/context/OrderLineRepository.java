@@ -6,10 +6,10 @@ import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextJoinedSelectBuilder;
 import org.fluentjdbc.DbContextTableAlias;
 import org.fluentjdbc.DbContextTable;
+import org.fluentjdbc.SingleRow;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -58,8 +58,8 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
     }
 
     @Override
-    public Optional<OrderLine> retrieve(UUID uuid) {
-        return Optional.empty();
+    public SingleRow<OrderLine> retrieve(UUID uuid) {
+        return SingleRow.absent(() -> new RuntimeException("Can't retrieve order line"));
     }
 
     public class QueryImpl implements Query<OrderLine> {
@@ -100,7 +100,7 @@ public class OrderLineRepository implements Repository<OrderLine, UUID> {
             return context.list(OrderLineRepository::toOrderLine);
         }
 
-        private QueryImpl query(DbContextJoinedSelectBuilder context) {
+        private QueryImpl query(@SuppressWarnings("unused") DbContextJoinedSelectBuilder context) {
             return this;
         }
 

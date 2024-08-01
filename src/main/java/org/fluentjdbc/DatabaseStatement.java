@@ -21,7 +21,6 @@ import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -215,7 +214,7 @@ public class DatabaseStatement {
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
@@ -223,8 +222,10 @@ public class DatabaseStatement {
      * @return the mapped row if one row is returned, Optional.empty otherwise
      * @throws IllegalStateException if more than one row was matched the the query
      */
-    public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return query(connection, result -> result.single(mapper));
+    public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+        return query(connection, result -> result.single(mapper, () -> new NoRowsReturnedException(
+                statement, parameters
+        )));
     }
 
     /**

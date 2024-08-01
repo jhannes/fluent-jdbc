@@ -6,7 +6,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -45,7 +44,7 @@ public class DatabaseTableQueryBuilder implements
         String statement = "select count(*) as count " + fromClause() + whereClause.whereClause();
         return table.newStatement("COUNT", statement, whereClause.getParameters())
                 .singleObject(connection, row -> row.getInt("count"))
-                .orElseThrow(() -> new RuntimeException("Should never happen"));
+                .orElseThrow();
     }
 
     /**
@@ -73,7 +72,7 @@ public class DatabaseTableQueryBuilder implements
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
@@ -83,7 +82,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Nonnull
     @Override
-    public <T> Optional<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+    public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return createSelect().singleObject(connection, mapper);
     }
 

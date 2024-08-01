@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 
@@ -69,7 +68,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param mapper Function object to map a single returned row to a object
@@ -78,7 +77,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      */
     @Nonnull
     @CheckReturnValue
-    <OBJECT> Optional<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper);
+    <OBJECT> SingleRow<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
      * Returns a string from the specified column name
@@ -88,7 +87,7 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<String> singleString(String fieldName) {
+    default SingleRow<String> singleString(String fieldName) {
         return singleObject(row -> row.getString(fieldName));
     }
 
@@ -100,40 +99,40 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<Number> singleLong(String fieldName) {
+    default SingleRow<Number> singleLong(String fieldName) {
         return singleObject(row -> row.getLong(fieldName));
     }
 
     /**
      * Executes <code>SELECT fieldName FROM ...</code> on the query.
-     * If there is no rows, returns {@link Optional#empty()}, if there is one result, returns it, if there
+     * If there is no rows, returns {@link SingleRow#absent}, if there is one result, returns it, if there
      * are more than one result, throws {@link IllegalStateException}
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<Instant> singleInstant(String fieldName) {
+    default SingleRow<Instant> singleInstant(String fieldName) {
         return singleObject(row -> row.getInstant(fieldName));
     }
 
     /**
      * Executes <code>SELECT fieldName FROM ...</code> on the query.
-     * If there is no rows, returns {@link Optional#empty()}, if there is one result, returns the
+     * If there is no rows, returns {@link SingleRow#absent}, if there is one result, returns the
      * binary stream of the object. Used with BLOB (Binary Large Objects) and bytea (PostgreSQL) data types
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<InputStream> singleInputStream(String fieldName) {
+    default SingleRow<InputStream> singleInputStream(String fieldName) {
         return singleObject(row -> row.getInputStream(fieldName));
     }
 
     /**
      * Executes <code>SELECT fieldName FROM ...</code> on the query.
-     * If there is no rows, returns {@link Optional#empty()}, if there is one result, returns the
+     * If there is no rows, returns {@link SingleRow#absent}, if there is one result, returns the
      * character reader of the object. Used with CLOB (Character Large Objects) and text (PostgreSQL) data types
      */
     @Nonnull
     @CheckReturnValue
-    default Optional<Reader> singleReader(String fieldName) {
+    default SingleRow<Reader> singleReader(String fieldName) {
         return singleObject(row -> row.getReader(fieldName));
     }
 

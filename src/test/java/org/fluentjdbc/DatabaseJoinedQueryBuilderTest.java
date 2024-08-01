@@ -46,7 +46,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldJoinTablesManyToOne() throws SQLException {
+    public void shouldJoinTablesManyToOne() {
         String format = "permission[%s] person[%s] organization[%s]";
 
         String personOneName = "Jane";
@@ -99,7 +99,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
 
 
     @Test
-    public void shouldJoinSameTableWithDifferentAlias() throws SQLException {
+    public void shouldJoinSameTableWithDifferentAlias() {
         String personOneName = "Jane";
         String personTwoName = "James";
         long personOneId = savePerson(personOneName);
@@ -130,13 +130,12 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                         "access_to=%s granted_by=%s",
                         r.table(p).getString("name"),
                         r.table(g).getString("name")
-                )))
-                .get()
+                )).get())
                 .isEqualTo("access_to=Jane granted_by=James");
     }
 
     @Test
-    public void shouldOrderAndFilter() throws SQLException {
+    public void shouldOrderAndFilter() {
         long alice = savePerson("Alice");
         long bob = savePerson("Bob");
         long charlene = savePerson("Charlene");
@@ -178,7 +177,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldCountJoinedRows() throws SQLException {
+    public void shouldCountJoinedRows() {
         long alice = savePerson("Alice");
         long bob = savePerson("Bob");
 
@@ -205,7 +204,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldReadAllDataTypes() throws SQLException {
+    public void shouldReadAllDataTypes() {
         long alice = savePerson("Alice");
         long army = saveOrganization("Army");
         Long membershipId = saveMembership(alice, army);
@@ -248,7 +247,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldThrowOnUnknownColumn() throws SQLException {
+    public void shouldThrowOnUnknownColumn() {
         long alice = savePerson("Alice");
         long army = saveOrganization("Army");
         saveMembership(alice, army);
@@ -257,7 +256,6 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias o = organizations.alias("o");
 
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(
                 () -> p.join(p.column("id"), m.column("person_id"))
                         .join(m.column("organization_id"), o.column("id"))
@@ -272,7 +270,6 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
         DatabaseTableAlias p = persons.alias("p");
         DatabaseTableAlias o = organizations.alias("o");
 
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(
                 () -> p.join(p.column("id"), m.column("person_id"))
                         .join(m.column("non_existing_column"), o.column("id"))
@@ -281,14 +278,14 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .hasMessageContaining("non_existing_column");
     }
 
-    private long savePerson(String personOneName) throws SQLException {
+    private long savePerson(String personOneName) {
         return persons.insert()
                 .setPrimaryKey("id", (Long) null)
                 .setField("name", personOneName)
                 .execute(connection);
     }
 
-    private void savePermission(long membershipId, String applicationName) throws SQLException {
+    private void savePermission(long membershipId, String applicationName) {
         permissions.insert()
                 .setPrimaryKey("id", (Long) null)
                 .setField("name", applicationName)
@@ -296,7 +293,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .execute(connection);
     }
 
-    private Long saveMembership(long personOneId, long orgOneId) throws SQLException {
+    private Long saveMembership(long personOneId, long orgOneId) {
         return memberships.insert()
                 .setPrimaryKey("id", (Long) null)
                 .setField("person_id", personOneId)
@@ -304,7 +301,7 @@ public class DatabaseJoinedQueryBuilderTest extends AbstractDatabaseTest {
                 .execute(connection);
     }
 
-    private Long saveOrganization(String orgOneName) throws SQLException {
+    private Long saveOrganization(String orgOneName) {
         return organizations.insert()
                 .setPrimaryKey("id", (Long) null)
                 .setField("name", orgOneName)

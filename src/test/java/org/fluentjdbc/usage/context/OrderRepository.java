@@ -5,9 +5,9 @@ import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextSelectBuilder;
 import org.fluentjdbc.DbContextTable;
+import org.fluentjdbc.SingleRow;
 
 import java.sql.SQLException;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -45,7 +45,7 @@ public class OrderRepository implements Repository<Order, UUID> {
     }
 
     @Override
-    public Optional<Order> retrieve(UUID uuid) {
+    public SingleRow<Order> retrieve(UUID uuid) {
         return table.where("order_id", uuid).singleObject(OrderRepository::toOrder);
     }
 
@@ -66,7 +66,7 @@ public class OrderRepository implements Repository<Order, UUID> {
             return query(context.where("customer_email", customerEmail));
         }
 
-        private Query query(DbContextSelectBuilder context) {
+        private Query query(@SuppressWarnings("unused") DbContextSelectBuilder context) {
             return this;
         }
     }

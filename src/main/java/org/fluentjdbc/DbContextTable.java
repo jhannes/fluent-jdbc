@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -103,7 +102,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      * {@link DbContextConnection} and is evicted when the connection is closed. The key is in context
      * of this table, so different tables can have the same key without collision
      */
-    public <KEY,ENTITY> Optional<ENTITY> cache(KEY key, DbContext.RetrieveMethod<KEY, ENTITY> retriever) {
+    public <KEY,ENTITY> SingleRow<ENTITY> cache(KEY key, DbContext.RetrieveMethod<KEY, ENTITY> retriever) {
         return dbContext.cache(getTable().getTableName(), key, retriever);
     }
 

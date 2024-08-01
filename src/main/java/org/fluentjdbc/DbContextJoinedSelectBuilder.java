@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.ResultSetMetaData;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -182,7 +181,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param mapper Function object to map a single returned row to a object
@@ -191,7 +190,7 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      */
     @Override
     @Nonnull
-    public <OBJECT> Optional<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper) {
+    public <OBJECT> SingleRow<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper) {
         return builder.singleObject(getConnection(), mapper);
     }
 

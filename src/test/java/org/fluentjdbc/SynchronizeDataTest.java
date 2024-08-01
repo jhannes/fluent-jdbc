@@ -46,17 +46,17 @@ public class SynchronizeDataTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldDownloadChanges() throws Exception {
+    public void shouldDownloadChanges() {
         Long id = table.newSaveBuilder("id", null).setField("name", "some name").execute(serverConnection).getId();
 
         assertThat(table.where("id", id).singleString(clientConnection, "name")).isEmpty();
 
         synchronize(serverConnection, clientConnection);
 
-        assertThat(table.where("id", id).singleString(clientConnection, "name")).get().isEqualTo("some name");
+        assertThat(table.where("id", id).singleString(clientConnection, "name").get()).isEqualTo("some name");
     }
 
-    private void synchronize(Connection serverConnection, Connection clientConnection) throws SQLException {
+    private void synchronize(Connection serverConnection, Connection clientConnection) {
         List<String> names = table.unordered().list(serverConnection, row -> row.getString("name"));
         for (String name : names) {
             table.newSaveBuilder("id", null).setField("name", name).execute(clientConnection);

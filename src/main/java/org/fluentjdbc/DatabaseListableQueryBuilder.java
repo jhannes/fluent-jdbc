@@ -4,7 +4,6 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,7 +44,7 @@ public interface DatabaseListableQueryBuilder<T extends DatabaseListableQueryBui
     T skipAndLimit(int offset, int rowCount);
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
@@ -55,7 +54,7 @@ public interface DatabaseListableQueryBuilder<T extends DatabaseListableQueryBui
      */
     @Nonnull
     @CheckReturnValue
-    <OBJECT> Optional<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper);
+    <OBJECT> SingleRow<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper);
 
     /**
      * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:

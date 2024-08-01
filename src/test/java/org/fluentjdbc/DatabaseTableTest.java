@@ -13,8 +13,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.fluentjdbc.FluentJdbcAsserts.assertThat;
 
 public class DatabaseTableTest extends AbstractDatabaseTest {
 
@@ -40,7 +40,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldInsertWithoutKey() throws SQLException {
+    public void shouldInsertWithoutKey() {
         table.insert()
             .setField("code", 1001)
             .setField("name", "insertTest")
@@ -66,13 +66,12 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .setField("name", "whatever")
                 .setField("entry_time", time)
                 .execute(connection);
-        assertThat(table.where("code", 1002).singleObject(connection, row -> row.getOffsetDateTime("entry_time")))
-                .get()
+        assertThat(table.where("code", 1002).singleObject(connection, row -> row.getOffsetDateTime("entry_time")).get())
                 .isEqualTo(time);
     }
 
     @Test
-    public void shouldHandleOrStatements() throws SQLException {
+    public void shouldHandleOrStatements() {
         Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1001).setField("name", "A").execute(connection);
         Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 1002).setField("name", "B").execute(connection);
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 2001).setField("name", "C").execute(connection);
@@ -88,7 +87,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldListOnWhereIn() throws SQLException {
+    public void shouldListOnWhereIn() {
         Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
         Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "world").execute(connection);
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "darkness").execute(connection);
@@ -99,7 +98,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldReturnEmptyListOnEmptyWhereIn() throws SQLException {
+    public void shouldReturnEmptyListOnEmptyWhereIn() {
         table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
         assertThat(table.whereIn("name", Collections.emptyList()).unordered().listStrings(connection, "id"))
                 .isEmpty();
@@ -107,7 +106,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldListOnOptional() throws SQLException {
+    public void shouldListOnOptional() {
         Object id1 = table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "yes").execute(connection);
         Object id2 = table.insert().setPrimaryKey("id", null).setField("code", 2).setField("name", "yes").execute(connection);
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute(connection);
@@ -131,7 +130,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldUpdate() throws SQLException {
+    public void shouldUpdate() {
         Object id = table.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1004)
@@ -140,12 +139,12 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
         table.where("id", id).query().update().setField("name", "New name").execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get()
+        assertThat(table.where("id", id).singleString(connection, "name").get())
             .isEqualTo("New name");
     }
 
     @Test
-    public void shouldUpdateIfPresent() throws SQLException {
+    public void shouldUpdateIfPresent() {
         Object id = table.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1004)
@@ -160,12 +159,12 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .setFieldIfPresent("description", "newComment")
                 .execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo("oldName");
-        assertThat(table.where("id", id).singleString(connection, "description")).get().isEqualTo("newComment");
+        assertThat(table.where("id", id).singleString(connection, "name").get()).isEqualTo("oldName");
+        assertThat(table.where("id", id).singleString(connection, "description").get()).isEqualTo("newComment");
     }
 
     @Test
-    public void shouldSpecifyCustomExpressions() throws SQLException {
+    public void shouldSpecifyCustomExpressions() {
         Long id = table.insert().setPrimaryKey("id", (Long)null)
                 .setField("code", 2)
                 .setField("name", "test")
@@ -177,7 +176,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldDelete() throws SQLException {
+    public void shouldDelete() {
         Long id = (Long) table.insert().setPrimaryKey("id", null).setField("code", 1).setField("name", "hello").execute(connection);
 
         table.where("name", "hello").delete(connection);
@@ -187,14 +186,13 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
 
     @Test
-    public void shouldThrowOnMissingColumn() throws Exception {
+    public void shouldThrowOnMissingColumn() {
         final Object id = table.insert()
                 .setPrimaryKey("id", null)
                 .setField("code", 1234)
                 .setField("name", "testing")
                 .execute(connection);
 
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("id", id).singleString(connection, "non_existing"))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("Column {non_existing} is not present");
@@ -202,11 +200,9 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldThrowOnMissingTable() {
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> missingTable.where("id", 12).singleLong(connection, "id"))
                 .isInstanceOf(SQLException.class);
 
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> missingTable.where("id", 12).unordered()
                 .list(connection, row -> row.getLong("id")))
                 .isInstanceOf(SQLException.class);
@@ -223,7 +219,6 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         table.insert().setField("code", 123).setField("name", "the same name").execute(connection);
         table.insert().setField("code", 456).setField("name", "the same name").execute(connection);
 
-        //noinspection ResultOfMethodCallIgnored
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong(connection, "code"))
                 .isInstanceOf(IllegalStateException.class);
     }

@@ -8,7 +8,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -84,7 +83,7 @@ public abstract class DatabaseSaveBuilder<T> {
     @Nonnull
     public DatabaseSaveResult<T> execute(@Nonnull Connection connection) {
         if (this.idValue != null) {
-            Optional<List<String>> difference = tableWhereId(this.idValue).singleObject(connection, row -> differingFields(row, connection));
+            SingleRow<List<String>> difference = tableWhereId(this.idValue).singleObject(connection, row -> differingFields(row, connection));
             if (!difference.isPresent()) {
                 insert(connection);
                 return DatabaseSaveResult.inserted(this.idValue);
@@ -96,7 +95,7 @@ public abstract class DatabaseSaveBuilder<T> {
             }
         } else if (hasUniqueKey()) {
             AtomicReference<T> idValueLocal = new AtomicReference<>();
-            Optional<List<String>> difference = tableWhereUniqueKey().singleObject(connection, row -> {
+            SingleRow<List<String>> difference = tableWhereUniqueKey().singleObject(connection, row -> {
                 idValueLocal.set(getId(row));
                 return differingFields(row, connection);
             });
@@ -118,7 +117,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * Creates a query where primary key is specified
      */
     @CheckReturnValue
-    protected DatabaseTableQueryBuilder tableWhereId(T p) {
+    protected DatabaseTableQueryBuilder tableWhereId(@Nullable T p) {
         return table.where(idField, p);
     }
 
@@ -169,7 +168,7 @@ public abstract class DatabaseSaveBuilder<T> {
      * Build and execute the <code>INSERT</code>-statement to insert this row
      */
     @Nullable
-    protected abstract T insert(Connection connection);
+    protected abstract T insert(@Nonnull Connection connection);
 
     protected T insertWithId(T idValue, Connection connection) {
         table.insert()
@@ -195,7 +194,7 @@ public abstract class DatabaseSaveBuilder<T> {
 
     @SuppressWarnings("unchecked")
     @CheckReturnValue
-    protected T getId(DatabaseRow row) throws SQLException {
+    protected T getId(@Nonnull DatabaseRow row) throws SQLException {
         return (T) row.getObject(idField);
     }
 

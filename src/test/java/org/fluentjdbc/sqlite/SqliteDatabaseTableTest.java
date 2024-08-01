@@ -38,7 +38,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
             }
         }
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get()
+        assertThat(table.where("id", id).singleString(connection, "name").get())
             .isEqualTo("test insert without primary key generation");
     }
 
@@ -51,7 +51,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
             .getId();
         assertThat(id).isEqualTo(21912L);
 
-        assertThat(table.where("id", 21912L).singleString(connection, "name")).get()
+        assertThat(table.where("id", 21912L).singleString(connection, "name").get())
             .isEqualTo("test insert with original id");
     }
 
@@ -74,7 +74,7 @@ public class SqliteDatabaseTableTest extends AbstractDatabaseTest {
             .setField("name", "test after update")
             .execute(connection);
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get()
+        assertThat(table.where("id", id).singleString(connection, "name").get())
             .isEqualTo("test after update");
     }
 

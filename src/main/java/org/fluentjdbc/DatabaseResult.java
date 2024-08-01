@@ -16,15 +16,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Spliterators;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 /**
  * Collects together a {@link PreparedStatement} and the resulting {@link ResultSet},
  * as well as metaData to map column names to collect indexes from {@link ResultSetMetaData}.
- * Use {@link #list(RowMapper)}, {@link #forEach(RowConsumer)} and {@link #single(RowMapper)}
+ * Use {@link #list(RowMapper)}, {@link #forEach(RowConsumer)} and {@link #single}
  * to process the {@link ResultSet}
  */
 @ParametersAreNonnullByDefault
@@ -175,21 +175,21 @@ public class DatabaseResult implements AutoCloseable {
      * where the query parameter ensure that no more than one row can be returned, ie the query
      * should include a unique key.
      *
-     * @return the mapped row. If no rows were returned, returns {@link Optional#empty()}
+     * @return the mapped row. If no rows were returned, returns {@link SingleRow#absent}
      * @throws IllegalArgumentException if more than one row was returned
      * @throws SQLException if the {@link RowMapper} throws
      */
     @Nonnull
     @CheckReturnValue
-    public <T> Optional<T> single(RowMapper<T> mapper) throws SQLException {
+    <T> SingleRow<T> single(RowMapper<T> mapper, Supplier<RuntimeException> exceptionSupplier) throws SQLException {
         if (!next()) {
-            return Optional.empty();
+            return SingleRow.absent(exceptionSupplier);
         }
         T result = mapper.mapRow(row());
         if (next()) {
             throw new IllegalStateException("More than one row returned");
         }
-        return Optional.of(result);
+        return SingleRow.of(result);
     }
 
     /**

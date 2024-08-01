@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
 
@@ -15,7 +16,7 @@ public class DatabaseSaveBuilderWithoutGeneratedKeys<T> extends DatabaseSaveBuil
 
     @Override
     @Nullable
-    protected T insert(Connection connection) {
+    protected T insert(@Nonnull Connection connection) {
         DatabaseInsertBuilder builder = table.insert();
         if (idValue != null) {
             builder = builder.setField(idField, idValue);

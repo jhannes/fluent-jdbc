@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -108,7 +107,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param mapper Function object to map a single returned row to a object
@@ -117,7 +116,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      */
     @Nonnull
     @Override
-    public <OBJECT> Optional<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper) {
+    public <OBJECT> SingleRow<OBJECT> singleObject(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper) {
         return getDatabaseStatement().singleObject(connection, mapper);
     }
 
@@ -152,7 +151,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
                 + (groupByClauses.isEmpty() ? "" : " group by " + String.join(", ", groupByClauses));
         return factory.newStatement("*", "COUNT", selectStatement, whereBuilder.getParameters())
                 .singleObject(connection, row -> row.getInt("count"))
-                .orElseThrow(() -> new RuntimeException("Should never happen"));
+                .orElseThrow();
     }
 
     /**

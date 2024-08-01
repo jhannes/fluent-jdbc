@@ -49,20 +49,20 @@ public class DbContextSyncBuilderTest {
 
     @Test
     public void shouldUpdateBigDecimal() {
-        Map<String, Object> object = createObject("testname", BigDecimal.valueOf(10.25));
+        Map<String, Object> object = createObject("test name", BigDecimal.valueOf(10.25));
 
         sync(Collections.singletonList(object));
 
         object.put("amount", BigDecimal.valueOf(2.25));
         sync(Collections.singletonList(object));
 
-        assertThat(table.where("id", object.get("id")).singleObject(row -> row.getBigDecimal("amount")))
-                .get().isEqualTo(BigDecimal.valueOf(2.25));
+        assertThat(table.where("id", object.get("id")).singleObject(row -> row.getBigDecimal("amount")).get())
+                .isEqualTo(BigDecimal.valueOf(2.25));
     }
 
     @Test
     public void shouldAddAdditionalRow() {
-        Map<String, Object> firstObject = createObject("testname", BigDecimal.valueOf(10.25));
+        Map<String, Object> firstObject = createObject("test name", BigDecimal.valueOf(10.25));
         sync(Collections.singletonList(firstObject));
 
         Map<String, Object> secondObject = createObject("other name", BigDecimal.valueOf(2));

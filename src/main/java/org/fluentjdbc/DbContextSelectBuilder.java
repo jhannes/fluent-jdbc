@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -44,7 +43,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     }
 
     @CheckReturnValue
-    private DbContextSelectBuilder query(DatabaseTableQueryBuilder builder) {
+    private DbContextSelectBuilder query(@SuppressWarnings("unused") DatabaseTableQueryBuilder builder) {
         return this;
     }
 
@@ -123,28 +122,28 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
-     * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @param mapper Function object to map a single returned row to an object
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws IllegalStateException if more than one row was matched the query
      */
     @Nonnull
     @Override
-    public <T> Optional<T> singleObject(DatabaseResult.RowMapper<T> mapper) {
+    public <T> SingleRow<T> singleObject(DatabaseResult.RowMapper<T> mapper) {
         return queryBuilder.singleObject(getConnection(), mapper);
     }
 
     /**
      * Returns a string from the specified column name
      *
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws IllegalStateException if more than one row was matched the query
      */
     @Nonnull
     @Override
-    public Optional<String> singleString(String fieldName) {
+    public SingleRow<String> singleString(String fieldName) {
         return queryBuilder.singleString(getConnection(), fieldName);
     }
 

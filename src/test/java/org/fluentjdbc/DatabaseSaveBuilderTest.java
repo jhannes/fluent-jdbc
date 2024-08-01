@@ -54,7 +54,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
 
 
     @Test
-    public void shouldGenerateIdForNewRow() throws Exception {
+    public void shouldGenerateIdForNewRow() {
         String savedName = "demo row";
         UUID id = table
                 .newSaveBuilderWithUUID("id", null)
@@ -63,11 +63,11 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .execute(connection)
                 .getId();
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo(savedName);
+        assertThat(table.where("id", id).singleString(connection, "name").get()).isEqualTo(savedName);
     }
 
     @Test
-    public void shouldUpdateRow() throws Exception {
+    public void shouldUpdateRow() {
         String savedName = "original row";
         UUID id = table
                 .newSaveBuilderWithUUID("id", null)
@@ -82,7 +82,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .execute(connection);
         assertThat(result.getSaveStatus()).isEqualTo(UPDATED);
 
-        assertThat(table.where("id", id).singleString(connection, "name")).get().isEqualTo("updated value");
+        assertThat(table.where("id", id).singleString(connection, "name").get()).isEqualTo("updated value");
 
         assertThat(table.where("id", id)
                 .orderBy("name")
@@ -91,7 +91,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldNotUpdateUnchangedRow() throws SQLException {
+    public void shouldNotUpdateUnchangedRow() {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         String savedName = "original row";
         UUID firstId = table
@@ -113,7 +113,7 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
     }
 
     @Test
-    public void shouldUpdateRowOnKey() throws SQLException {
+    public void shouldUpdateRowOnKey() {
         UUID idOnInsert = table.newSaveBuilderWithUUID("id", null)
             .uniqueKey("code", 10001)
             .setField("name", "old name")
@@ -129,12 +129,12 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         assertThat(result.toString()).contains(result.getId().toString());
         assertThat(result.hashCode()).isEqualTo(DatabaseSaveResult.updated(result.getId(), null).hashCode());
 
-        assertThat(table.where("id", idOnInsert).singleString(connection, "name")).get()
+        assertThat(table.where("id", idOnInsert).singleString(connection, "name").get())
             .isEqualTo("new name");
     }
 
     @Test
-    public void shouldGenerateUsePregeneratedIdForNewRow() throws Exception {
+    public void shouldGenerateUsePreGeneratedIdForNewRow() {
         String savedName = "demo row";
         UUID id = UUID.randomUUID();
         DatabaseSaveResult<UUID> result = table
@@ -147,12 +147,12 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
         UUID generatedKey = result.getId();
         assertThat(id).isEqualTo(generatedKey);
 
-        assertThat(table.where("id", id).singleString(connection, "name"))
-                .get().isEqualTo(savedName);
+        assertThat(table.where("id", id).singleString(connection, "name").get())
+                .isEqualTo(savedName);
     }
     
     @Test
-    public void shouldInsertMultipleRowsOnPartialKeyMatch() throws SQLException {
+    public void shouldInsertMultipleRowsOnPartialKeyMatch() {
         DatabaseSaveResult<UUID> first = multikeyTable.newSaveBuilderWithUUID("id", null)
                 .uniqueKey("first_name", "John")
                 .uniqueKey("last_name", "Doe")
@@ -172,8 +172,8 @@ public class DatabaseSaveBuilderTest extends AbstractDatabaseTest {
                 .setField("address", "Updated St 1")
                 .execute(connection);
         assertThat(third.getSaveStatus()).isEqualTo(UPDATED);
-        assertThat(second.getId()).isEqualTo(second.getId());
-        assertThat(multikeyTable.where("id", second.getId()).singleString(connection, "address")).get()
+        assertThat(second.getId()).isEqualTo(third.getId());
+        assertThat(multikeyTable.where("id", second.getId()).singleString(connection, "address").get())
                 .isEqualTo("Updated St 1");
     }
 

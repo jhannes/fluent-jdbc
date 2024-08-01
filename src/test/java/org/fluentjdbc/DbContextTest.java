@@ -118,8 +118,7 @@ public class DbContextTest {
 
         assertThat(dbContext
                 .statement("select max(code) as max_code from database_table_test_table", Arrays.asList())
-                .singleObject(row -> row.getInt("max_code")))
-                .get()
+                .singleObject(row -> row.getInt("max_code")).get())
                 .isEqualTo(10003);
         assertThat(dbContext
                 .statement("select max(code) as max_code from database_table_test_table where name = ?", Arrays.asList("ZYX"))
@@ -137,7 +136,7 @@ public class DbContextTest {
         DbContextSqlBuilder sqlBuilder = dbContext.select("max(code) as max_code")
                 .from(table.getTable().getTableName())
                 .where("name", "ZYX");
-        assertThat(sqlBuilder.unordered().singleLong("max_code")).get().isEqualTo(10002L);
+        assertThat(sqlBuilder.unordered().singleLong("max_code").get()).isEqualTo(10002L);
         assertThat(sqlBuilder.getCount()).isEqualTo(2);
     }
 
@@ -439,9 +438,9 @@ public class DbContextTest {
                 .setFields(Arrays.asList("code"), Arrays.asList(1104))
                 .setField("name", "New name").execute();
 
-        assertThat(table.where("id", id).singleString("name")).get()
+        assertThat(table.where("id", id).singleString("name").get())
             .isEqualTo("New name");
-        assertThat(table.where("id", id).singleLong("code")).get()
+        assertThat(table.where("id", id).singleLong("code").get())
             .isEqualTo(1104L);
     }
 
@@ -455,7 +454,7 @@ public class DbContextTest {
 
         assertThat(table.cache(id,
                 i -> table.where("id", i).singleObject(row -> row.getString("name"))
-        )).get().isEqualTo("hello");
+        ).get()).isEqualTo("hello");
 
         int count = table.where("id", id)
                 .update()
@@ -465,7 +464,7 @@ public class DbContextTest {
 
         assertThat(table.cache(id,
                 i -> table.where("id", i).singleObject(row -> row.getString("name"))
-        )).get().isEqualTo("hello");
+        ).get()).isEqualTo("hello");
     }
 
     @Test
@@ -527,8 +526,7 @@ public class DbContextTest {
                 .execute();
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         transfer(
-                table.where("id", id)
-                    .singleInputStream("data").orElseThrow(RuntimeException::new),
+                table.where("id", id).singleInputStream("data").get(),
                 buffer
         );
         assertThat(buffer.toString()).isEqualTo("Hello World");
@@ -546,7 +544,7 @@ public class DbContextTest {
         StringWriter buffer = new StringWriter();
         transfer(
                 table.where("id", id)
-                    .singleReader("document").orElseThrow(RuntimeException::new),
+                    .singleReader("document").get(),
                 buffer
         );
         assertThat(buffer.toString()).isEqualTo("Hello World");

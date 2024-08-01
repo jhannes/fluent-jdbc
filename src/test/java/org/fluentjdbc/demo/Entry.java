@@ -56,7 +56,6 @@ public class Entry {
     }
 
     public static Entry retrieve(Connection connection, Long id) {
-        return entriesTable.where("id", id).singleObject(connection, Entry::mapFromRow)
-                .orElseThrow(() -> new IllegalArgumentException("Unknown id " + id));
+        return entriesTable.where("id", id).singleObject(connection, Entry::mapFromRow).get();
     }
 }

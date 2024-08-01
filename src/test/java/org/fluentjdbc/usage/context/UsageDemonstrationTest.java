@@ -1,6 +1,5 @@
 package org.fluentjdbc.usage.context;
 
-import org.fluentjdbc.AbstractDatabaseTest;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
@@ -85,8 +84,9 @@ public class UsageDemonstrationTest {
         Product product = sampleProduct();
         productRepository.save(product);
         assertThat(product).hasNoNullFieldsOrProperties();
-        assertThat(productRepository.retrieve(product.getProductId())).get()
-                .isEqualToComparingFieldByField(product);
+        assertThat(productRepository.retrieve(product.getProductId()).get())
+                .usingRecursiveComparison()
+                .isEqualTo(product);
     }
 
     @Test
@@ -98,8 +98,9 @@ public class UsageDemonstrationTest {
         updatedProduct.setProductId(originalProduct.getProductId());
         productRepository.save(updatedProduct);
 
-        assertThat(productRepository.retrieve(originalProduct.getProductId())).get()
-                .isEqualToComparingFieldByField(updatedProduct);
+        assertThat(productRepository.retrieve(originalProduct.getProductId()).get())
+                .usingRecursiveComparison()
+                .isEqualTo(updatedProduct);
     }
 
     @Test
@@ -118,9 +119,10 @@ public class UsageDemonstrationTest {
         Order updatedOrder = sampleOrder();
         updatedOrder.setOrderId(originalOrder.getOrderId());
         orderRepository.save(updatedOrder);
-        assertThat(orderRepository.retrieve(originalOrder.getOrderId())).get()
+        assertThat(orderRepository.retrieve(originalOrder.getOrderId()).get())
                 .hasNoNullFieldsOrProperties()
-                .isEqualToComparingFieldByField(updatedOrder);
+                .usingRecursiveComparison()
+                .isEqualTo(updatedOrder);
     }
 
     @Test

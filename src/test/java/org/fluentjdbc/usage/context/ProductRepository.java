@@ -4,12 +4,11 @@ import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseSaveBuilder;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DatabaseTable;
-import org.fluentjdbc.DatabaseTableAlias;
 import org.fluentjdbc.DatabaseTableQueryBuilder;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextSelectBuilder;
 import org.fluentjdbc.DbContextTable;
-import org.fluentjdbc.DbContextTableAlias;
+import org.fluentjdbc.SingleRow;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,10 +16,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.EnumMap;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
 
@@ -55,7 +51,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
 
         @Nonnull
         @Override
-        protected Product.Id insert(Connection connection) {
+        protected Product.Id insert(@Nonnull Connection connection) {
             Product.Id idValue = this.idValue;
             if (idValue == null) {
                 idValue = new Product.Id(UUID.randomUUID());
@@ -69,12 +65,12 @@ public class ProductRepository implements Repository<Product, Product.Id> {
         }
 
         @Override
-        protected Product.Id getId(DatabaseRow row) throws SQLException {
+        protected Product.Id getId(@Nonnull DatabaseRow row) throws SQLException {
             return new Product.Id(row.getUUID(idField));
         }
 
         @Override
-        protected DatabaseTableQueryBuilder tableWhereId(Product.Id id) {
+        protected DatabaseTableQueryBuilder tableWhereId(@Nonnull Product.Id id) {
             return table.where(idField, id.getValue());
         }
     }
@@ -110,7 +106,7 @@ public class ProductRepository implements Repository<Product, Product.Id> {
     }
 
     @Override
-    public Optional<Product> retrieve(Product.Id productId) {
+    public SingleRow<Product> retrieve(Product.Id productId) {
         return table.where("product_id", productId.getValue()).singleObject(ProductRepository::toProduct);
     }
 

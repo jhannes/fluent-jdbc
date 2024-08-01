@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 /**
@@ -13,7 +12,7 @@ import java.util.stream.Stream;
  * clauses, {@link #select(String...)} column names, {@link #from(String)} table statement,
  * {@link #groupBy(String...)}, {@link #orderBy(String)} and {@link #skipAndLimit(int, int)}.
  *
- * Example:
+ * <h2>Example:</h2>
  *
  * <pre>
  * new DbContextSqlBuilder(dbContext)
@@ -53,7 +52,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
     }
 
     /**
-     * Replace the from part of the <code>SELECT ... FROM fromStatement</code> in the select statement
+     * Replace the "from" part of the <code>SELECT ... FROM fromStatement</code> in the select statement
      */
     @CheckReturnValue
     public DbContextSqlBuilder from(String fromStatement) {
@@ -136,16 +135,16 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
     }
 
     /**
-     * If the query returns no rows, returns {@link Optional#empty()}, if exactly one row is returned, maps it and return it,
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
-     * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @param mapper Function object to map a single returned row to an object
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws IllegalStateException if more than one row was matched the query
      */
     @Nonnull
     @Override
-    public <OBJECT> Optional<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper) {
+    public <OBJECT> SingleRow<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper) {
         return builder.singleObject(getConnection(), mapper);
     }
 

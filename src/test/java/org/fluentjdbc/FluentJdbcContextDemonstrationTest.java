@@ -62,7 +62,7 @@ public class FluentJdbcContextDemonstrationTest {
                 .execute()
                 .getId();
 
-        assertThat(table.where("id", id).singleString("name")).get().isEqualTo(savedName);
+        assertThat(table.where("id", id).singleString("name").get()).isEqualTo(savedName);
     }
 
     @Test
@@ -81,8 +81,8 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", updatedName)
                 .execute();
 
-        assertThat(table.where("id", id).singleString("name")).get().isEqualTo(updatedName);
-        assertThat(table.where("id", id).singleLong("code")).get().isEqualTo(543L);
+        assertThat(table.where("id", id).singleString("name").get()).isEqualTo(updatedName);
+        assertThat(table.where("id", id).singleLong("code").get()).isEqualTo(543L);
     }
 
     @Test
@@ -128,7 +128,7 @@ public class FluentJdbcContextDemonstrationTest {
                 .execute()
                 .getId();
 
-        assertThat(table.where("id", id).singleString("name")).get()
+        assertThat(table.where("id", id).singleString("name").get())
             .isEqualTo(newRow);
     }
 
@@ -146,7 +146,7 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", updatedName)
                 .execute();
 
-        assertThat(table.where("id", id).singleString("name")).get()
+        assertThat(table.where("id", id).singleString("name").get())
             .isEqualTo(updatedName);
     }
 
@@ -162,9 +162,9 @@ public class FluentJdbcContextDemonstrationTest {
                 .getId();
         Thread.sleep(10);
 
-        assertThat(table.where("id", id).singleInstant("created_at").orElseThrow(IllegalArgumentException::new))
+        assertThat(table.where("id", id).singleInstant("created_at").get())
             .isAfter(start).isBefore(Instant.now());
-        assertThat(table.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new))
+        assertThat(table.where("id", id).singleInstant("updated_at").get())
             .isAfter(start).isBefore(Instant.now());
     }
 
@@ -176,14 +176,14 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", "demo row")
                 .execute()
                 .getId();
-        Instant createdTime = table.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new);
-        Instant updatedTime = table.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new);
+        Instant createdTime = table.where("id", id).singleInstant("updated_at").get();
+        Instant updatedTime = table.where("id", id).singleInstant("updated_at").get();
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "another value").execute();
-        assertThat(table.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new))
+        assertThat(table.where("id", id).singleInstant("updated_at").get())
                 .isAfter(updatedTime);
-        assertThat(table.where("id", id).singleObject(row -> row.getOffsetDateTime("created_at")).orElseThrow(IllegalArgumentException::new))
+        assertThat(table.where("id", id).singleObject(row -> row.getOffsetDateTime("created_at")).get())
                 .isEqualTo(OffsetDateTime.ofInstant(createdTime, ZoneId.systemDefault()));
     }
 
@@ -195,11 +195,11 @@ public class FluentJdbcContextDemonstrationTest {
                 .setField("name", "original value")
                 .execute()
                 .getId();
-        Instant updatedTime = table.where("id", id).singleInstant("updated_at").orElseThrow(IllegalArgumentException::new);
+        Instant updatedTime = table.where("id", id).singleInstant("updated_at").get();
         Thread.sleep(10);
 
         table.newSaveBuilder("id", id).setField("name", "original value").execute();
-        assertThat(table.where("id", id).singleInstant("updated_at")).get()
+        assertThat(table.where("id", id).singleInstant("updated_at").get())
             .isEqualTo(updatedTime);
     }
 

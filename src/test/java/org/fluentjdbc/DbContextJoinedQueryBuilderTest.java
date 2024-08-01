@@ -193,8 +193,7 @@ public class DbContextJoinedQueryBuilderTest {
                         "access_to=%s granted_by=%s",
                         r.table(p).getString("name"),
                         r.table(g).getString("name")
-                )))
-                .get()
+                )).get())
                 .isEqualTo("access_to=Jane granted_by=James");
     }
 

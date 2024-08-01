@@ -11,7 +11,6 @@ import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -54,8 +53,9 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
     public void shouldRetrieveSimpleObject() throws SQLException {
         TagType tagType = sampleTagType().save(connection);
 
-        assertThat(TagType.retrieve(connection, tagType.getId())).get()
-            .isEqualToComparingFieldByField(tagType);
+        assertThat(TagType.retrieve(connection, tagType.getId()).get())
+                .usingRecursiveComparison()
+                .isEqualTo(tagType);
     }
 
     private TagType sampleTagType() {
@@ -77,8 +77,8 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
         TagType colorTagType = new TagType("color").save(connection);
 
         assertThat(TagType.list(connection))
-            .extracting("name")
-            .contains(sizeTagType.getName(), colorTagType.getName());
+                .extracting("name")
+                .contains(sizeTagType.getName(), colorTagType.getName());
     }
 
     @Test
@@ -95,7 +95,7 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
         assertThat(entryAggregate.getTags()).extracting("name").containsExactly("astronomical", "orange");
         assertThat(entryAggregate.getTags()).extracting("tagTypeId")
-            .contains(sizeTagType.getId());
+                .contains(sizeTagType.getId());
     }
 
     protected void databaseDoesNotSupportResultSetMetadataTableName() {
@@ -135,8 +135,8 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
         assertThat(entriesGroupedByColorAndSize.get(astronomical).keySet()).containsOnly(orange, blue, red);
         assertThat(entriesGroupedByColorAndSize.get(small).get(blue))
-            .extracting("name")
-            .containsOnly("Blueberry", "Balloon");
+                .extracting("name")
+                .containsOnly("Blueberry", "Balloon");
     }
 
     @Test
@@ -146,13 +146,14 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
         TagType.saveAll(tagTypes, connection);
 
         for (TagType tagType : tagTypes) {
-            assertThat(TagType.retrieve(connection, tagType.getId())).get()
-                .isEqualToComparingFieldByField(tagType);
+            assertThat(TagType.retrieve(connection, tagType.getId()).get())
+                    .usingRecursiveComparison()
+                    .isEqualTo(tagType);
         }
 
         assertThat(TagType.list(connection))
-            .extracting("name")
-            .contains("a", "b", "c");
+                .extracting("name")
+                .contains("a", "b", "c");
     }
 
 
@@ -175,7 +176,6 @@ public class RichDomainModelTest extends AbstractDatabaseTest {
 
         return result;
     }
-
 
 
 }

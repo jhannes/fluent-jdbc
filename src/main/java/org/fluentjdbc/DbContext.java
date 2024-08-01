@@ -11,7 +11,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * <p>Provides a starting point for for context oriented database operation. Create one DbContext for your
@@ -85,7 +84,7 @@ public class DbContext {
     }
 
     private final ThreadLocal<TopLevelDbContextConnection> currentConnection = new ThreadLocal<>();
-    private final ThreadLocal<HashMap<String, HashMap<Object, Optional<?>>>> currentCache = new ThreadLocal<>();
+    private final ThreadLocal<HashMap<String, HashMap<Object, SingleRow<?>>>> currentCache = new ThreadLocal<>();
     private final ThreadLocal<DbTransaction> currentTransaction = new ThreadLocal<>();
 
     /**
@@ -134,7 +133,7 @@ public class DbContext {
     }
 
     /**
-     * Gets a connection from {@link ConnectionSupplier} and assigns it to the the current thread.
+     * Gets a connection from {@link ConnectionSupplier} and assigns it to the current thread.
      * Associates the cache with the current thread as well
      *
      * @see #startConnection(DataSource)
@@ -172,16 +171,16 @@ public class DbContext {
      * {@link DbContextConnection} and is evicted when the connection is closed
      */
     @CheckReturnValue
-    public <ENTITY, KEY> Optional<ENTITY> cache(String tableName, KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
+    public <ENTITY, KEY> SingleRow<ENTITY> cache(String tableName, KEY key, RetrieveMethod<KEY, ENTITY> retriever) {
         if (!currentCache.get().containsKey(tableName)) {
             currentCache.get().put(tableName, new HashMap<>());
         }
         if (!currentCache.get().get(tableName).containsKey(key)) {
-            Optional<ENTITY> value = retriever.retrieve(key);
+            SingleRow<ENTITY> value = retriever.retrieve(key);
             currentCache.get().get(tableName).put(key, value);
         }
         //noinspection unchecked
-        return (Optional<ENTITY>) currentCache.get().get(tableName).get(key);
+        return (SingleRow<ENTITY>) currentCache.get().get(tableName).get(key);
     }
 
     /**
@@ -307,10 +306,10 @@ public class DbContext {
 
     /**
      * Functional interface used to populate the query. Called on when a retrieved value is not in
-     * the cache. Like {@link java.util.function.Function}, but returns {@link Optional}
+     * the cache. Like {@link java.util.function.Function}, but returns {@link SingleRow}
      */
     @FunctionalInterface
     public interface RetrieveMethod<KEY, ENTITY> {
-        Optional<ENTITY> retrieve(KEY key);
+        SingleRow<ENTITY> retrieve(KEY key);
     }
 }

@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
@@ -21,7 +22,7 @@ public class DatabaseSaveBuilderWithUUID extends DatabaseSaveBuilder<UUID> {
 
     @Override
     @Nullable
-    protected UUID insert(Connection connection) {
+    protected UUID insert(@Nonnull Connection connection) {
         return insertWithId(
                 this.idValue != null ? this.idValue : UUID.randomUUID(),
                 connection
