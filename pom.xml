@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.jhannes</groupId>
     <artifactId>fluent-jdbc</artifactId>
-    <version>0.3.1-SNAPSHOT</version>
+    <version>0.4.0</version>
 
     <name>Fluent JDBC library</name>
     <description>A Java library used to execute JDBC statements and build SQL</description>
@@ -225,7 +225,7 @@
         <connection>scm:git:https://github.com/jhannes/fluent-jdbc.git</connection>
         <developerConnection>scm:git:https://github.com/jhannes/fluent-jdbc.git</developerConnection>
         <url>https://github.com/jhannes/fluent-jdbc.git</url>
-        <tag>HEAD</tag>
+        <tag>fluent-jdbc-0.4.0</tag>
     </scm>
     <distributionManagement>
         <snapshotRepository>
