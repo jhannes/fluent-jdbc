@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,12 @@ public interface DatabaseUpdatable<T extends DatabaseUpdatable<T>> {
      */
     @CheckReturnValue
     T setField(String field, @Nullable Object value);
+
+    /**
+     * Adds the fieldName to the SQL statement with the expression and the values to the parameter list
+     */
+    @CheckReturnValue
+    T setField(String field, String expression, Collection<?> values);
 
     /**
      * Calls {@link #setField(String, Object)} for each fieldName and parameter

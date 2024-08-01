@@ -4,7 +4,9 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +26,8 @@ import java.util.Map;
 @ParametersAreNonnullByDefault
 public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBuilder> {
 
-    private final Map<String, Object> fields = new LinkedHashMap<>();
+    private final Map<String, String> expressions = new LinkedHashMap<>();
+    private final Map<String, Collection<?>> parameters = new LinkedHashMap<>();
     private final DatabaseTable table;
 
     public DatabaseInsertBuilder(DatabaseTable table) {
@@ -33,15 +36,26 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
 
     @CheckReturnValue
     Collection<Object> getParameters() {
-        return fields.values();
+        ArrayList<Object> parameters = new ArrayList<>();
+        this.parameters.values().forEach(parameters::addAll);
+        return parameters;
     }
 
     /**
      * Adds fieldName to the <code>INSERT (fieldName) VALUES (?)</code> and parameter to the list of parameters
      */
     @Override
-    public DatabaseInsertBuilder setField(String fieldName, @Nullable Object parameter) {
-        fields.put(fieldName, parameter);
+    public DatabaseInsertBuilder setField(String field, @Nullable Object value) {
+        return setField(field, "?", Collections.singletonList(value));
+    }
+
+    /**
+     * Adds fieldName to the <code>INSERT (fieldName) VALUES (expression)</code> and parameter to the list of parameters
+     */
+    @Override
+    public DatabaseInsertBuilder setField(String field, String expression, Collection<?> values) {
+        this.parameters.put(field, values);
+        this.expressions.put(field, expression);
         return this;
     }
 
@@ -50,7 +64,8 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      */
     @Override
     public DatabaseInsertBuilder setFields(Map<String, ?> fields) {
-        this.fields.putAll(fields);
+        //noinspection ResultOfMethodCallIgnored
+        fields.forEach(this::setField);
         return this;
     }
 
@@ -60,7 +75,8 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
     @Override
     public DatabaseInsertBuilder setFields(List<String> fieldNames, List<?> values) {
         for (int i = 0; i < fieldNames.size(); i++) {
-            fields.put(fieldNames.get(i), values.get(i));
+            //noinspection ResultOfMethodCallIgnored
+            setField(fieldNames.get(i), values.get(i));
         }
         return this;
     }
@@ -72,7 +88,8 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * to bind parameters and execute statement
      */
     public int execute(Connection connection) {
-        return table.newStatement("INSERT", createInsertStatement(), getParameters())
+        return table
+                .newStatement("INSERT", createInsertStatement(), getParameters())
                 .executeUpdate(connection);
     }
 
@@ -82,7 +99,7 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      */
     @CheckReturnValue
     String createInsertStatement() {
-        return table.createInsertSql(fields.keySet());
+        return "insert into " + table.getTableName() + " (" + String.join(",", expressions.keySet()) + ") values (" + String.join(", ", expressions.values()) + ")";
     }
 
     /**

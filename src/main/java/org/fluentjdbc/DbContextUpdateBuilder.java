@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -51,6 +52,11 @@ public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdate
     @Override
     public DbContextUpdateBuilder setField(String field, Object value) {
         return build(builder.setField(field, value));
+    }
+
+    @Override
+    public DbContextUpdateBuilder setField(String field, String expression, Collection<?> values) {
+        return build(builder.setField(field, expression, values));
     }
 
     /**

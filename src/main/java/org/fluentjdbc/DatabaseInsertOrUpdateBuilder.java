@@ -1,10 +1,10 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.sql.Connection;
-import java.util.LinkedHashMap;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -23,13 +23,12 @@ import java.util.Map;
  */
 public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<DatabaseInsertOrUpdateBuilder> {
 
-    @Nonnull
-    private final DatabaseTable table;
-    private final Map<String, Object> updateFields = new LinkedHashMap<>();
-    private DatabaseWhereBuilder whereClause;
+    private DatabaseUpdateBuilder updateBuilder;
+    private DatabaseInsertBuilder insertBuilder;
 
     public DatabaseInsertOrUpdateBuilder(DatabaseTable table) {
-        this.table = table;
+        updateBuilder = new DatabaseUpdateBuilder(table);
+        insertBuilder = new DatabaseInsertBuilder(table);
     }
 
     /**
@@ -37,9 +36,8 @@ public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<Database
      */
     @Override
     public DatabaseInsertOrUpdateBuilder setFields(List<String> fields, List<?> values) {
-        for (int i = 0; i < fields.size(); i++) {
-            updateFields.put(fields.get(i), values.get(i));
-        }
+        updateBuilder = updateBuilder.setFields(fields, values);
+        insertBuilder = insertBuilder.setFields(fields, values);
         return this;
     }
 
@@ -48,7 +46,8 @@ public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<Database
      */
     @Override
     public DatabaseInsertOrUpdateBuilder setFields(Map<String, ?> fields) {
-        updateFields.putAll(fields);
+        updateBuilder = updateBuilder.setFields(fields);
+        insertBuilder = insertBuilder.setFields(fields);
         return this;
     }
 
@@ -57,13 +56,28 @@ public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<Database
      */
     @Override
     public DatabaseInsertOrUpdateBuilder setField(String field, @Nullable Object value) {
-        updateFields.put(field, value);
+        return setField(field, "?", Collections.singleton(value));
+    }
+
+    /**
+     * Adds fieldName to <code>UPDATE ... SET fieldName = expression</code> and values to the list of parameters
+     */
+    @Override
+    public DatabaseInsertOrUpdateBuilder setField(String field, String expression, Collection<?> values) {
+        updateBuilder = updateBuilder.setField(field, expression, values);
+        insertBuilder = insertBuilder.setField(field, expression, values);
         return this;
     }
 
     @CheckReturnValue
     public DatabaseInsertOrUpdateBuilder where(DatabaseWhereBuilder whereClause) {
-        this.whereClause = whereClause;
+        updateBuilder = updateBuilder.where(whereClause);
+        List<String> columns = whereClause.getColumns();
+        for (int i = 0; i < columns.size(); i++) {
+            String column = columns.get(i);
+            insertBuilder = insertBuilder.setField(column, whereClause.getColumnExpressions().get(i), whereClause.getParameterAsCollection(i));
+        }
+
         return this;
     }
 
@@ -72,15 +86,11 @@ public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<Database
      * @return returns the number of rows updated or -1 if a row was inserted
      */
     public int execute(Connection connection) {
-        int rowCount = new DatabaseUpdateBuilder(table).where(whereClause).setFields(updateFields)
-                .execute(connection);
+        int rowCount = updateBuilder.execute(connection);
         if (rowCount != 0) {
             return rowCount;
         }
-        new DatabaseInsertBuilder(table)
-                .setFields(whereClause.getColumns(), whereClause.getParameters())
-                .setFields(updateFields)
-                .execute(connection);
+        insertBuilder.execute(connection);
         return -1;
     }
 

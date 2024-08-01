@@ -18,6 +18,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -101,14 +102,12 @@ public class DbContextTest {
     @Test
     public void shouldHaveAccessToConnection() throws SQLException {
         insertTestRow(1001, "customSqlTest");
-
         String customSql = String.format("select code from %s where name = 'customSqlTest'", table.getTable().getTableName());
-        ResultSet resultSet = dbContext.getThreadConnection()
-                .prepareStatement(customSql)
-                .executeQuery();
-        resultSet.next();
-
-        assertThat(resultSet.getLong("code")).isEqualTo(1001);
+        try (PreparedStatement preparedStatement = dbContext.getThreadConnection().prepareStatement(customSql)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            resultSet.next();
+            assertThat(resultSet.getLong("code")).isEqualTo(1001);
+        }
     }
 
     @Test
@@ -512,6 +511,30 @@ public class DbContextTest {
                 .execute();
         assertThat(table.whereAll(key).singleString("name").get()).isEqualTo("originalName");
         assertThat(table.whereAll(key).singleString("document").get()).isEqualTo("newDescription");
+    }
+
+    @Test
+    public void shouldUpdateCalculatedFields() {
+        String name = "something";
+        String prefix = "oldPrefix";
+        table.whereColumnValuesEqual("id", "2000000 + length(?)", Collections.singletonList(name))
+                .insertOrUpdate()
+                .setField("code", 1)
+                .setField("document", "? || ' plus ' || ?", Arrays.asList(prefix, name))
+                .execute();
+
+        assertThat(table
+                .whereColumnValuesEqual("id", "2000000 + length(?)", Collections.singletonList(name))
+                .singleString("document").get()).isEqualTo("oldPrefix plus something");
+
+        prefix = "newPrefix";
+        table.whereColumnValuesEqual("id", "2000000 + length(?)", Collections.singletonList(name))
+                .insertOrUpdate()
+                .setField("document", "? || ' plus ' || ?", Arrays.asList(prefix, name))
+                .execute();
+        assertThat(table
+                .whereColumnValuesEqual("id", "2000000 + length(?)", Collections.singletonList(name))
+                .singleString("document").get()).isEqualTo("newPrefix plus something");
     }
 
     @Test

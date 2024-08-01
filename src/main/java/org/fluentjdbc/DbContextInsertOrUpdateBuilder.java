@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,14 @@ public class DbContextInsertOrUpdateBuilder implements DatabaseUpdatable<DbConte
     @Override
     public DbContextInsertOrUpdateBuilder setField(String field, @Nullable Object value) {
         return build(builder.setField(field, value));
+    }
+
+    /**
+     * Adds the fieldName to the SQL statement and the value to the parameter list
+     */
+    @Override
+    public DbContextInsertOrUpdateBuilder setField(String field, String expression, Collection<?> values) {
+        return build(builder.setField(field, expression, values));
     }
 
     /**

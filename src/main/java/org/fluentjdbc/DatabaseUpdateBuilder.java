@@ -6,10 +6,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Generate <code>UPDATE</code> statements by collecting field names and parameters. Example:
@@ -28,7 +29,8 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
 
     @Nonnull
     private final DatabaseTable table;
-    private final Map<String, Object> updateFields = new LinkedHashMap<>();
+    private final Map<String, String> updateExpressions = new LinkedHashMap<>();
+    private final Map<String, Collection<?>> updateFields = new LinkedHashMap<>();
     private DatabaseWhereBuilder whereClause;
 
     public DatabaseUpdateBuilder(DatabaseTable table) {
@@ -41,7 +43,8 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
     @Override
     public DatabaseUpdateBuilder setFields(List<String> fields, List<?> values) {
         for (int i = 0; i < fields.size(); i++) {
-            updateFields.put(fields.get(i), values.get(i));
+            //noinspection ResultOfMethodCallIgnored
+            setField(fields.get(i), values.get(i));
         }
         return this;
     }
@@ -51,7 +54,8 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
      */
     @Override
     public DatabaseUpdateBuilder setFields(Map<String, ?> fields) {
-        updateFields.putAll(fields);
+        //noinspection ResultOfMethodCallIgnored
+        fields.forEach(this::setField);
         return this;
     }
 
@@ -60,7 +64,16 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
      */
     @Override
     public DatabaseUpdateBuilder setField(String field, @Nullable Object value) {
-        this.updateFields.put(field, value);
+        return setField(field, "?", Collections.singleton(value));
+    }
+
+    /**
+     * Adds fieldName to <code>UPDATE ... SET fieldName = expression</code> and parameter to the list of parameters
+     */
+    @Override
+    public DatabaseUpdateBuilder setField(String field, String expression, Collection<?> values) {
+        this.updateFields.put(field, values);
+        this.updateExpressions.put(field, field + " = " + expression);
         return this;
     }
 
@@ -72,15 +85,13 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
             return 0;
         }
         List<Object> parameters = new ArrayList<>();
-        parameters.addAll(updateFields.values());
+        updateFields.values().forEach(parameters::addAll);
         parameters.addAll(whereClause.getParameters());
         return table.newStatement("UPDATE", createUpdateStatement(), parameters).executeUpdate(connection);
     }
 
     private String createUpdateStatement() {
-        return "update " + table.getTableName()
-                + " set " + updateFields.keySet().stream().map(column -> column + " = ?").collect(Collectors.joining(","))
-                + whereClause.whereClause();
+        return "update " + table.getTableName() + " set " + String.join(", ", updateExpressions.values()) + whereClause.whereClause();
     }
 
     @CheckReturnValue

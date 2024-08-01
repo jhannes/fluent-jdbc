@@ -1,6 +1,7 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -63,11 +64,19 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
     }
 
     /**
-     * Adds fieldName to the <code>INSERT (fieldName) VALUES (?)</code> and parameter to the list of parameters
+     * Adds fieldName to the <code>INSERT (field) VALUES (?)</code> and value to the list of parameters
      */
     @Override
-    public DbContextInsertBuilder setField(String fieldName, Object parameter) {
-        return build(builder.setField(fieldName, parameter));
+    public DbContextInsertBuilder setField(String field, Object value) {
+        return build(builder.setField(field, value));
+    }
+
+    /**
+     * Adds fieldName to the <code>INSERT (field) VALUES (expression)</code> and value to the list of parameters
+     */
+    @Override
+    public DbContextInsertBuilder setField(String field, String expression, Collection<?> values) {
+        return build(builder.setField(field, expression, values));
     }
 
     /**

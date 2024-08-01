@@ -4,6 +4,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,5 +72,14 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
 
     public List<String> getColumns() {
         return columns;
+    }
+
+    List<String> getColumnExpressions() {
+        return columnExpressions;
+    }
+
+    Collection<?> getParameterAsCollection(int i) {
+        Object parameter = parameters.get(i);
+        return parameter instanceof Collection ? ((Collection<?>) parameter) : Collections.singleton(parameter);
     }
 }
