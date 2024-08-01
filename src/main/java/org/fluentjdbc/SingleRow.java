@@ -75,5 +75,10 @@ public interface SingleRow<TYPE> extends Iterable<TYPE> {
         public boolean isPresent() {
             return true;
         }
+
+        @Override
+        public String toString() {
+            return "SingleRow{" + result + "}";
+        }
     }
 }
