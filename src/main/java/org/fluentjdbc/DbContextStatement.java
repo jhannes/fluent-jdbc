@@ -4,6 +4,7 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -67,7 +68,7 @@ public class DbContextStatement {
 
     /**
      * Calls {@link Connection#prepareStatement(String)} with the statement,
-     * {@link DatabaseStatement#bindParameters(PreparedStatement, List)}, converting each parameter in the process
+     * {@link DatabaseStatement#bindParameters(PreparedStatement, Collection)} (PreparedStatement, List)}, converting each parameter in the process
      * and executes the statement
      */
     public int executeUpdate(Connection connection) {
