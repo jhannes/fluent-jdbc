@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 /**
  * Used to execute an arbitrary statement. Create with {@link DbContext#statement(String, List)}.
  *
- * <h3>Example</h3>
+ * <h2>Example</h2>
  *
  * <pre>
  * dbContext.statement(

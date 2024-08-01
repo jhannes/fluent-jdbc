@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * to execute the synchronization. Use {@link #getStatus()} to get a summary of rows inserted, updated, deleted
  * and unchanged.</p>
  *
- * <h3>Example:</h3>
+ * <h2>Example:</h2>
  *
  * <pre>
  *     public EnumMap&lt;DatabaseSaveResult.SaveStatus, Integer&gt; syncProducts(List&lt;Product&gt; products) {

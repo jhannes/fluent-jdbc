@@ -35,7 +35,7 @@ import static org.fluentjdbc.DatabaseStatement.bindParameters;
  *
  * <p>Pull requests are welcome for a substitute for SQL Server and Oracle.</p>
  *
- * <h3>Usage example:</h3>
+ * <h2>Usage example:</h2>
  *
  * <pre>
  * DatabaseTableAlias p = productsTable.alias("p");

@@ -22,7 +22,7 @@ import java.util.stream.Stream;
  *
  * <p>Pull requests are welcome for a substitute for SQL Server and Oracle.</p>
  *
- * <h3>Usage example:</h3>
+ * <h2>Usage example:</h2>
 
  * <pre>
  * {@link DbContextTable}Alias p = productsTable.alias("p");
