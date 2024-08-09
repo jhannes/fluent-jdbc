@@ -45,7 +45,7 @@ public class DatabaseResult implements AutoCloseable {
     }
 
     /**
-     * Functional interface for {@link #single(RowMapper, Supplier)} and {@link #list(RowMapper)}.
+     * Functional interface for {@link #single(RowMapper, Supplier, Supplier)} and {@link #list(RowMapper)}.
      * Like {@link java.util.function.Function}, but allows {@link SQLException} to be
      * thrown from {@link #mapRow(DatabaseRow)}
      */
