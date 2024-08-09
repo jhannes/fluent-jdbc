@@ -176,18 +176,18 @@ public class DatabaseResult implements AutoCloseable {
      * should include a unique key.
      *
      * @return the mapped row. If no rows were returned, returns {@link SingleRow#absent}
-     * @throws IllegalArgumentException if more than one row was returned
+     * @throws MultipleRowsReturnedException if more than one row was returned
      * @throws SQLException if the {@link RowMapper} throws
      */
     @Nonnull
     @CheckReturnValue
-    <T> SingleRow<T> single(RowMapper<T> mapper, Supplier<RuntimeException> exceptionSupplier) throws SQLException {
+    <T> SingleRow<T> single(RowMapper<T> mapper, Supplier<RuntimeException> noMatchException, Supplier<MultipleRowsReturnedException> multipleRowsException) throws SQLException {
         if (!next()) {
-            return SingleRow.absent(exceptionSupplier);
+            return SingleRow.absent(noMatchException);
         }
         T result = mapper.mapRow(row());
         if (next()) {
-            throw new IllegalStateException("More than one row returned");
+            throw multipleRowsException.get();
         }
         return SingleRow.of(result);
     }

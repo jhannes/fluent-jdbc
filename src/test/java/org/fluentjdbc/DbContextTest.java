@@ -562,7 +562,7 @@ public class DbContextTest {
         table.insert().setField("code", 123).setField("name", "the same name").execute();
         table.insert().setField("code", 456).setField("name", "the same name").execute();
 
-        assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> table.where("name", "the same name").singleLong("code")).isInstanceOf(MultipleRowsReturnedException.class);
     }
 
     @Test

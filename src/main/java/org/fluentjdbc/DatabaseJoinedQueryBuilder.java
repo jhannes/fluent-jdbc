@@ -203,13 +203,17 @@ public class DatabaseJoinedQueryBuilder implements
      *
      * @param connection Database connection
      * @param mapper     Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @Override
     public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return query(connection, result -> result.single(mapper, () -> new NoRowsReturnedException(createSelectStatement(), parameters)));
+        return query(connection, result -> result.single(
+                mapper,
+                () -> new NoRowsReturnedException(createSelectStatement(), parameters),
+                () -> new MultipleRowsReturnedException(createSelectStatement(), parameters)
+        ));
     }
 
     /**
@@ -274,7 +278,7 @@ public class DatabaseJoinedQueryBuilder implements
         int index = 0;
 
         ResultSet resultSet = statement.executeQuery();
-        // Unfortunately, even though the database should know the alias for the each table, JDBC doesn't reveal it
+        // Unfortunately, even though the database should know the alias for each table, JDBC doesn't reveal it
         ResultSetMetaData metaData = resultSet.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             while (!metaData.getTableName(i).equalsIgnoreCase(aliases.get(index).getTableName())) {

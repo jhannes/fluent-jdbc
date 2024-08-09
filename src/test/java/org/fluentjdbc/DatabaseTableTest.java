@@ -220,7 +220,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         table.insert().setField("code", 456).setField("name", "the same name").execute(connection);
 
         assertThatThrownBy(() -> table.where("name", "the same name").singleLong(connection, "code"))
-                .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(MultipleRowsReturnedException.class);
     }
 
 }

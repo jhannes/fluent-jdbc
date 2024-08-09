@@ -193,9 +193,9 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
      * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
-     * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @param mapper Function object to map a single returned row to an object
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Override
     @Nonnull

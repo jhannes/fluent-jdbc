@@ -136,7 +136,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      *
      * @param mapper Function object to map a single returned row to an object
      * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws IllegalStateException if more than one row was matched the query
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @Override
@@ -148,7 +148,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * Returns a string from the specified column name
      *
      * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws IllegalStateException if more than one row was matched the query
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @Override

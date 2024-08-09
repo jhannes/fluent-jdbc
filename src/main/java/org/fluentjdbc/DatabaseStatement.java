@@ -120,13 +120,13 @@ public class DatabaseStatement {
      */
     public static Object toDatabaseType(@Nullable Object parameter, Connection connection) {
         if (parameter instanceof Instant) {
-            return Timestamp.from((Instant)parameter);
+            return Timestamp.from((Instant) parameter);
         } else if (parameter instanceof ZonedDateTime) {
-            return Timestamp.from(Instant.from((ZonedDateTime)parameter));
+            return Timestamp.from(Instant.from((ZonedDateTime) parameter));
         } else if (parameter instanceof OffsetDateTime) {
-            return Timestamp.from(Instant.from((OffsetDateTime)parameter));
+            return Timestamp.from(Instant.from((OffsetDateTime) parameter));
         } else if (parameter instanceof LocalDate) {
-            return Date.valueOf((LocalDate)parameter);
+            return Date.valueOf((LocalDate) parameter);
         } else if (parameter instanceof UUID) {
             if (isSqlServer(connection)) {
                 return parameter.toString().toUpperCase();
@@ -166,7 +166,7 @@ public class DatabaseStatement {
      */
     private static boolean isSqlServer(Connection connection) {
         return connection.getClass().getName().startsWith("net.sourceforge.jtds.jdbc") ||
-                connection.getClass().getName().startsWith("com.microsoft.sqlserver.jdbc");
+               connection.getClass().getName().startsWith("com.microsoft.sqlserver.jdbc");
     }
 
     /**
@@ -218,14 +218,16 @@ public class DatabaseStatement {
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
-     * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @param mapper     Function object to map a single returned row to a object
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return query(connection, result -> result.single(mapper, () -> new NoRowsReturnedException(
-                statement, parameters
-        )));
+        return query(connection, result -> result.single(
+                mapper,
+                () -> new NoRowsReturnedException(statement, parameters),
+                () -> new MultipleRowsReturnedException(statement, parameters)
+        ));
     }
 
     /**
@@ -268,7 +270,7 @@ public class DatabaseStatement {
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
+            reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
         }
     }
 
@@ -286,7 +288,7 @@ public class DatabaseStatement {
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
+            reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
         }
     }
 
@@ -304,7 +306,7 @@ public class DatabaseStatement {
         } catch (SQLException e) {
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            reporter.reportQuery(statement, System.currentTimeMillis()-startTime);
+            reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
         }
     }
 

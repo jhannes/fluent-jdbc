@@ -50,7 +50,7 @@ public interface DatabaseListableQueryBuilder<T extends DatabaseListableQueryBui
      * @param connection Database connection
      * @param mapper Function object to map a single returned row to a object
      * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @CheckReturnValue

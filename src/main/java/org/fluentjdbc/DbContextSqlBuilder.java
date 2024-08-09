@@ -149,7 +149,7 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
      *
      * @param mapper Function object to map a single returned row to an object
      * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws IllegalStateException if more than one row was matched the query
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @Override

@@ -72,8 +72,8 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @CheckReturnValue
@@ -82,8 +82,8 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
     /**
      * Returns a string from the specified column name
      *
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @CheckReturnValue
@@ -94,8 +94,8 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
     /**
      * Returns a long from the specified column name
      *
-     * @return the mapped row if one row is returned, Optional.empty otherwise
-     * @throws IllegalStateException if more than one row was matched the the query
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
     @Nonnull
     @CheckReturnValue
