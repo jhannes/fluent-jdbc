@@ -28,7 +28,6 @@
             <artifactId>spotbugs-annotations</artifactId>
             <version>4.8.6</version>
             <scope>compile</scope>
-            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
