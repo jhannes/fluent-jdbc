@@ -51,6 +51,19 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
     }
 
     /**
+     * Returns a int from the specified column name
+     *
+     * @param connection Database connection
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
+     */
+    @Nonnull
+    @CheckReturnValue
+    default SingleRow<Integer> singleInt(Connection connection, final String fieldName) {
+        return singleObject(connection, row -> row.getInt(fieldName));
+    }
+
+    /**
      * Returns a long from the specified column name
      *
      * @param connection Database connection
@@ -59,7 +72,7 @@ public interface DatabaseQueryBuilder<T extends DatabaseQueryBuilder<T>> extends
      */
     @Nonnull
     @CheckReturnValue
-    default SingleRow<Number> singleLong(Connection connection, final String fieldName) {
+    default SingleRow<Long> singleLong(Connection connection, final String fieldName) {
         return singleObject(connection, row -> row.getLong(fieldName));
     }
 

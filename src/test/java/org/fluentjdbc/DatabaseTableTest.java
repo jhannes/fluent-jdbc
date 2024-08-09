@@ -219,7 +219,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         table.insert().setField("code", 123).setField("name", "the same name").execute(connection);
         table.insert().setField("code", 456).setField("name", "the same name").execute(connection);
 
-        assertThatThrownBy(() -> table.where("name", "the same name").singleLong(connection, "code"))
+        assertThatThrownBy(() -> table.where("name", "the same name").singleInt(connection, "code"))
                 .isInstanceOf(MultipleRowsReturnedException.class);
     }
 
