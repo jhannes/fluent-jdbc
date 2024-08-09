@@ -99,7 +99,7 @@ public abstract class DatabaseSaveBuilder<T> {
                 idValueLocal.set(getId(row));
                 return differingFields(row, connection);
             });
-            if (!difference.isPresent()) {
+            if (difference.isEmpty()) {
                 idValueLocal.set(insert(connection));
                 return DatabaseSaveResult.inserted(idValueLocal.get());
             } else if (!difference.get().isEmpty()) {
