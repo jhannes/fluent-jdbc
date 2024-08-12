@@ -170,7 +170,7 @@ public class DbContextTest {
         thread.start();
         thread.join();
 
-        assertThat(table.where("name", "insertTest").unordered().listLongs("code"))
+        assertThat(table.where("name", "insertTest").unordered().listInt("code"))
                 .isEmpty();
     }
 
@@ -190,8 +190,8 @@ public class DbContextTest {
         thread.start();
         thread.join();
 
-        assertThat(table.where("name", "insertTest").unordered().listLongs("code"))
-                .containsExactly(1001L);
+        assertThat(table.where("name", "insertTest").unordered().singleInt("code").get())
+                .isEqualTo(1001);
     }
 
     @Test
@@ -228,7 +228,7 @@ public class DbContextTest {
             table.insert().setField("code", 3).execute();
         }
 
-        assertThat(table.query().listLongs("code")).contains(1L, 2L, 3L);
+        assertThat(table.query().listInt("code")).contains(1, 2, 3);
     }
     
 

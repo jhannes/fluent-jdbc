@@ -92,6 +92,14 @@ public interface DatabaseListableQueryBuilder<T extends DatabaseListableQueryBui
      * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
      */
     @CheckReturnValue
+    default List<Integer> listInt(Connection connection, final String fieldName) {
+        return list(connection, row -> row.getInt(fieldName));
+    }
+
+    /**
+     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
+     */
+    @CheckReturnValue
     default List<Long> listLongs(Connection connection, final String fieldName) {
         return list(connection, row -> row.getLong(fieldName));
     }

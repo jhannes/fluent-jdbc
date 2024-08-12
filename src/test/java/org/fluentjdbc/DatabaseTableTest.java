@@ -53,8 +53,8 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
             .execute(connection);
         assertThat(id).isNotNull();
 
-        assertThat(table.where("name", "insertTest").orderBy("code").listLongs(connection, "code"))
-            .containsExactly(1001L, 1002L);
+        assertThat(table.where("name", "insertTest").orderBy("code").listInt(connection, "code"))
+            .containsExactly(1001, 1002);
     }
 
 
