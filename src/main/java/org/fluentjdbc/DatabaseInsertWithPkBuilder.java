@@ -27,8 +27,6 @@ import static org.fluentjdbc.DatabaseStatement.bindParameters;
  */
 public class DatabaseInsertWithPkBuilder<T> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseInsertWithPkBuilder.class);
-
     private final DatabaseInsertBuilder insertBuilder;
     private final String idField;
     private final T idValue;
