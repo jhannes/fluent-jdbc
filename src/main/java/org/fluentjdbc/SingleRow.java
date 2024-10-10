@@ -3,11 +3,17 @@ package org.fluentjdbc;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+/**
+ * An internal alternative to {@link java.util.Optional}, but when you try to access a {@link Absent} single row
+ * (equivalent of {@link Optional#empty()}, an exception specified at creation time is thrown. This allows
+ * for good exception messages like "More than one row returned for query ..."
+ */
 public interface SingleRow<TYPE> extends Iterable<TYPE> {
 
     /**
@@ -41,6 +47,10 @@ public interface SingleRow<TYPE> extends Iterable<TYPE> {
     void ifPresentOrElse(Consumer<? super TYPE> consumer, Runnable emptyAction);
 
     Stream<TYPE> stream();
+
+    TYPE orElse(TYPE alternative);
+
+    TYPE orElseGet(Supplier<? extends TYPE> alternative);
 
     class Absent<T, EX extends RuntimeException> implements SingleRow<T> {
         private final Supplier<EX> exception;
@@ -83,6 +93,21 @@ public interface SingleRow<TYPE> extends Iterable<TYPE> {
         @Override
         public Stream<T> stream() {
             return Stream.empty();
+        }
+
+        @Override
+        public T orElse(T alternative) {
+            return alternative;
+        }
+
+        @Override
+        public T orElseGet(Supplier<? extends T> alternative) {
+            return alternative.get();
+        }
+
+        @Override
+        public String toString() {
+            return "SingleRow.Absent{" + exception + "}";
         }
     }
 
@@ -128,6 +153,21 @@ public interface SingleRow<TYPE> extends Iterable<TYPE> {
         @Override
         public Stream<T> stream() {
             return Stream.of(result);
+        }
+
+        @Override
+        public T orElse(T alternative) {
+            return result;
+        }
+
+        @Override
+        public T orElseGet(Supplier<? extends T> alternative) {
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Present && result.equals(((Present<?>) obj).result);
         }
 
         @Override
