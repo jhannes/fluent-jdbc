@@ -1,5 +1,6 @@
 package org.fluentjdbc;
 
+import lombok.SneakyThrows;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.fluentjdbc.opt.junit.DbContextRule;
 import org.junit.Assume;
@@ -40,7 +41,7 @@ public class DbContextTest {
 
     private final DataSource dataSource;
 
-    private final DbContextTable table;
+    protected final DbContextTable table;
 
     private final Map<String, String> replacements;
     
@@ -573,14 +574,13 @@ public class DbContextTest {
                 .setField("code", 456)
                 .setField("data", new ByteArrayInputStream("Hello World".getBytes()))
                 .execute();
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        transfer(
-                table.where("id", id).singleInputStream("data").get(),
-                buffer
-        );
-        assertThat(buffer.toString()).isEqualTo("Hello World");
+        assertThat(readInputStream(this.table.where("id", id), "data").toString()).isEqualTo("Hello World");
     }
-    
+
+    protected ByteArrayOutputStream readInputStream(DbContextSelectBuilder query, String column) throws IOException {
+        return toOutputStream(query.singleInputStream("data").get());
+    }
+
     @Test
     public void shouldRetrieveSavedReader() throws IOException {
         assumeLargeObjectsSupported();
@@ -589,19 +589,23 @@ public class DbContextTest {
                 .setField("code", 567)
                 .setField("document", new StringReader("Hello World"))
                 .execute();
+        assertThat(readFromReader(table.where("id", id), "document")).isEqualTo("Hello World");
+    }
 
-        StringWriter buffer = new StringWriter();
-        transfer(
-                table.where("id", id)
-                    .singleReader("document").get(),
-                buffer
-        );
-        assertThat(buffer.toString()).isEqualTo("Hello World");
+    protected String readFromReader(DbContextSelectBuilder query, String column) throws IOException {
+        return toString(query.singleReader(column).get());
     }
 
     public void insertTestRow(int code, String name) {
         table.insert().setFields(Arrays.asList("code", "name"), Arrays.asList(code, name))
                 .execute();
+    }
+
+    @SneakyThrows
+    protected static ByteArrayOutputStream toOutputStream(InputStream input) {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        transfer(input, buffer);
+        return buffer;
     }
 
     private static void transfer(InputStream input, OutputStream output) throws IOException {
@@ -611,7 +615,14 @@ public class DbContextTest {
             output.write(buffer, 0, read);
         }
     }
-    
+
+    @SneakyThrows
+    protected String toString(Reader reader) {
+        StringWriter buffer = new StringWriter();
+        transfer(reader, buffer);
+        return buffer.toString();
+    }
+
     private static void transfer(Reader input, Writer output) throws IOException {
         char[] buffer = new char[8192];
         int read;

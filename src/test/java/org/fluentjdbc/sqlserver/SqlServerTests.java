@@ -1,12 +1,16 @@
 package org.fluentjdbc.sqlserver;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
+import lombok.SneakyThrows;
+import org.fluentjdbc.DbContextSelectBuilder;
+import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import javax.sql.DataSource;
+import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -22,6 +26,8 @@ public class SqlServerTests {
         REPLACEMENTS.put("UUID", "uniqueidentifier");
         REPLACEMENTS.put("INTEGER_PK", "integer identity primary key");
         REPLACEMENTS.put("BOOLEAN", "bit");
+        REPLACEMENTS.put("BLOB", "varbinary(max)");
+        REPLACEMENTS.put("CLOB", "varchar(max)");
     }
 
     public static class DatabaseSaveBuilderTest extends org.fluentjdbc.DatabaseSaveBuilderTest {
@@ -51,13 +57,13 @@ public class SqlServerTests {
 
         @Override
         public void shouldInsertRowWithNonexistentKey() throws SQLException {
-            try(Statement stmt = connection.createStatement()) {
+            try (Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("set identity_insert demo_table on");
             }
 
             super.shouldInsertRowWithNonexistentKey();
 
-            try(Statement stmt = connection.createStatement()) {
+            try (Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("set identity_insert demo_table off");
             }
         }
@@ -70,13 +76,13 @@ public class SqlServerTests {
 
         @Override
         public void shouldInsertWithExplicitKey() throws SQLException {
-            try(Statement stmt = connection.createStatement()) {
+            try (Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("set identity_insert database_table_test_table on");
             }
 
             super.shouldInsertWithExplicitKey();
 
-            try(Statement stmt = connection.createStatement()) {
+            try (Statement stmt = connection.createStatement()) {
                 stmt.executeUpdate("set identity_insert database_table_test_table off");
             }
         }
@@ -88,8 +94,55 @@ public class SqlServerTests {
         }
     }
 
+    public static class DbContextTest extends org.fluentjdbc.DbContextTest {
+        public DbContextTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+
+        @SneakyThrows
+        @Override
+        public void shouldInsertOrUpdate() {
+            try (Statement stmt = dbContext.getThreadConnection().createStatement()) {
+                stmt.executeUpdate("set identity_insert database_table_test_table on");
+            }
+            super.shouldInsertOrUpdate();
+        }
+
+        @SneakyThrows
+        @Override
+        public void shouldInsertWithExplicitKey() {
+            try (Statement stmt = dbContext.getThreadConnection().createStatement()) {
+                stmt.executeUpdate("set identity_insert database_table_test_table on");
+            }
+            super.shouldInsertWithExplicitKey();
+        }
+
+        @Override
+        public void shouldUpdateCalculatedFields() {
+            // SQL Server syntax for string concatenation differs from other SQL dialects
+        }
+
+        @Override
+        protected ByteArrayOutputStream readInputStream(DbContextSelectBuilder query, String column) {
+            // Sql server closes streams when next() is called
+            return query.singleObject(row -> toOutputStream(row.getInputStream(column))).get();
+        }
+
+        @Override
+        protected String readFromReader(DbContextSelectBuilder query, String column) {
+            // Sql server closes streams when next() is called
+            return query.singleObject(row -> toString(row.getReader(column))).get();
+        }
+    }
+
+    public static class DbContextSyncBuilderTest extends org.fluentjdbc.DbContextSyncBuilderTest {
+        public DbContextSyncBuilderTest() {
+            super(getDataSource(), REPLACEMENTS);
+        }
+    }
+
     public static class UsageDemonstrationTest extends org.fluentjdbc.usage.context.UsageDemonstrationTest {
-        public UsageDemonstrationTest() throws SQLException {
+        public UsageDemonstrationTest() {
             super(getDataSource(), REPLACEMENTS);
             databaseDoesNotSupportResultSetMetadataTableName();
         }
@@ -103,7 +156,7 @@ public class SqlServerTests {
 
     private static SQLServerDataSource dataSource;
 
-    static synchronized DataSource getDataSource() throws SQLException {
+    static synchronized DataSource getDataSource() {
         Assume.assumeFalse("Database not available", databaseFailed);
         if (dataSource != null) {
             return dataSource;
@@ -120,7 +173,7 @@ public class SqlServerTests {
                 databaseFailed = true;
                 Assume.assumeFalse("Database is unavailable: " + e, true);
             }
-            throw e;
+            throw ExceptionUtil.softenCheckedException(e);
         }
         return dataSource;
     }
