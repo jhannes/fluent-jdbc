@@ -3,6 +3,7 @@ package org.fluentjdbc;
 import org.fluentjdbc.h2.H2TestDatabase;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -42,19 +43,19 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
     @Test
     public void shouldInsertWithoutKey() {
         table.insert()
-            .setField("code", 1001)
-            .setField("name", "insertTest")
-            .execute(connection);
+                .setField("code", 1001)
+                .setField("name", "insertTest")
+                .execute(connection);
 
         Object id = table.insert()
-            .setPrimaryKey("id", null)
-            .setField("code", 1002)
-            .setField("name", "insertTest")
-            .execute(connection);
+                .setPrimaryKey("id", null)
+                .setField("code", 1002)
+                .setField("name", "insertTest")
+                .execute(connection);
         assertThat(id).isNotNull();
 
         assertThat(table.where("name", "insertTest").orderBy("code").listInt(connection, "code"))
-            .containsExactly(1001, 1002);
+                .containsExactly(1001, 1002);
     }
 
 
@@ -78,7 +79,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         Object id4 = table.insert().setPrimaryKey("id", null).setField("code", 2002).setField("name", "D").execute(connection);
 
         assertThat(table
-                .whereExpressionWithParameterList("name = ? OR name = ? OR name = ?", Arrays.asList("A","B", "C"))
+                .whereExpressionWithParameterList("name = ? OR name = ? OR name = ?", Arrays.asList("A", "B", "C"))
                 .whereExpressionWithParameterList("name = ? OR code > ?", Arrays.asList("A", 2000L))
                 .unordered()
                 .listStrings(connection, "id"))
@@ -93,8 +94,8 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "darkness").execute(connection);
 
         assertThat(table.whereIn("name", Arrays.asList("hello", "world")).unordered().listStrings(connection, "id"))
-            .containsOnly(id1.toString(), id2.toString())
-            .doesNotContain(id3.toString());
+                .containsOnly(id1.toString(), id2.toString())
+                .doesNotContain(id3.toString());
     }
 
     @Test
@@ -112,9 +113,9 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute(connection);
 
         assertThat(table.whereOptional("name", "yes").unordered().listStrings(connection, "id"))
-            .contains(id1.toString(), id2.toString()).doesNotContain(id3.toString());
+                .contains(id1.toString(), id2.toString()).doesNotContain(id3.toString());
         assertThat(table.whereOptional("name", null).unordered().listStrings(connection, "id"))
-            .contains(id1.toString(), id2.toString(), id3.toString());
+                .contains(id1.toString(), id2.toString(), id3.toString());
     }
 
 
@@ -140,7 +141,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
         table.where("id", id).query().update().setField("name", "New name").execute(connection);
 
         assertThat(table.where("id", id).singleString(connection, "name").get())
-            .isEqualTo("New name");
+                .isEqualTo("New name");
     }
 
     @Test
@@ -165,7 +166,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldSpecifyCustomExpressions() {
-        Long id = table.insert().setPrimaryKey("id", (Long)null)
+        Long id = table.insert().setPrimaryKey("id", (Long) null)
                 .setField("code", 2)
                 .setField("name", "test")
                 .setField("description", null)
@@ -181,7 +182,7 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
 
         table.where("name", "hello").delete(connection);
         assertThat(table.unordered().listLongs(connection, "id"))
-            .doesNotContain(id);
+                .doesNotContain(id);
     }
 
 
@@ -194,18 +195,21 @@ public class DatabaseTableTest extends AbstractDatabaseTest {
                 .execute(connection);
 
         assertThatThrownBy(() -> table.where("id", id).singleString(connection, "non_existing"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Column {non_existing} is not present");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Column {non_existing} is not present");
     }
 
     @Test
     public void shouldThrowOnMissingTable() {
         assertThatThrownBy(() -> missingTable.where("id", 12).singleLong(connection, "id"))
                 .isInstanceOf(SQLException.class);
+        assertThat(MDC.get("fluentjdbc.tablename")).isEqualTo(missingTable.getTableName());
+        MDC.clear();
 
         assertThatThrownBy(() -> missingTable.where("id", 12).unordered()
                 .list(connection, row -> row.getLong("id")))
                 .isInstanceOf(SQLException.class);
+        assertThat(MDC.get("fluentjdbc.tablename")).isEqualTo(missingTable.getTableName());
 
         assertThatThrownBy(() -> missingTable.insert().setField("id", 12).execute(connection))
                 .isInstanceOf(SQLException.class);

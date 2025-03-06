@@ -24,6 +24,6 @@ public class DatabaseStatementFactory {
      * and the parameters are bound with {@link DatabaseStatement#bindParameter(PreparedStatement, int, Object)}
      */
     public DatabaseStatement newStatement(String tableName, String operation, String sql, Collection<?> parameters) {
-        return new DatabaseStatement(sql, parameters, reporter.table(tableName).operation(operation));
+        return new DatabaseStatement(tableName, sql, parameters, reporter.table(tableName).operation(operation));
     }
 }

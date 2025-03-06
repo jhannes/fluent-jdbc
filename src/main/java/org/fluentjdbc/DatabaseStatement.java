@@ -3,6 +3,7 @@ package org.fluentjdbc;
 import org.fluentjdbc.util.ExceptionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -44,11 +45,13 @@ public class DatabaseStatement {
 
 
     protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
+    private final String tableName;
     private final String statement;
     private final Collection<?> parameters;
     private final DatabaseTableOperationReporter reporter;
 
-    public DatabaseStatement(String statement, Collection<?> parameters, DatabaseTableOperationReporter reporter) {
+    public DatabaseStatement(String tableName, String statement, Collection<?> parameters, DatabaseTableOperationReporter reporter) {
+        this.tableName = tableName;
         this.statement = statement;
         this.parameters = parameters;
         this.reporter = reporter;
@@ -270,6 +273,7 @@ public class DatabaseStatement {
             DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery());
             return result.stream(mapper, statement);
         } catch (SQLException e) {
+            MDC.put("fluentjdbc.tablename", tableName);
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
             reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
@@ -288,6 +292,7 @@ public class DatabaseStatement {
             bindParameters(stmt, parameters);
             return f.apply(stmt);
         } catch (SQLException e) {
+            MDC.put("fluentjdbc.tablename", tableName);
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
             reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
@@ -306,6 +311,7 @@ public class DatabaseStatement {
             bindParameters(stmt, parameters);
             return f.apply(stmt);
         } catch (SQLException e) {
+            MDC.put("fluentjdbc.tablename", tableName);
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
             reporter.reportQuery(statement, System.currentTimeMillis() - startTime);

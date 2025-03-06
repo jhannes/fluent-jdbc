@@ -6,6 +6,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.slf4j.MDC;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -338,6 +339,7 @@ public class DbContextJoinedQueryBuilderTest {
         assertThatThrownBy(() -> selectContext.forEach(row -> {}))
                 .isInstanceOf(SQLException.class)
                 .hasMessageContaining("non_existing");
+        assertThat(MDC.get("fluentjdbc.tablename")).isEqualTo(persons.getTable().getTableName());
         assertThatThrownBy(() -> selectContext.list(row -> row.getString("id")))
                 .isInstanceOf(SQLException.class)
                 .hasMessageContaining("non_existing");
