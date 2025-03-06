@@ -90,6 +90,8 @@ public class DatabaseStatement {
             stmt.setDate(index, (Date) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof CharSequence) {
             stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
+        } else if (parameter instanceof Character) {
+            stmt.setString(index, String.valueOf(parameter));
         } else if (parameter instanceof Enum<?>) {
             stmt.setString(index, (String) toDatabaseType(parameter, stmt.getConnection()));
         } else if (parameter instanceof Collection<?>) {
