@@ -41,8 +41,8 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public int getCount(Connection connection) {
-        String statement = "select count(*) as count " + fromClause() + whereClause.whereClause();
-        return table.newStatement("COUNT", statement, whereClause.getParameters())
+        String statement = "select count(*) as count " + fromClause() + getWhereClause();
+        return table.newStatement("COUNT", statement, getParameters())
                 .singleObject(connection, row -> row.getInt("count"))
                 .orElseThrow();
     }
@@ -68,7 +68,7 @@ public class DatabaseTableQueryBuilder implements
     }
 
     public DatabaseStatement createSelect() {
-        return table.newStatement("SELECT", createSelectStatement(), whereClause.getParameters());
+        return table.newStatement("SELECT", createSelectStatement(), getParameters());
     }
 
     /**
@@ -168,20 +168,27 @@ public class DatabaseTableQueryBuilder implements
         return this;
     }
 
-    private String createSelectStatement() {
-        return "select *" + fromClause() + whereClause.whereClause() + orderByClause() + fetchClause();
+    public String createSelectStatement() {
+        return "select *" + fromClause() + getWhereClause() + orderByClause() + fetchClause();
     }
 
     protected String fromClause() {
         return " from " + table.getTableName();
     }
 
+    public String getWhereClause() {
+        return whereClause.whereClause();
+    }
+
     protected String orderByClause() {
         return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
     }
 
-    private String fetchClause() {
+    protected String fetchClause() {
         return rowCount == null ? "" : " offset " + offset + " rows fetch first " + rowCount + " rows only";
     }
 
+    public List<Object> getParameters() {
+        return whereClause.getParameters();
+    }
 }
