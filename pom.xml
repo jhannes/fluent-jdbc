@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.jhannes</groupId>
     <artifactId>fluent-jdbc</artifactId>
-    <version>0.5.4</version>
+    <version>0.5.5-SNAPSHOT</version>
 
     <name>Fluent JDBC library</name>
     <description>A Java library used to execute JDBC statements and build SQL</description>
