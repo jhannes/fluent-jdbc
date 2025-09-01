@@ -2,10 +2,8 @@ package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.ResultSetMetaData;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -142,27 +140,13 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     }
 
     /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpression("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
-     */
-    public DbContextJoinedSelectBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters){
-        return query(builder.whereExpressionWithParameterList(expression, parameters));
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
+     * Adds the parameter to the WHERE-clause and all the parameter list.
+     * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
      */
     @Override
-    public DbContextJoinedSelectBuilder whereOptional(String fieldName, @Nullable Object value) {
-        return query(builder.whereOptional(fieldName, value));
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query unless value is null
-     */
-    @Override
-    public DbContextJoinedSelectBuilder whereOptional(DatabaseColumnReference column, @Nullable Object value) {
-        return query(builder.whereOptional(column, value));
+    public DbContextJoinedSelectBuilder where(DatabaseQueryParameter parameter) {
+        builder.where(parameter);
+        return this;
     }
 
     /**

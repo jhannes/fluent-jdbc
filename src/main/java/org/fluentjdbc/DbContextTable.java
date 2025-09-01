@@ -38,6 +38,15 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     /**
+     * Adds the parameter to the WHERE-clause and all the parameter list.
+     * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
+     */
+    @Override
+    public DbContextSelectBuilder where(DatabaseQueryParameter parameter) {
+        return query().where(parameter);
+    }
+
+    /**
      * Creates a {@link DbContextInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement. Example:
      *
      * <pre>

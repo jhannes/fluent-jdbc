@@ -1,6 +1,6 @@
 package org.fluentjdbc;
 
-import java.util.Collection;
+import javax.annotation.CheckReturnValue;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +31,21 @@ public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdate
     }
 
     /**
+     * Adds parameters to the <code>INSERT (fieldName) VALUES (expression)</code> and to the list of parameters
+     */
+    public DbContextUpdateBuilder addParameters(List<DatabaseQueryParameter> queryParameters) {
+        return build(builder.addParameters(queryParameters));
+    }
+
+    /**
+     * Adds a parameter to the <code>INSERT (fieldName) VALUES (expression)</code> and to the list of parameters
+     */
+    @CheckReturnValue
+    public DbContextUpdateBuilder addParameter(DatabaseQueryParameter parameter) {
+        return build(builder.addParameter(parameter));
+    }
+
+    /**
      * Calls {@link #setField(String, Object)} for each fieldName and parameter
      */
     @Override
@@ -44,19 +59,6 @@ public class DbContextUpdateBuilder implements DatabaseUpdatable<DbContextUpdate
     @Override
     public DbContextUpdateBuilder setFields(Map<String, ?> fields) {
         return build(builder.setFields(fields));
-    }
-
-    /**
-     * Adds the fieldName to the SQL statement and the value to the parameter list
-     */
-    @Override
-    public DbContextUpdateBuilder setField(String field, Object value) {
-        return build(builder.setField(field, value));
-    }
-
-    @Override
-    public DbContextUpdateBuilder setField(String field, String expression, Collection<?> values) {
-        return build(builder.setField(field, expression, values));
     }
 
     /**

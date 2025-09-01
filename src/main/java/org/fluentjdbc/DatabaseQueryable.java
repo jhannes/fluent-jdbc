@@ -24,12 +24,34 @@ import static org.fluentjdbc.DatabaseStatement.parameterString;
 public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
 
     /**
+     * Adds the parameter to the WHERE-clause and all the parameter list.
+     * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
+     */
+    T where(DatabaseQueryParameter parameter);
+
+    /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query
+     */
+    @CheckReturnValue
+    default T where(String fieldName, @Nullable Object value) {
+        return whereColumnValuesEqual(fieldName, "?", Collections.singletonList(value));
+    }
+
+    /**
+     * Adds "<code>WHERE fieldName = value</code>" to the query
+     */
+    @CheckReturnValue
+    default T where(DatabaseColumnReference column, @Nullable Object value) {
+        return whereColumnValuesEqual(column.getQualifiedColumnName(), "?", Collections.singletonList(value));
+    }
+
+    /**
      * Adds the expression to the WHERE-clause and all the values to the parameter list.
      * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
      */
     @CheckReturnValue
     default T whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        return query().whereExpressionWithParameterList(expression, parameters);
+        return where(new DatabaseQueryParameter("(" + expression + ")", parameters));
     }
 
     /**
@@ -47,7 +69,7 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      */
     @CheckReturnValue
     default T whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
-        return query().whereColumnValuesEqual(column, expression, parameters);
+        return where(new DatabaseQueryParameter("(" + column + " = " + expression + ")", parameters, column, expression));
     }
 
     /**
@@ -55,7 +77,7 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
      */
     @CheckReturnValue
     default T whereExpression(String expression) {
-        return whereExpressionWithParameterList(expression, Collections.emptyList());
+        return where(new DatabaseQueryParameter("(" + expression + ")", Collections.emptyList()));
     }
 
     /**
@@ -124,22 +146,6 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
             query = query.where(entry.getKey(), entry.getValue());
         }
         return query;
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query
-     */
-    @CheckReturnValue
-    default T where(String fieldName, @Nullable Object value) {
-        return whereColumnValuesEqual(fieldName, "?", Collections.singletonList(value));
-    }
-
-    /**
-     * Adds "<code>WHERE fieldName = value</code>" to the query
-     */
-    @CheckReturnValue
-    default T where(DatabaseColumnReference column, @Nullable Object value) {
-        return whereColumnValuesEqual(column.getQualifiedColumnName(), "?", Collections.singletonList(value));
     }
 
     /**

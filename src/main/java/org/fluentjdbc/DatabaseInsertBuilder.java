@@ -6,10 +6,10 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Generate <code>INSERT</code> statements by collecting field names and parameters. Support
@@ -26,8 +26,7 @@ import java.util.Map;
 @ParametersAreNonnullByDefault
 public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBuilder> {
 
-    private final Map<String, String> expressions = new LinkedHashMap<>();
-    private final Map<String, Collection<?>> parameters = new LinkedHashMap<>();
+    private final LinkedHashMap<String, DatabaseQueryParameter> queryParameters = new LinkedHashMap<>();
     private final DatabaseTable table;
 
     public DatabaseInsertBuilder(DatabaseTable table) {
@@ -37,25 +36,26 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
     @CheckReturnValue
     Collection<Object> getParameters() {
         ArrayList<Object> parameters = new ArrayList<>();
-        this.parameters.values().forEach(parameters::addAll);
+        this.queryParameters.values().forEach(q -> parameters.addAll(q.getParameters()));
         return parameters;
     }
 
     /**
-     * Adds fieldName to the <code>INSERT (fieldName) VALUES (?)</code> and parameter to the list of parameters
+     * Adds a parameter to the <code>INSERT (fieldName) VALUES (expression)</code> and to the list of parameters
      */
     @Override
-    public DatabaseInsertBuilder setField(String field, @Nullable Object value) {
-        return setField(field, "?", Collections.singletonList(value));
+    public DatabaseInsertBuilder addParameter(DatabaseQueryParameter parameter) {
+        this.queryParameters.put(parameter.getColumnName(), parameter);
+        return this;
     }
 
     /**
-     * Adds fieldName to the <code>INSERT (fieldName) VALUES (expression)</code> and parameter to the list of parameters
+     * Adds parameters to the <code>INSERT (fieldName) VALUES (expression)</code> and to the list of parameters
      */
     @Override
-    public DatabaseInsertBuilder setField(String field, String expression, Collection<?> values) {
-        this.parameters.put(field, values);
-        this.expressions.put(field, expression);
+    public DatabaseInsertBuilder addParameters(List<DatabaseQueryParameter> queryParameters) {
+        //noinspection ResultOfMethodCallIgnored
+        queryParameters.forEach(this::addParameter);
         return this;
     }
 
@@ -99,7 +99,11 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      */
     @CheckReturnValue
     String createInsertStatement() {
-        return "insert into " + table.getTableName() + " (" + String.join(",", expressions.keySet()) + ") values (" + String.join(", ", expressions.values()) + ")";
+        return "insert into " + table.getTableName() + " (" +
+                queryParameters.values().stream().map(DatabaseQueryParameter::getColumnName).collect(Collectors.joining(", ")) +
+                ") values (" +
+                queryParameters.values().stream().map(DatabaseQueryParameter::getUpdateExpression).collect(Collectors.joining(", ")) +
+                ")";
     }
 
     /**

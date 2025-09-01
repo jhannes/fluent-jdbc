@@ -1,10 +1,7 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nullable;
 import java.sql.Connection;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +29,25 @@ public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<Database
     }
 
     /**
+     * Adds parameters to the <code>INSERT</code> and <code>UPDATE</code> statements and list of parameters
+     */
+    public DatabaseInsertOrUpdateBuilder addParameters(List<DatabaseQueryParameter> queryParameters) {
+        updateBuilder = updateBuilder.addParameters(queryParameters);
+        insertBuilder = insertBuilder.addParameters(queryParameters);
+        return this;
+    }
+
+    /**
+     * Adds a parameter to the <code>INSERT</code> and <code>UPDATE</code> statements and list of parameters
+     */
+    @CheckReturnValue
+    public DatabaseInsertOrUpdateBuilder addParameter(DatabaseQueryParameter parameter) {
+        updateBuilder = updateBuilder.addParameter(parameter);
+        insertBuilder = insertBuilder.addParameter(parameter);
+        return this;
+    }
+
+    /**
      * Calls {@link #setField(String, Object)} for each fieldName and parameter
      */
     @Override
@@ -51,33 +67,11 @@ public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<Database
         return this;
     }
 
-    /**
-     * Adds fieldName to <code>UPDATE ... SET fieldName = ?</code> and parameter to the list of parameters
-     */
-    @Override
-    public DatabaseInsertOrUpdateBuilder setField(String field, @Nullable Object value) {
-        return setField(field, "?", Collections.singleton(value));
-    }
-
-    /**
-     * Adds fieldName to <code>UPDATE ... SET fieldName = expression</code> and values to the list of parameters
-     */
-    @Override
-    public DatabaseInsertOrUpdateBuilder setField(String field, String expression, Collection<?> values) {
-        updateBuilder = updateBuilder.setField(field, expression, values);
-        insertBuilder = insertBuilder.setField(field, expression, values);
-        return this;
-    }
-
     @CheckReturnValue
     public DatabaseInsertOrUpdateBuilder where(DatabaseWhereBuilder whereClause) {
         updateBuilder = updateBuilder.where(whereClause);
-        List<String> columns = whereClause.getColumns();
-        for (int i = 0; i < columns.size(); i++) {
-            String column = columns.get(i);
-            insertBuilder = insertBuilder.setField(column, whereClause.getColumnExpressions().get(i), whereClause.getParameterAsCollection(i));
-        }
-
+        //noinspection ResultOfMethodCallIgnored
+        insertBuilder.addParameters(whereClause.getQueryParameters());
         return this;
     }
 

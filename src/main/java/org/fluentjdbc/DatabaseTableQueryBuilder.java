@@ -4,7 +4,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.sql.Connection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -87,20 +86,12 @@ public class DatabaseTableQueryBuilder implements
     }
 
     /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     * Adds the parameter to the WHERE-clause and all the parameter list.
+     * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
      */
-    public DatabaseTableQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        this.whereClause = whereClause.whereExpressionWithParameterList(expression, parameters);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
-     */
-    public DatabaseTableQueryBuilder whereColumnValuesEqual(String columnValue, String columnExpression, Collection<?> parameters) {
-        this.whereClause = whereClause.whereColumnValuesEqual(columnValue, columnExpression, parameters);
+    @Override
+    public DatabaseTableQueryBuilder where(DatabaseQueryParameter parameter) {
+        whereClause.where(parameter);
         return this;
     }
 

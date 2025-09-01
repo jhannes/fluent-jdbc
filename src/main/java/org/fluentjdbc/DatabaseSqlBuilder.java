@@ -1,11 +1,9 @@
 package org.fluentjdbc;
 
-import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.stream.Stream;
 
 /**
@@ -35,7 +33,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     private final ArrayList<String> orderByClauses = new ArrayList<>();
     private Integer offset;
     private Integer rowCount;
-    private DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
+    private final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
 
     public DatabaseSqlBuilder(DatabaseStatementFactory factory) {
         this.factory = factory;
@@ -58,22 +56,12 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     }
 
     /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     * Adds the parameter to the WHERE-clause and all the parameter list.
+     * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
      */
     @Override
-    public DatabaseSqlBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        whereBuilder = whereBuilder.whereExpressionWithParameterList(expression, parameters);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
-     */
-    @CheckReturnValue
-    public DatabaseSqlBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
-        whereBuilder = whereBuilder.whereColumnValuesEqual(column, expression, parameters);
+    public DatabaseSqlBuilder where(DatabaseQueryParameter parameter) {
+        whereBuilder.where(parameter);
         return this;
     }
 

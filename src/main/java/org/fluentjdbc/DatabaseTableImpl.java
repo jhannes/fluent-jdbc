@@ -1,7 +1,6 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
@@ -32,13 +31,18 @@ public class DatabaseTableImpl implements DatabaseTable {
     private final String tableName;
     private final DatabaseStatementFactory factory;
 
-    public DatabaseTableImpl(@Nonnull String tableName) {
+    public DatabaseTableImpl(String tableName) {
         this(tableName, new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER));
     }
 
-    public DatabaseTableImpl(@Nonnull String tableName, @Nonnull DatabaseStatementFactory factory) {
+    public DatabaseTableImpl(String tableName, DatabaseStatementFactory factory) {
         this.tableName = tableName;
         this.factory = factory;
+    }
+
+    @Override
+    public DatabaseTableQueryBuilder where(DatabaseQueryParameter parameter) {
+        return query().where(parameter);
     }
 
     /**

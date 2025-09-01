@@ -3,7 +3,6 @@ package org.fluentjdbc;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
 import java.sql.Connection;
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -59,22 +58,10 @@ public class DbContextSqlBuilder implements DbContextListableSelect<DbContextSql
         return query(builder.from(fromStatement));
     }
 
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
-     */
     @Override
-    public DbContextSqlBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        return query(builder.whereExpressionWithParameterList(expression, parameters));
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
-     */
-    @CheckReturnValue
-    public DbContextSqlBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
-        return query(builder.whereColumnValuesEqual(column, expression, parameters));
+    public DbContextSqlBuilder where(DatabaseQueryParameter parameter) {
+        builder.where(parameter);
+        return this;
     }
 
     /**

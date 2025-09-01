@@ -9,7 +9,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -51,8 +50,7 @@ public class DatabaseJoinedQueryBuilder implements
     private final DatabaseTable table;
     private final DatabaseTableAlias tableAlias;
     private final List<JoinedTable> joinedTables = new ArrayList<>();
-    private final List<String> conditions = new ArrayList<>();
-    private final List<Object> parameters = new ArrayList<>();
+    private final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
     private final List<String> orderByClauses = new ArrayList<>();
     private Integer offset;
     private Integer rowCount;
@@ -104,33 +102,21 @@ public class DatabaseJoinedQueryBuilder implements
     }
 
     /**
+     * Adds the parameter to the WHERE-clause and all the parameter list.
+     * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
+     */
+    @Override
+    public DatabaseJoinedQueryBuilder where(DatabaseQueryParameter parameter) {
+        whereBuilder.where(parameter);
+        return this;
+    }
+
+    /**
      * Adds "<code>WHERE fieldName = value</code>" to the query
      */
     @Override
     public DatabaseJoinedQueryBuilder where(String fieldName, @Nullable Object value) {
         return whereExpression(tableAlias.getAlias() + "." + fieldName + " = ?", value);
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
-     */
-    @Override
-    public DatabaseJoinedQueryBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        conditions.add(expression);
-        this.parameters.addAll(parameters);
-        return this;
-    }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
-     */
-    @CheckReturnValue
-    public DatabaseJoinedQueryBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
-        conditions.add(column + " = " + expression);
-        this.parameters.addAll(parameters);
-        return this;
     }
 
     /**
@@ -211,8 +197,8 @@ public class DatabaseJoinedQueryBuilder implements
     public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
         return query(connection, result -> result.single(
                 mapper,
-                () -> new NoRowsReturnedException(createSelectStatement(), parameters),
-                () -> new MultipleRowsReturnedException(createSelectStatement(), parameters)
+                () -> new NoRowsReturnedException(createSelectStatement(), whereBuilder.getParameters()),
+                () -> new MultipleRowsReturnedException(createSelectStatement(), whereBuilder.getParameters())
         ));
     }
 
@@ -256,8 +242,8 @@ public class DatabaseJoinedQueryBuilder implements
      */
     @Override
     public int getCount(Connection connection) {
-        String query = "select count(*) as count " + fromClause() + whereClause() + orderByClause();
-        return table.newStatement("COUNT", query, parameters)
+        String statement = "select count(*) as count " + fromClause() + whereBuilder.whereClause();
+        return table.newStatement("COUNT", statement, whereBuilder.getParameters())
                 .singleObject(connection, row -> row.getInt("count"))
                 .orElseThrow();
     }
@@ -311,18 +297,13 @@ public class DatabaseJoinedQueryBuilder implements
 
     @CheckReturnValue
     protected String createSelectStatement() {
-        return "select *" + fromClause() + whereClause() + orderByClause() + fetchClause();
+        return "select *" + fromClause() + whereBuilder.whereClause() + orderByClause() + fetchClause();
     }
 
     @CheckReturnValue
     protected String fromClause() {
         return " from " + tableAlias.getTableNameAndAlias() + " " +
                 joinedTables.stream().map(JoinedTable::toSql).collect(Collectors.joining(" "));
-    }
-
-    @CheckReturnValue
-    protected String whereClause() {
-        return conditions.isEmpty() ? "" : " where " + String.join(" and ", conditions);
     }
 
     @CheckReturnValue
@@ -336,11 +317,15 @@ public class DatabaseJoinedQueryBuilder implements
     }
 
     private <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
-        return table.newStatement("SELECT", createSelectStatement(), parameters).execute(connection, stmt -> {
+        return createSelect().execute(connection, stmt -> {
             try (DatabaseResult result = createResult(stmt)) {
                 return resultMapper.apply(result);
             }
         });
+    }
+
+    public DatabaseStatement createSelect() {
+        return table.newStatement("SELECT", createSelectStatement(), whereBuilder.getParameters());
     }
 
     private static class JoinedTable {

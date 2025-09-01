@@ -4,8 +4,8 @@ import javax.annotation.CheckReturnValue;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Used to build the <code>WHERE ...</code> clause of SQL statements such as SELECT, UPDATE and DELETE.
@@ -15,35 +15,17 @@ import java.util.List;
 @ParametersAreNonnullByDefault
 public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuilder> {
 
-    private final List<String> columns = new ArrayList<>();
-    private final List<String> columnExpressions = new ArrayList<>();
-    private final List<String> conditions = new ArrayList<>();
-    private final List<Object> parameters = new ArrayList<>();
+    private final List<DatabaseQueryParameter> queryParameters = new ArrayList<>();
 
     /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereExpressionWithParameterList("created_at between ? and ?", List.of(earliestDate, latestDate))</code>
+     * Adds the parameter to the WHERE-clause and all the parameter list.
+     * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
      */
     @Override
-    public DatabaseWhereBuilder whereExpressionWithParameterList(String expression, Collection<?> parameters) {
-        this.conditions.add("(" + expression + ")");
-        this.parameters.addAll(parameters);
+    public DatabaseWhereBuilder where(DatabaseQueryParameter parameter) {
+        this.queryParameters.add(parameter);
         return this;
     }
-
-    /**
-     * Adds the expression to the WHERE-clause and all the values to the parameter list.
-     * E.g. <code>whereColumnValues("json_column", "?::json", jsonString)</code>
-     */
-    @Override
-    public DatabaseWhereBuilder whereColumnValuesEqual(String column, String expression, Collection<?> parameters) {
-        //noinspection ResultOfMethodCallIgnored
-        whereExpressionWithParameterList(column + " = " + expression, parameters);
-        columns.add(column);
-        columnExpressions.add(expression);
-        return this;
-    }
-
 
     /**
      * Implemented as <code>return this</code> for compatibility purposes
@@ -59,7 +41,9 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
      */
     @CheckReturnValue
     public String whereClause() {
-        return conditions.isEmpty() ? "" : " WHERE " + String.join(" AND ", conditions);
+        return queryParameters.isEmpty()
+                ? ""
+                : " WHERE " + queryParameters.stream().map(DatabaseQueryParameter::getWhereExpression).collect(Collectors.joining(" AND "));
     }
 
     /**
@@ -67,19 +51,10 @@ public class DatabaseWhereBuilder implements DatabaseQueryable<DatabaseWhereBuil
      */
     @CheckReturnValue
     public List<Object> getParameters() {
-        return parameters;
+        return queryParameters.stream().flatMap(p -> p.getParameters().stream()).collect(Collectors.toList());
     }
 
-    public List<String> getColumns() {
-        return columns;
-    }
-
-    List<String> getColumnExpressions() {
-        return columnExpressions;
-    }
-
-    Collection<?> getParameterAsCollection(int i) {
-        Object parameter = parameters.get(i);
-        return parameter instanceof Collection ? ((Collection<?>) parameter) : Collections.singleton(parameter);
+    List<DatabaseQueryParameter> getQueryParameters() {
+        return queryParameters;
     }
 }
