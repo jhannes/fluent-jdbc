@@ -126,6 +126,15 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     /**
+     * Creates a {@link DbContextSqlBuilder} which allows you to query the table by
+     * generating <code>"SELECT ..."</code> statements where you can decide which columns to return
+     */
+    @CheckReturnValue
+    public DbContextSqlBuilder select(String... columns) {
+        return new DbContextSqlBuilder(this.dbContext, table.select(columns));
+    }
+
+    /**
      * Creates a {@link DbContextSelectBuilder} which allows you to query the table by
      * generating <code>"SELECT ..."</code> statements
      */

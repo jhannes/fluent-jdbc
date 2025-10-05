@@ -1,7 +1,6 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Collection;
@@ -11,7 +10,7 @@ import java.util.stream.Stream;
 import static org.fluentjdbc.DatabaseStatement.parameterString;
 
 /**
- * <p>Provides a starting point for for fluent-jdbc with explicit Connection management
+ * <p>Provides a starting point for fluent-jdbc with explicit Connection management
  * </p>
  *
  * <p>Example</p>
@@ -84,6 +83,11 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
      */
     @CheckReturnValue
     DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String fieldName, @Nullable UUID uuid);
+
+    /**
+     * Creates a {@link DatabaseSqlBuilder} object to fluently generate a <code>SELECT ...</code> statement
+     */
+    DatabaseSqlBuilder select(String... columns);
 
     /**
      * Creates a {@link DatabaseInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
@@ -173,7 +177,7 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
      * </pre>
      */
     @CheckReturnValue
-    <OBJECT> DatabaseBulkUpdateBuilder<OBJECT> bulkUpdate(@Nonnull Iterable<OBJECT> objects);
+    <OBJECT> DatabaseBulkUpdateBuilder<OBJECT> bulkUpdate(Iterable<OBJECT> objects);
 
     /**
      * Creates String for

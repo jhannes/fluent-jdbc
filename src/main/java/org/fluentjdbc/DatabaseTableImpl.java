@@ -130,6 +130,14 @@ public class DatabaseTableImpl implements DatabaseTable {
     }
 
     /**
+     * Creates a query object to be used to add {@link #where(String, Object)} statements and control returned columns
+     */
+    @Override
+    public DatabaseSqlBuilder select(String... columns) {
+        return new DatabaseSqlBuilder(factory).from(tableName).select(columns);
+    }
+
+    /**
      * Creates a {@link DatabaseInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
      */
     @Override

@@ -135,9 +135,7 @@ public class DbContextTest {
         insertTestRow(10002, "ZYX");
         insertTestRow(10003, "ABC");
 
-        DbContextSqlBuilder sqlBuilder = dbContext.select("max(code) as max_code")
-                .from(table.getTable().getTableName())
-                .where("name", "ZYX");
+        DbContextSqlBuilder sqlBuilder = table.select("max(code) as max_code").where("name", "ZYX");
         assertThat(sqlBuilder.unordered().singleLong("max_code").get()).isEqualTo(10002L);
         assertThat(sqlBuilder.getCount()).isEqualTo(2);
     }
@@ -151,11 +149,7 @@ public class DbContextTest {
         insertTestRow(10003, "ABC");
         insertTestRow(10005, "ZYX");
 
-        DbContextSqlBuilder sqlBuilder = dbContext.select("code")
-                .query()
-                .from(table.getTable().getTableName())
-                .where("name", "ZYX")
-                .orderBy("code");
+        DbContextSqlBuilder sqlBuilder = table.select("code").where("name", "ZYX").orderBy("code");
         assertThat(sqlBuilder.getCount()).isEqualTo(3);
         assertThat(sqlBuilder.limit(2).stream(row -> row.getLong("code")))
                 .containsExactly(9000L, 10002L);
@@ -567,7 +561,7 @@ public class DbContextTest {
     }
 
     @Test
-    public void shouldRetrieveSavedInputStream() throws IOException {
+    public void shouldRetrieveSavedInputStream() {
         assumeLargeObjectsSupported();
         Object id = table.insert()
                 .setPrimaryKey("id", null)
@@ -577,12 +571,12 @@ public class DbContextTest {
         assertThat(readInputStream(this.table.where("id", id), "data").toString()).isEqualTo("Hello World");
     }
 
-    protected ByteArrayOutputStream readInputStream(DbContextSelectBuilder query, String column) throws IOException {
+    protected ByteArrayOutputStream readInputStream(DbContextSelectBuilder query, String column) {
         return toOutputStream(query.singleInputStream("data").get());
     }
 
     @Test
-    public void shouldRetrieveSavedReader() throws IOException {
+    public void shouldRetrieveSavedReader() {
         assumeLargeObjectsSupported();
         Object id = table.insert()
                 .setPrimaryKey("id", null)
@@ -592,7 +586,7 @@ public class DbContextTest {
         assertThat(readFromReader(table.where("id", id), "document")).isEqualTo("Hello World");
     }
 
-    protected String readFromReader(DbContextSelectBuilder query, String column) throws IOException {
+    protected String readFromReader(DbContextSelectBuilder query, String column) {
         return toString(query.singleReader(column).get());
     }
 
