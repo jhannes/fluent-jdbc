@@ -3,7 +3,7 @@ package org.fluentjdbc.usage.context;
 import org.fluentjdbc.DatabaseRow;
 import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DbContext;
-import org.fluentjdbc.DbContextSelectBuilder;
+import org.fluentjdbc.DbContextTableQueryBuilder;
 import org.fluentjdbc.DbContextTable;
 import org.fluentjdbc.SingleRow;
 
@@ -51,9 +51,9 @@ public class OrderRepository implements Repository<Order, UUID> {
 
     public static class Query implements Repository.Query<Order> {
 
-        private final DbContextSelectBuilder context;
+        private final DbContextTableQueryBuilder context;
 
-        public Query(DbContextSelectBuilder context) {
+        public Query(DbContextTableQueryBuilder context) {
             this.context = context;
         }
 
@@ -66,7 +66,7 @@ public class OrderRepository implements Repository<Order, UUID> {
             return query(context.where("customer_email", customerEmail));
         }
 
-        private Query query(@SuppressWarnings("unused") DbContextSelectBuilder context) {
+        private Query query(@SuppressWarnings("unused") DbContextTableQueryBuilder context) {
             return this;
         }
     }

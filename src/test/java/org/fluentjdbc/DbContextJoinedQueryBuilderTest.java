@@ -381,6 +381,37 @@ public class DbContextJoinedQueryBuilderTest {
     }
 
     @Test
+    public void shouldQueryOnSubSelect() {
+        String personOneName = "Jane";
+        String personTwoName = "James";
+        long personOneId = savePerson(personOneName);
+        long personTwoId = savePerson(personTwoName);
+
+        long orgOneId = saveOrganization("Oslo");
+        long orgTwoId = saveOrganization("Bergen");
+        long orgThreeId = saveOrganization("Trondheim");
+
+        saveMembership(personOneId, orgOneId);
+        saveMembership(personOneId, orgTwoId);
+        saveMembership(personTwoId, orgTwoId);
+        saveMembership(personTwoId, orgThreeId);
+
+        List<String> membersOfOrgOneAndEitherTwoOrOrgThree = persons
+                .where(memberships.select("person_id")
+                        .where("organization_id", orgOneId)
+                        .asNestedSelectOn("id")
+                )
+                .where(memberships.select("person_id")
+                        .whereIn("organization_id", Arrays.asList(orgTwoId, orgThreeId))
+                        .asNestedSelectOn("id")
+                ).listStrings("name");
+
+        assertThat(membersOfOrgOneAndEitherTwoOrOrgThree)
+                .contains(personOneName)
+                .doesNotContain(personTwoName);
+    }
+
+    @Test
     public void shouldValidateMatchingNumberOfJoinedColumns() {
         assertThatThrownBy(() ->
                 parents.alias("p")

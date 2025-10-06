@@ -4,6 +4,7 @@ import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 /**
@@ -24,25 +25,31 @@ import java.util.stream.Stream;
  * </pre>
  *
  */
-public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuilder>, DatabaseListableQueryBuilder<DatabaseSqlBuilder> {
+public class DatabaseSelectBuilder implements DatabaseQueryBuilder<DatabaseSelectBuilder>, DatabaseListableQueryBuilder<DatabaseSelectBuilder> {
 
-    private final ArrayList<String> columns = new ArrayList<>();
     private final DatabaseStatementFactory factory;
     private String fromStatement;
     private final ArrayList<String> groupByClauses = new ArrayList<>();
-    private final ArrayList<String> orderByClauses = new ArrayList<>();
-    private Integer offset;
-    private Integer rowCount;
-    private final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
 
-    public DatabaseSqlBuilder(DatabaseStatementFactory factory) {
+    private final ArrayList<String> columns = new ArrayList<>();
+    protected final DatabaseWhereBuilder whereBuilder;
+    protected final List<String> orderByClauses = new ArrayList<>();
+    protected Integer offset;
+    protected Integer rowCount;
+
+    public DatabaseSelectBuilder(DatabaseStatementFactory factory) {
+        this(factory, new DatabaseWhereBuilder());
+    }
+
+    public DatabaseSelectBuilder(DatabaseStatementFactory factory, DatabaseWhereBuilder whereBuilder) {
         this.factory = factory;
+        this.whereBuilder = whereBuilder;
     }
 
     /**
      * Add the arguments to the column list for the <code>SELECT column, column...</code> statement
      */
-    public DatabaseSqlBuilder select(String... columns) {
+    public DatabaseSelectBuilder select(String... columns) {
         this.columns.addAll(Arrays.asList(columns));
         return this;
     }
@@ -50,7 +57,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     /**
      * Replace the "from" part of the <code>SELECT ... FROM fromStatement</code> in the select statement
      */
-    public DatabaseSqlBuilder from(String fromStatement) {
+    public DatabaseSelectBuilder from(String fromStatement) {
         this.fromStatement = fromStatement;
         return this;
     }
@@ -60,7 +67,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
      */
     @Override
-    public DatabaseSqlBuilder where(DatabaseQueryParameter parameter) {
+    public DatabaseSelectBuilder where(DatabaseQueryParameter parameter) {
         whereBuilder.where(parameter);
         return this;
     }
@@ -68,8 +75,27 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
     /**
      * Add the arguments to the column list for the <code>SELECT column, column...</code> statement
      */
-    public DatabaseSqlBuilder groupBy(String... groupByStatement) {
+    public DatabaseSelectBuilder groupBy(String... groupByStatement) {
         groupByClauses.addAll(Arrays.asList(groupByStatement));
+        return this;
+    }
+
+    /**
+     * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
+     */
+    @Override
+    public DatabaseSelectBuilder orderBy(String orderByClause) {
+        orderByClauses.add(orderByClause);
+        return this;
+    }
+
+    /**
+     * Sets the <code>ORDER BY ...</code> clause of the <code>SELECT</code> statement
+     */
+    @Override
+    public DatabaseSelectBuilder orderBy(List<String> orderByClauses) {
+        this.orderByClauses.clear();
+        this.orderByClauses.addAll(orderByClauses);
         return this;
     }
 
@@ -78,16 +104,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     @Override
-    public DatabaseSqlBuilder unordered() {
-        return this;
-    }
-
-    /**
-     * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
-     */
-    @Override
-    public DatabaseSqlBuilder orderBy(String orderByClause) {
-        orderByClauses.add(orderByClause);
+    public DatabaseSelectBuilder unordered() {
         return this;
     }
 
@@ -97,8 +114,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
      * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
      */
-    @Override
-    public DatabaseSqlBuilder skipAndLimit(int offset, int rowCount) {
+    public DatabaseSelectBuilder skipAndLimit(int offset, int rowCount) {
         this.offset = offset;
         this.rowCount = rowCount;
         return this;
@@ -108,6 +124,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
+     * @param connection Database connection
      * @param mapper Function object to map a single returned row to an object
      * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
      * @throws MultipleRowsReturnedException if more than one row was matched the query
@@ -147,7 +164,7 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
                 + (" from " + fromStatement)
                 + whereBuilder.whereClause()
                 + (groupByClauses.isEmpty() ? "" : " group by " + String.join(", ", groupByClauses));
-        return factory.newStatement("*", "COUNT", selectStatement, whereBuilder.getParameters())
+        return factory.newStatement(fromStatement, "COUNT", selectStatement, whereBuilder.getParameters())
                 .singleObject(connection, row -> row.getInt("count"))
                 .orElseThrow();
     }
@@ -156,16 +173,25 @@ public class DatabaseSqlBuilder implements DatabaseQueryBuilder<DatabaseSqlBuild
      * Implemented as <code>return this</code> for compatibility purposes
      */
     @Override
-    public DatabaseSqlBuilder query() {
+    public DatabaseSelectBuilder query() {
         return this;
+    }
+
+    /**
+     * Returns a {@link DatabaseQueryParameter} with a <code>column in (SELECT ....)</code>
+     * with this expression and the same parameters as this builder
+     */
+    public DatabaseQueryParameter asNestedSelectOn(String column) {
+        return new DatabaseQueryParameter(column + " in (" + createSelectStatement() + ")", whereBuilder.getParameters());
     }
 
     @Nonnull
     private DatabaseStatement getDatabaseStatement() {
-        return factory.newStatement("*", "SELECT", createSelectStatement(String.join(", ", columns)), whereBuilder.getParameters());
+        return factory.newStatement(fromStatement, "SELECT", createSelectStatement(), whereBuilder.getParameters());
     }
 
-    private String createSelectStatement(String columns) {
+    protected String createSelectStatement() {
+        String columns = this.columns.isEmpty() ? "*" : String.join(", ", this.columns);
         return "select " + columns
                 + (" from " + fromStatement)
                 + whereBuilder.whereClause()

@@ -85,9 +85,9 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
     DatabaseSaveBuilder<UUID> newSaveBuilderWithUUID(String fieldName, @Nullable UUID uuid);
 
     /**
-     * Creates a {@link DatabaseSqlBuilder} object to fluently generate a <code>SELECT ...</code> statement
+     * Creates a {@link DatabaseSelectBuilder} object to fluently generate a <code>SELECT ...</code> statement
      */
-    DatabaseSqlBuilder select(String... columns);
+    DatabaseSelectBuilder select(String... columns);
 
     /**
      * Creates a {@link DatabaseInsertBuilder} object to fluently generate a <code>INSERT ...</code> statement
@@ -192,4 +192,6 @@ public interface DatabaseTable extends DatabaseQueryable<DatabaseTableQueryBuild
     }
 
     DatabaseStatement newStatement(String operation, String sql, Collection<?> parameters);
+
+    DatabaseStatementFactory getFactory();
 }

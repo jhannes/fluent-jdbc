@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Spliterators;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -79,13 +80,17 @@ public class DatabaseResult implements AutoCloseable {
         this.keys = keys;
     }
 
+    public DatabaseResult(PreparedStatement statement) throws SQLException {
+        this(statement, statement.executeQuery());
+    }
+
     public DatabaseResult(PreparedStatement statement, ResultSet resultSet) throws SQLException {
         this(statement, resultSet, new HashMap<>(), new HashMap<>(), new HashMap<>());
         ResultSetMetaData metaData = resultSet.getMetaData();
         for (int i = 1; i <= metaData.getColumnCount(); i++) {
             String columnName = metaData.getColumnName(i).toUpperCase();
             String tableName = metaData.getTableName(i).toUpperCase();
-            if (!tableName.equals("")) {
+            if (!tableName.isEmpty()) {
                 if (!tableColumnIndexes.containsKey(tableName)) {
                     tableColumnIndexes.put(tableName, new HashMap<>());
                 }
@@ -199,6 +204,10 @@ public class DatabaseResult implements AutoCloseable {
     @CheckReturnValue
     public DatabaseRow row() {
         return new DatabaseRow(this.resultSet, this.columnIndexes, this.tableColumnIndexes, this.keys);
+    }
+
+    public Set<String> getColumnNames() {
+        return columnIndexes.keySet();
     }
 
     private class Iterator<T> implements java.util.Iterator<T> {

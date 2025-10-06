@@ -27,7 +27,7 @@ import java.util.stream.Stream;
  * </pre>
  */
 @CheckReturnValue
-public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder> {
+public class DbContextTable implements DatabaseQueryable<DbContextTableQueryBuilder> {
 
     private final DatabaseTable table;
     private final DbContext dbContext;
@@ -42,7 +42,7 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
      * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
      */
     @Override
-    public DbContextSelectBuilder where(DatabaseQueryParameter parameter) {
+    public DbContextTableQueryBuilder where(DatabaseQueryParameter parameter) {
         return query().where(parameter);
     }
 
@@ -61,14 +61,14 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
     /**
      * Creates a {@link #query()} ready for list-operations without any <code>ORDER BY</code> clause
      */
-    public DbContextSelectBuilder unordered() {
+    public DbContextTableQueryBuilder unordered() {
         return query();
     }
 
     /**
      * Creates a {@link #query()} ready for list-operations with <code>ORDER BY ...</code> clause
      */
-    public DbContextSelectBuilder orderedBy(String orderByClause) {
+    public DbContextTableQueryBuilder orderedBy(String orderByClause) {
         return query().orderBy(orderByClause);
     }
 
@@ -126,20 +126,20 @@ public class DbContextTable implements DatabaseQueryable<DbContextSelectBuilder>
     }
 
     /**
-     * Creates a {@link DbContextSqlBuilder} which allows you to query the table by
+     * Creates a {@link DbContextSelectBuilder} which allows you to query the table by
      * generating <code>"SELECT ..."</code> statements where you can decide which columns to return
      */
     @CheckReturnValue
-    public DbContextSqlBuilder select(String... columns) {
-        return new DbContextSqlBuilder(this.dbContext, table.select(columns));
+    public DbContextSelectBuilder select(String... columns) {
+        return new DbContextSelectBuilder(this.dbContext, table.select(columns));
     }
 
     /**
-     * Creates a {@link DbContextSelectBuilder} which allows you to query the table by
+     * Creates a {@link DbContextTableQueryBuilder} which allows you to query the table by
      * generating <code>"SELECT ..."</code> statements
      */
-    public DbContextSelectBuilder query() {
-        return new DbContextSelectBuilder(this);
+    public DbContextTableQueryBuilder query() {
+        return new DbContextTableQueryBuilder(this);
     }
 
     /**

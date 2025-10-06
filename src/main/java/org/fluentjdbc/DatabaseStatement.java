@@ -267,10 +267,8 @@ public class DatabaseStatement {
     public <OBJECT> Stream<OBJECT> stream(Connection connection, DatabaseResult.RowMapper<OBJECT> mapper) {
         long startTime = System.currentTimeMillis();
         try {
-            logger.trace(statement);
-            PreparedStatement stmt = connection.prepareStatement(statement);
-            bindParameters(stmt, parameters);
-            DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery());
+            PreparedStatement stmt = prepareStatement(connection);
+            DatabaseResult result = new DatabaseResult(stmt);
             return result.stream(mapper, statement);
         } catch (SQLException e) {
             MDC.put("fluentjdbc.tablename", tableName);
@@ -281,15 +279,24 @@ public class DatabaseStatement {
     }
 
     /**
+     * Calls {@link Connection#prepareStatement(String)} with the statement and
+     * {@link #bindParameters(PreparedStatement, Collection)}
+     */
+    public PreparedStatement prepareStatement(Connection connection) throws SQLException {
+        logger.trace(statement);
+        PreparedStatement stmt = connection.prepareStatement(statement);
+        bindParameters(stmt, parameters);
+        return stmt;
+    }
+
+    /**
      * Calls {@link Connection#prepareStatement(String)} with the statement,
      * {@link #bindParameters(PreparedStatement, Collection)}, converting each parameter in the process
      * and executes the argument function with the statement
      */
     public <T> T execute(Connection connection, PreparedStatementFunction<T> f) {
         long startTime = System.currentTimeMillis();
-        logger.trace(statement);
-        try (PreparedStatement stmt = connection.prepareStatement(statement)) {
-            bindParameters(stmt, parameters);
+        try (PreparedStatement stmt = prepareStatement(connection)) {
             return f.apply(stmt);
         } catch (SQLException e) {
             MDC.put("fluentjdbc.tablename", tableName);
@@ -320,7 +327,7 @@ public class DatabaseStatement {
 
     public <T> T query(Connection connection, DatabaseResult.DatabaseResultMapper<T> resultMapper) {
         return execute(connection, stmt -> {
-            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
+            try (DatabaseResult result = new DatabaseResult(stmt)) {
                 return resultMapper.apply(result);
             }
         });

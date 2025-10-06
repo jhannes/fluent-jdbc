@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Used to execute an arbitrary statement. Create with {@link DbContext#statement(String, List)}.
+ * Used to execute an arbitrary statement. Create with {@link DbContext#statement(String, Collection)}.
  *
  * <h2>Example</h2>
  *
@@ -25,7 +25,7 @@ public class DbContextStatement {
     private final DbContext dbContext;
     private final DatabaseStatement statement;
 
-    public DbContextStatement(DbContext dbContext, String statement, List<Object> parameters) {
+    public DbContextStatement(DbContext dbContext, String statement, Collection<Object> parameters) {
         this.dbContext = dbContext;
         this.statement = dbContext.getStatementFactory().newStatement("*", "*", statement, parameters);
     }

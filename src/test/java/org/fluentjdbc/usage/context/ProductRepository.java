@@ -6,7 +6,7 @@ import org.fluentjdbc.DatabaseSaveResult;
 import org.fluentjdbc.DatabaseTable;
 import org.fluentjdbc.DatabaseTableQueryBuilder;
 import org.fluentjdbc.DbContext;
-import org.fluentjdbc.DbContextSelectBuilder;
+import org.fluentjdbc.DbContextTableQueryBuilder;
 import org.fluentjdbc.DbContextTable;
 import org.fluentjdbc.SingleRow;
 
@@ -116,9 +116,9 @@ public class ProductRepository implements Repository<Product, Product.Id> {
     }
 
     public static class Query implements Repository.Query<Product> {
-        private final DbContextSelectBuilder query;
+        private final DbContextTableQueryBuilder query;
 
-        public Query(DbContextSelectBuilder query) {
+        public Query(DbContextTableQueryBuilder query) {
             this.query = query;
         }
 

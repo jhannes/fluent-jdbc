@@ -133,8 +133,8 @@ public class DatabaseTableImpl implements DatabaseTable {
      * Creates a query object to be used to add {@link #where(String, Object)} statements and control returned columns
      */
     @Override
-    public DatabaseSqlBuilder select(String... columns) {
-        return new DatabaseSqlBuilder(factory).from(tableName).select(columns);
+    public DatabaseSelectBuilder select(String... columns) {
+        return new DatabaseSelectBuilder(factory).from(tableName).select(columns);
     }
 
     /**
@@ -240,5 +240,10 @@ public class DatabaseTableImpl implements DatabaseTable {
     @Override
     public DatabaseStatement newStatement(String operation, String sql, Collection<?> parameters) {
         return factory.newStatement(tableName, operation, sql, parameters);
+    }
+
+    @Override
+    public DatabaseStatementFactory getFactory() {
+        return factory;
     }
 }

@@ -2,7 +2,7 @@ package org.fluentjdbc.sqlserver;
 
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import lombok.SneakyThrows;
-import org.fluentjdbc.DbContextSelectBuilder;
+import org.fluentjdbc.DbContextTableQueryBuilder;
 import org.fluentjdbc.util.ExceptionUtil;
 import org.junit.Assume;
 import org.junit.Ignore;
@@ -123,13 +123,13 @@ public class SqlServerTests {
         }
 
         @Override
-        protected ByteArrayOutputStream readInputStream(DbContextSelectBuilder query, String column) {
+        protected ByteArrayOutputStream readInputStream(DbContextTableQueryBuilder query, String column) {
             // Sql server closes streams when next() is called
             return query.singleObject(row -> toOutputStream(row.getInputStream(column))).get();
         }
 
         @Override
-        protected String readFromReader(DbContextSelectBuilder query, String column) {
+        protected String readFromReader(DbContextTableQueryBuilder query, String column) {
             // Sql server closes streams when next() is called
             return query.singleObject(row -> toString(row.getReader(column))).get();
         }

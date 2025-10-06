@@ -25,64 +25,19 @@ public class DatabaseTableQueryBuilder implements
         DatabaseListableQueryBuilder<DatabaseTableQueryBuilder>
 {
 
-    protected DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
     protected final DatabaseTable table;
+    protected final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
     protected final List<String> orderByClauses = new ArrayList<>();
-    protected Integer offset;
-    protected Integer rowCount;
 
     DatabaseTableQueryBuilder(DatabaseTable table) {
         this.table = table;
     }
 
     /**
-     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
+     * Add the arguments to the column list for the <code>SELECT column, column...</code> statement
      */
-    @Override
-    public int getCount(Connection connection) {
-        String statement = "select count(*) as count " + fromClause() + getWhereClause();
-        return table.newStatement("COUNT", statement, getParameters())
-                .singleObject(connection, row -> row.getInt("count"))
-                .orElseThrow();
-    }
-
-    /**
-     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
-     * <pre>
-     *     table.where("status", status).stream(connection, row -&gt; row.getInstant("created_at"))
-     * </pre>
-     */
-    @Override
-    public <T> Stream<T> stream(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return createSelect().stream(connection, mapper);
-    }
-
-    /**
-     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
-     * {@link DatabaseResult.RowConsumer} for each returned row
-     */
-    @Override
-    public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
-        createSelect().forEach(connection, consumer);
-    }
-
-    public DatabaseStatement createSelect() {
-        return table.newStatement("SELECT", createSelectStatement(), getParameters());
-    }
-
-    /**
-     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
-     * if more than one is returned, throws `IllegalStateException`
-     *
-     * @param connection Database connection
-     * @param mapper Function object to map a single returned row to an object
-     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws MultipleRowsReturnedException if more than one row was matched the query
-     */
-    @Nonnull
-    @Override
-    public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
-        return createSelect().singleObject(connection, mapper);
+    public DatabaseSelectBuilder select(String... columns) {
+        return createSelectBuilder().select(columns);
     }
 
     /**
@@ -91,7 +46,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public DatabaseTableQueryBuilder where(DatabaseQueryParameter parameter) {
-        whereClause.where(parameter);
+        whereBuilder.where(parameter);
         return this;
     }
 
@@ -100,7 +55,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public DatabaseUpdateBuilder update() {
-        return table.update().where(whereClause);
+        return table.update().where(whereBuilder);
     }
 
     /**
@@ -109,7 +64,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public DatabaseInsertOrUpdateBuilder insertOrUpdate() {
-        return table.insertOrUpdate().where(whereClause);
+        return table.insertOrUpdate().where(whereBuilder);
     }
 
     /**
@@ -117,7 +72,7 @@ public class DatabaseTableQueryBuilder implements
      */
     @Override
     public int delete(Connection connection) {
-        return table.delete().where(whereClause).execute(connection);
+        return table.delete().where(whereBuilder).execute(connection);
     }
 
     /**
@@ -126,6 +81,16 @@ public class DatabaseTableQueryBuilder implements
     @Override
     public DatabaseTableQueryBuilder orderBy(String orderByClause) {
         orderByClauses.add(orderByClause);
+        return this;
+    }
+
+    /**
+     * Sets the <code>ORDER BY ...</code> clause of the <code>SELECT</code> statement
+     */
+    @Override
+    public DatabaseTableQueryBuilder orderBy(List<String> orderByClauses) {
+        this.orderByClauses.clear();
+        this.orderByClauses.addAll(orderByClauses);
         return this;
     }
 
@@ -144,11 +109,51 @@ public class DatabaseTableQueryBuilder implements
      * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
      * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
      */
+    public DatabaseSelectBuilder skipAndLimit(Integer offset, Integer rowCount) {
+        return createSelectBuilder().skipAndLimit(offset, rowCount);
+    }
+
+    /**
+     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
+     * if more than one is returned, throws `IllegalStateException`
+     *
+     * @param connection Database connection
+     * @param mapper Function object to map a single returned row to an object
+     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
+     * @throws MultipleRowsReturnedException if more than one row was matched the query
+     */
+    @Nonnull
     @Override
-    public DatabaseTableQueryBuilder skipAndLimit(int offset, int rowCount) {
-        this.offset = offset;
-        this.rowCount = rowCount;
-        return this;
+    public <T> SingleRow<T> singleObject(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+        return createSelectBuilder().singleObject(connection, mapper);
+    }
+
+    /**
+     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
+     * <pre>
+     *     table.where("status", status).stream(connection, row -&gt; row.getInstant("created_at"))
+     * </pre>
+     */
+    @Override
+    public <T> Stream<T> stream(Connection connection, DatabaseResult.RowMapper<T> mapper) {
+        return createSelectBuilder().stream(connection, mapper);
+    }
+
+    /**
+     * Executes the <code>SELECT * FROM ...</code> statement and calls back to
+     * {@link DatabaseResult.RowConsumer} for each returned row
+     */
+    @Override
+    public void forEach(Connection connection, DatabaseResult.RowConsumer consumer) {
+        createSelectBuilder().forEach(connection, consumer);
+    }
+
+    /**
+     * Executes <code>SELECT count(*) FROM ...</code> on the query and returns the result
+     */
+    @Override
+    public int getCount(Connection connection) {
+        return createSelectBuilder().getCount(connection);
     }
 
     /**
@@ -159,27 +164,9 @@ public class DatabaseTableQueryBuilder implements
         return this;
     }
 
-    public String createSelectStatement() {
-        return "select *" + fromClause() + getWhereClause() + orderByClause() + fetchClause();
-    }
-
-    protected String fromClause() {
-        return " from " + table.getTableName();
-    }
-
-    public String getWhereClause() {
-        return whereClause.whereClause();
-    }
-
-    protected String orderByClause() {
-        return orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses);
-    }
-
-    protected String fetchClause() {
-        return rowCount == null ? "" : " offset " + offset + " rows fetch first " + rowCount + " rows only";
-    }
-
-    public List<Object> getParameters() {
-        return whereClause.getParameters();
+    public DatabaseSelectBuilder createSelectBuilder() {
+        return new DatabaseSelectBuilder(table.getFactory(), whereBuilder)
+                .orderBy(orderByClauses)
+                .from(table.getTableName());
     }
 }

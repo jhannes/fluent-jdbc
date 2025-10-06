@@ -7,47 +7,43 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Used to construct SQL SELECT statements in a flexible way with {@link #where(String, Object)}
- * clauses, {@link #select(String...)} column names, {@link #from(String)} table statement,
- * {@link #groupBy(String...)}, {@link #orderBy(String)} and {@link #skipAndLimit(int, int)}.
- *
- * <h2>Example:</h2>
+ * Generate <code>SELECT</code> statements by collecting <code>WHERE</code> expressions and parameters.Example:
  *
  * <pre>
- * new DbContextSqlBuilder(dbContext)
- *      .select("first_name", "last_name")
- *      .select("p.id")
- *      .from("person p full join organizations o")
- *      .where("organization_sector", sector)
- *      .limit(100)
- *      .list(row -&gt; List.of(row.getString("first_name"), row.getString("last_name"), row.getUUID("p.id"));
+ * {@link DbContextTable} table = context.table("database_test_table");
+ * try (DbContextConnection ignored = context.startConnection(dataSource)) {
+ *      List&lt;Person&gt; result = table
+ *          .where("firstName", firstName)
+ *          .whereExpression("lastName like ?", "joh%")
+ *          .whereIn("status", statuses)
+ *          .orderBy("lastName")
+ *          .list(row -&gt; new Person(row));
+ * }
  * </pre>
  *
+ * @see org.fluentjdbc.DatabaseTableQueryBuilder
  */
-public class DbContextSelectBuilder implements DbContextListableSelect<DbContextSelectBuilder> {
+public class DbContextTableQueryBuilder implements DbContextListableSelect<DbContextTableQueryBuilder> {
 
-    private final DbContext dbContext;
-    private final DatabaseSelectBuilder builder;
+    private final DbContextTable dbContextTable;
+    private final DatabaseTableQueryBuilder builder;
 
-    public DbContextSelectBuilder(DbContext dbContext) {
-        this(dbContext, new DatabaseSelectBuilder(dbContext.getStatementFactory()));
-    }
-
-    public DbContextSelectBuilder(DbContext dbContext, DatabaseSelectBuilder builder) {
-        this.dbContext = dbContext;
-        this.builder = builder;
+    public DbContextTableQueryBuilder(DbContextTable dbContextTable) {
+        this.dbContextTable = dbContextTable;
+        builder = new DatabaseTableQueryBuilder(dbContextTable.getTable());
     }
 
     /**
-     * Implemented as <code>return this</code> for compatibility purposes
+     * Returns this. Needed to make {@link DbContextTableQueryBuilder} interchangeable with {@link DbContextTable}
      */
     @Override
-    public DbContextSelectBuilder query() {
+    public DbContextTableQueryBuilder query() {
         return this;
     }
 
-    @SuppressWarnings("unused")
-    private DbContextSelectBuilder query(DatabaseSelectBuilder builder) {
+
+    @CheckReturnValue
+    private DbContextTableQueryBuilder query(@SuppressWarnings("unused") DatabaseTableQueryBuilder builder) {
         return this;
     }
 
@@ -56,15 +52,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     @CheckReturnValue
     public DbContextSelectBuilder select(String... columns) {
-        return query(builder.select(columns));
-    }
-
-    /**
-     * Replace the "from" part of the <code>SELECT ... FROM fromStatement</code> in the select statement
-     */
-    @CheckReturnValue
-    public DbContextSelectBuilder from(String fromStatement) {
-        return query(builder.from(fromStatement));
+        return new DbContextSelectBuilder(dbContextTable.getDbContext(), builder.select(columns));
     }
 
     /**
@@ -72,33 +60,24 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      * E.g. <code>where(new DatabaseQueryParameter("created_at between ? and ?", List.of(earliestDate, latestDate)))</code>
      */
     @Override
-    public DbContextSelectBuilder where(DatabaseQueryParameter parameter) {
-        builder.where(parameter);
-        return this;
-    }
-
-    /**
-     * Add the arguments to the column list for the <code>SELECT ... FROM ... ... GROUP BY groupByStatement</code> statement
-     */
-    @CheckReturnValue
-    public DbContextSelectBuilder groupBy(String... groupByStatement) {
-        return query(builder.groupBy(groupByStatement));
+    public DbContextTableQueryBuilder where(DatabaseQueryParameter parameter) {
+        return query(builder.where(parameter));
     }
 
     /**
      * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
      */
     @Override
-    public DbContextSelectBuilder orderBy(String orderByClause) {
+    public DbContextTableQueryBuilder orderBy(String orderByClause) {
         return query(builder.orderBy(orderByClause));
     }
 
     /**
-     * If you haven't called {@link #orderBy}, the results of {@link DatabaseListableQueryBuilder#list}
+     * If you haven't called {@link #orderBy}, the results of {@link #list}
      * will be unpredictable. Call <code>unordered()</code> if you are okay with this.
      */
     @CheckReturnValue
-    public DbContextSelectBuilder unordered() {
+    public DbContextTableQueryBuilder unordered() {
         return query(builder.unordered());
     }
 
@@ -121,7 +100,7 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
      */
     @CheckReturnValue
     public DbContextSelectBuilder skipAndLimit(int offset, int rowCount) {
-        return query(builder.skipAndLimit(offset, rowCount));
+        return new DbContextSelectBuilder(dbContextTable.getDbContext(), builder.skipAndLimit(offset, rowCount));
     }
 
     /**
@@ -189,16 +168,28 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
         builder.forEach(getConnection(), consumer);
     }
 
-    @Nonnull
-    private Connection getConnection() {
-        return dbContext.getThreadConnection();
+    /**
+     * Executes <code>DELETE FROM tableName WHERE ....</code>
+     */
+    public int executeDelete() {
+        return builder.delete(getConnection());
     }
 
     /**
-     * Returns a {@link DatabaseQueryParameter} with a <code>column in (SELECT ....)</code>
-     * with this expression and the same parameters as this builder
+     * Creates a {@link DbContextUpdateBuilder} object to fluently generate a <code>UPDATE ...</code> statement
      */
-    public DatabaseQueryParameter asNestedSelectOn(String column) {
-        return builder.asNestedSelectOn(column);
+    @CheckReturnValue
+    public DbContextUpdateBuilder update() {
+        return new DbContextUpdateBuilder(this.dbContextTable, builder.update());
+    }
+
+    @CheckReturnValue
+    public DbContextInsertOrUpdateBuilder insertOrUpdate() {
+        return new DbContextInsertOrUpdateBuilder(this.dbContextTable, builder.insertOrUpdate());
+    }
+
+    @CheckReturnValue
+    private Connection getConnection() {
+        return dbContextTable.getConnection();
     }
 }

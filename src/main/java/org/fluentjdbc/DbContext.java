@@ -9,8 +9,8 @@ import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * <p>Provides a starting point for for context oriented database operation. Create one DbContext for your
@@ -56,8 +56,8 @@ public class DbContext {
      * <code>dbContext.select("max(age) as max_age").from("persons").where("name", "Johannes").singleLong("max_age")</code>
      */
     @CheckReturnValue
-    public DbContextSqlBuilder select(String... columns) {
-        return new DbContextSqlBuilder(this).select(columns);
+    public DbContextSelectBuilder select(String... columns) {
+        return new DbContextSelectBuilder(this).select(columns);
     }
 
     /**
@@ -66,7 +66,7 @@ public class DbContext {
      * <code>dbContext.select("update persons set full_name = first_name || ' ' || last_name").executeUpdate()</code>
      */
     @CheckReturnValue
-    public DbContextStatement statement(String statement, List<Object> parameters) {
+    public DbContextStatement statement(String statement, Collection<Object> parameters) {
         return new DbContextStatement(this, statement, parameters);
     }
 

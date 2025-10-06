@@ -24,31 +24,16 @@ public interface DatabaseListableQueryBuilder<T extends DatabaseListableQueryBui
     T orderBy(String orderByClause);
 
     /**
-     * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.
-     * FETCH FIRST was introduced in
-     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
-     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     * Sets the <code>ORDER BY ...</code> clause of the <code>SELECT</code> statement
      */
-    @CheckReturnValue
-    default T limit(int rowCount) {
-        return skipAndLimit(0, rowCount);
-    }
-
-    /**
-     * Adds <code>OFFSET ... ROWS FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code>
-     * statement. FETCH FIRST was introduced in
-     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
-     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
-     */
-    @CheckReturnValue
-    T skipAndLimit(int offset, int rowCount);
+    T orderBy(List<String> orderByClauses);
 
     /**
      * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
-     * @param mapper Function object to map a single returned row to a object
+     * @param mapper Function object to map a single returned row to an object
      * @return the mapped row if one row is returned, Optional.empty otherwise
      * @throws MultipleRowsReturnedException if more than one row was matched the query
      */

@@ -41,7 +41,7 @@ public class EntryAggregate {
 
         String sql = "select * from entries e inner join entry_taggings et on e.id = et.entry_id inner join tags t on et.tag_id = t.id order by e.id";
         try (PreparedStatement stmt = connection.prepareStatement(sql)) {
-            try (DatabaseResult result = new DatabaseResult(stmt, stmt.executeQuery())) {
+            try (DatabaseResult result = new DatabaseResult(stmt)) {
                 List<EntryAggregate> entries = new ArrayList<>();
 
                 EntryAggregate aggregate = null;

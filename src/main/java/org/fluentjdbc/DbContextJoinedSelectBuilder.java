@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 /**
- * {@link DbContextSelectBuilder} used to generate joined queries using SQL-92 standard
+ * {@link DbContextTableQueryBuilder} used to generate joined queries using SQL-92 standard
  * <code>SELECT * FROM table1 a JOIN table2 b ON a.column = b.column</code>. To specify
  * columns for selection and tables for retrieval of columns, use {@link DbContextTableAlias}
  * and {@link DatabaseColumnReference}.
@@ -205,12 +205,21 @@ public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbC
     }
 
     /**
+     * Adds <code>FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code> statement.
+     * FETCH FIRST was introduced in
+     * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
+     * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
+     */
+    public DbContextJoinedSelectBuilder limit(int rowCount) {
+        return skipAndLimit(0, rowCount);
+    }
+
+    /**
      * Adds <code>OFFSET ... ROWS FETCH ... ROWS ONLY</code> clause to the <code>SELECT</code>
      * statement. FETCH FIRST was introduced in
      * <a href="https://en.wikipedia.org/wiki/Select_%28SQL%29#Limiting_result_rows">SQL:2008</a>
      * and is supported by Postgresql 8.4, Oracle 12c, IBM DB2, HSQLDB, H2, and SQL Server 2012.
      */
-    @Override
     public DbContextJoinedSelectBuilder skipAndLimit(int offset, int rowCount) {
         return query(builder.skipAndLimit(offset, rowCount));
     }
