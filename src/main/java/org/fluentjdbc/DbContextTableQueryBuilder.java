@@ -65,6 +65,14 @@ public class DbContextTableQueryBuilder implements DbContextListableSelect<DbCon
     }
 
     /**
+     * Adds <code>WHERE column in (SELECT ....)</code> with the provided selectBuilder
+     * and adds the parameters from the builder
+     */
+    public DbContextTableQueryBuilder whereSubselect(String column, DbContextSelectBuilder selectBuilder) {
+        return whereSubselect(column, selectBuilder.getBuilder());
+    }
+
+    /**
      * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
      */
     @Override

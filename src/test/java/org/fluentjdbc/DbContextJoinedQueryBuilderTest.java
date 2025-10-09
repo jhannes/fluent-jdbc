@@ -396,15 +396,12 @@ public class DbContextJoinedQueryBuilderTest {
         saveMembership(personTwoId, orgTwoId);
         saveMembership(personTwoId, orgThreeId);
 
-        List<String> membersOfOrgOneAndEitherTwoOrOrgThree = persons
-                .where(memberships.select("person_id")
-                        .where("organization_id", orgOneId)
-                        .asNestedSelectOn("id")
-                )
-                .where(memberships.select("person_id")
-                        .whereIn("organization_id", Arrays.asList(orgTwoId, orgThreeId))
-                        .asNestedSelectOn("id")
-                ).listStrings("name");
+        List<String> membersOfOrgOneAndEitherTwoOrOrgThree = persons.query()
+                .whereSubselect("id", memberships.select("person_id")
+                        .where("organization_id", orgOneId))
+                .whereSubselect("id", memberships.select("person_id")
+                        .whereIn("organization_id", Arrays.asList(orgTwoId, orgThreeId)))
+                .listStrings("name");
 
         assertThat(membersOfOrgOneAndEitherTwoOrOrgThree)
                 .contains(personOneName)

@@ -149,6 +149,14 @@ public interface DatabaseQueryable<T extends DatabaseQueryable<T>> {
     }
 
     /**
+     * Adds <code>WHERE column in (SELECT ....)</code> with the provided selectBuilder
+     * and adds the parameters from the builder
+     */
+    default T whereSubselect(String column, DatabaseSelectBuilder builder) {
+        return where(builder.asNestedSelectOn(column));
+    }
+
+    /**
      * Returns or creates a query object to be used to add {@link #where(String, Object)} statements and operations
      */
     @CheckReturnValue

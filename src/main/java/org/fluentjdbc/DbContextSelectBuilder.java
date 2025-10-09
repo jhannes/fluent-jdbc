@@ -201,4 +201,8 @@ public class DbContextSelectBuilder implements DbContextListableSelect<DbContext
     public DatabaseQueryParameter asNestedSelectOn(String column) {
         return builder.asNestedSelectOn(column);
     }
+
+    public DatabaseSelectBuilder getBuilder() {
+        return builder;
+    }
 }
