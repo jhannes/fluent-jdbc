@@ -194,12 +194,7 @@ public class DbContext {
             return new NestedTransactionContext(getCurrentTransaction());
         }
         logger.debug("Starting new transaction");
-        try {
-            getThreadConnection().setAutoCommit(false);
-        } catch (SQLException e) {
-            throw ExceptionUtil.softenCheckedException(e);
-        }
-        currentTransaction.set(new TopLevelTransaction());
+        currentTransaction.set(new TopLevelTransaction(getThreadConnection()));
         return getCurrentTransaction();
     }
 
@@ -237,8 +232,18 @@ public class DbContext {
     }
 
     private class TopLevelTransaction implements DbTransaction {
+        private final boolean autoCommit;
         boolean complete = false;
         boolean rollback = false;
+
+        private TopLevelTransaction(Connection connection) {
+            try {
+                this.autoCommit = connection.getAutoCommit();
+                getThreadConnection().setAutoCommit(false);
+            } catch (SQLException e) {
+                throw ExceptionUtil.softenCheckedException(e);
+            }
+        }
 
         @Override
         public void setComplete() {
@@ -261,7 +266,7 @@ public class DbContext {
                     logger.debug("Commit");
                     getThreadConnection().commit();
                 }
-                getThreadConnection().setAutoCommit(false);
+                getThreadConnection().setAutoCommit(autoCommit);
             } catch (SQLException e) {
                 throw ExceptionUtil.softenCheckedException(e);
             }

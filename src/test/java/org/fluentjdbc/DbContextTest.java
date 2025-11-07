@@ -351,7 +351,18 @@ public class DbContextTest {
             tx.setComplete();
         }
         assertThat(table.where("name", "nestedTx").listLongs("code"))
-                .contains();
+                .isEmpty();
+    }
+
+    @Test
+    public void shouldRevertToAutoCommit() {
+        try (DbTransaction tx = dbContext.ensureTransaction()) {
+            table.insert().setField("code", 1009).setField("name", "updatedInTx").execute();
+            tx.setComplete();
+        }
+        table.where("code", 1009).update().setField("name", "updatedAfterTx").execute();
+        assertThat(table.where("code", 1009).singleString("name").orElseThrow())
+                .isEqualTo("updatedAfterTx");
     }
 
     @Test
