@@ -57,6 +57,10 @@ public class DatabaseStatement {
         this.reporter = reporter;
     }
 
+    public String getStatement() {
+        return statement;
+    }
+
     /**
      * sets all parameters on the statement, calling {@link #bindParameter(PreparedStatement, int, Object)} to
      * convert each one
@@ -274,7 +278,7 @@ public class DatabaseStatement {
             MDC.put("fluentjdbc.tablename", tableName);
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
+            reporter.reportQuery(this, System.currentTimeMillis() - startTime);
         }
     }
 
@@ -302,7 +306,7 @@ public class DatabaseStatement {
             MDC.put("fluentjdbc.tablename", tableName);
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
+            reporter.reportQuery(this, System.currentTimeMillis() - startTime);
         }
     }
 
@@ -321,7 +325,7 @@ public class DatabaseStatement {
             MDC.put("fluentjdbc.tablename", tableName);
             throw ExceptionUtil.softenCheckedException(e);
         } finally {
-            reporter.reportQuery(statement, System.currentTimeMillis() - startTime);
+            reporter.reportQuery(this, System.currentTimeMillis() - startTime);
         }
     }
 

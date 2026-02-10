@@ -20,5 +20,5 @@ public interface DatabaseTableOperationReporter {
      * @param query The parameterized SQL query that was executed to the database
      * @param timing The duration the query took in millis
      */
-    void reportQuery(String query, long timing);
+    void reportQuery(DatabaseStatement query, long timing);
 }
