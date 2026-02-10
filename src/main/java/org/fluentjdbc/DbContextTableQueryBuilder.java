@@ -29,8 +29,12 @@ public class DbContextTableQueryBuilder implements DbContextListableSelect<DbCon
     private final DatabaseTableQueryBuilder builder;
 
     public DbContextTableQueryBuilder(DbContextTable dbContextTable) {
+        this(dbContextTable, new DatabaseTableQueryBuilder(dbContextTable.getTable()));
+    }
+
+    public DbContextTableQueryBuilder(DbContextTable dbContextTable, DatabaseTableQueryBuilder builder) {
         this.dbContextTable = dbContextTable;
-        builder = new DatabaseTableQueryBuilder(dbContextTable.getTable());
+        this.builder = builder;
     }
 
     /**

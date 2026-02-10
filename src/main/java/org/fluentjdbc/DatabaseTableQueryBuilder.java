@@ -29,7 +29,7 @@ public class DatabaseTableQueryBuilder implements
     protected final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
     protected final List<String> orderByClauses = new ArrayList<>();
 
-    DatabaseTableQueryBuilder(DatabaseTable table) {
+    protected DatabaseTableQueryBuilder(DatabaseTable table) {
         this.table = table;
     }
 
