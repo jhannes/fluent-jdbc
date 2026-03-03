@@ -13,7 +13,7 @@ public interface DatabaseTableOperationReporter {
     Logger logger = LoggerFactory.getLogger(DatabaseTableOperationReporter.class);
 
     DatabaseTableOperationReporter LOGGING_OPERATION_REPORTER =
-            (query, timing) -> logger.debug("time={}s query=\"{}\"", timing/1000.0, query);
+            (query, timing) -> logger.debug("time={}s query=\"{}\"", timing/1000.0, query.getStatement());
 
     /**
      * Called when the operation is performed on the table

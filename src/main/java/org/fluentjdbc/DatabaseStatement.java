@@ -227,7 +227,7 @@ public class DatabaseStatement {
      * if more than one is returned, throws `IllegalStateException`
      *
      * @param connection Database connection
-     * @param mapper     Function object to map a single returned row to a object
+     * @param mapper     Function object to map a single returned row to an object
      * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
      * @throws MultipleRowsReturnedException if more than one row was matched the query
      */
@@ -337,4 +337,8 @@ public class DatabaseStatement {
         });
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + "{statement=" + statement + ", parameters=" + parameters + '}';
+    }
 }
