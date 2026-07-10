@@ -32,4 +32,8 @@ public interface DatabaseReporter {
     @CheckReturnValue
     @Nonnull
     DatabaseTableReporter table(@Nonnull String tableName);
+
+    default DatabaseTransactionReporter transactions() {
+        return DatabaseTransactionReporter.LOGGING_REPORTER;
+    }
 }

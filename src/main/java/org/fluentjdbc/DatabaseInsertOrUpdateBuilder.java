@@ -20,12 +20,16 @@ import java.util.Map;
  */
 public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<DatabaseInsertOrUpdateBuilder> {
 
-    private DatabaseUpdateBuilder updateBuilder;
-    private DatabaseInsertBuilder insertBuilder;
+    protected DatabaseUpdateBuilder updateBuilder;
+    protected DatabaseInsertBuilder insertBuilder;
 
     public DatabaseInsertOrUpdateBuilder(DatabaseTable table) {
-        updateBuilder = new DatabaseUpdateBuilder(table);
-        insertBuilder = new DatabaseInsertBuilder(table);
+        this(new DatabaseUpdateBuilder(table), new DatabaseInsertBuilder(table));
+    }
+
+    public DatabaseInsertOrUpdateBuilder(DatabaseUpdateBuilder updateBuilder, DatabaseInsertBuilder insertBuilder) {
+        this.updateBuilder = updateBuilder;
+        this.insertBuilder = insertBuilder;
     }
 
     /**

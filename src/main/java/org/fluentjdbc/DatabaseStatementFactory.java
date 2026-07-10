@@ -26,4 +26,8 @@ public class DatabaseStatementFactory {
     public DatabaseStatement newStatement(String tableName, String operation, String sql, Collection<?> parameters) {
         return new DatabaseStatement(tableName, sql, parameters, reporter.table(tableName).operation(operation));
     }
+
+    public DatabaseReporter getReporter() {
+        return this.reporter;
+    }
 }

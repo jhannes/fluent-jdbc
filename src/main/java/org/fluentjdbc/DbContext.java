@@ -70,6 +70,16 @@ public class DbContext {
         return new DbContextStatement(this, statement, parameters);
     }
 
+    /**
+     * Execute an arbitrary SQL statement, e.g.
+     * <code>dbContext.select("select 1 as number from dual").singleLong("max_age")</code> or
+     * <code>dbContext.select("update persons set full_name = first_name || ' ' || last_name").executeUpdate()</code>
+     */
+    @CheckReturnValue
+    public DbContextStatement statement(String statement) {
+        return new DbContextStatement(this, statement);
+    }
+
     public DatabaseStatementFactory getStatementFactory() {
         return factory;
     }
@@ -194,7 +204,7 @@ public class DbContext {
             return new NestedTransactionContext(getCurrentTransaction());
         }
         logger.debug("Starting new transaction");
-        currentTransaction.set(new TopLevelTransaction(getThreadConnection()));
+        currentTransaction.set(new TopLevelTransaction(getThreadConnection(), factory.getReporter()));
         return getCurrentTransaction();
     }
 
@@ -233,10 +243,12 @@ public class DbContext {
 
     private class TopLevelTransaction implements DbTransaction {
         private final boolean autoCommit;
+        private final DatabaseReporter reporter;
         boolean complete = false;
         boolean rollback = false;
 
-        private TopLevelTransaction(Connection connection) {
+        private TopLevelTransaction(Connection connection, DatabaseReporter reporter) {
+            this.reporter = reporter;
             try {
                 this.autoCommit = connection.getAutoCommit();
                 getThreadConnection().setAutoCommit(false);
@@ -257,16 +269,18 @@ public class DbContext {
 
         @Override
         public void close() {
+            long start = System.currentTimeMillis();
             currentTransaction.remove();
             try {
                 if (!complete || rollback) {
-                    logger.debug("Rollback");
                     getThreadConnection().rollback();
+                    getThreadConnection().setAutoCommit(autoCommit);
+                    reporter.transactions().logRollback(System.currentTimeMillis() - start);
                 } else {
-                    logger.debug("Commit");
                     getThreadConnection().commit();
+                    getThreadConnection().setAutoCommit(autoCommit);
+                    reporter.transactions().logCommit(System.currentTimeMillis() - start);
                 }
-                getThreadConnection().setAutoCommit(autoCommit);
             } catch (SQLException e) {
                 throw ExceptionUtil.softenCheckedException(e);
             }

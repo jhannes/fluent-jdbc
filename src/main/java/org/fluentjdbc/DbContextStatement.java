@@ -2,9 +2,9 @@ package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nonnull;
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,6 +28,10 @@ public class DbContextStatement {
     public DbContextStatement(DbContext dbContext, String statement, Collection<Object> parameters) {
         this.dbContext = dbContext;
         this.statement = dbContext.getStatementFactory().newStatement("*", "*", statement, parameters);
+    }
+
+    public DbContextStatement(DbContext dbContext, String statement) {
+        this(dbContext, statement, Collections.emptyList());
     }
 
     /**
@@ -67,11 +71,11 @@ public class DbContextStatement {
     }
 
     /**
-     * Calls {@link Connection#prepareStatement(String)} with the statement,
-     * {@link DatabaseStatement#bindParameters(PreparedStatement, Collection)} (PreparedStatement, List)}, converting each parameter in the process
+     * Calls prepareStatement(String) with the statement,
+     * {@link DatabaseStatement#bindParameters(PreparedStatement, Collection)}, converting each parameter in the process
      * and executes the statement
      */
-    public int executeUpdate(Connection connection) {
-        return statement.executeUpdate(connection);
+    public int executeUpdate() {
+        return statement.executeUpdate(dbContext.getThreadConnection());
     }
 }
