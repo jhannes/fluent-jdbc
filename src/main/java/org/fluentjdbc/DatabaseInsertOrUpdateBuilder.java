@@ -2,6 +2,7 @@ package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
 import java.sql.Connection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -20,12 +21,16 @@ import java.util.Map;
  */
 public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<DatabaseInsertOrUpdateBuilder> {
 
-    private DatabaseUpdateBuilder updateBuilder;
-    private DatabaseInsertBuilder insertBuilder;
+    protected DatabaseUpdateBuilder updateBuilder;
+    protected DatabaseInsertBuilder insertBuilder;
 
     public DatabaseInsertOrUpdateBuilder(DatabaseTable table) {
-        updateBuilder = new DatabaseUpdateBuilder(table);
-        insertBuilder = new DatabaseInsertBuilder(table);
+        this(new DatabaseUpdateBuilder(table), new DatabaseInsertBuilder(table));
+    }
+
+    public DatabaseInsertOrUpdateBuilder(DatabaseUpdateBuilder updateBuilder, DatabaseInsertBuilder insertBuilder) {
+        this.updateBuilder = updateBuilder;
+        this.insertBuilder = insertBuilder;
     }
 
     /**
@@ -44,6 +49,15 @@ public class DatabaseInsertOrUpdateBuilder implements DatabaseUpdatable<Database
     public DatabaseInsertOrUpdateBuilder addParameter(DatabaseQueryParameter parameter) {
         updateBuilder = updateBuilder.addParameter(parameter);
         insertBuilder = insertBuilder.addParameter(parameter);
+        return this;
+    }
+
+    /**
+     * Adds the fieldName to the SQL statement and the value to the parameter list for insert only (not update)
+     */
+    @CheckReturnValue
+    public DatabaseInsertOrUpdateBuilder setInsertField(String field, Object value) {
+        insertBuilder = insertBuilder.addParameter(new DatabaseQueryParameter(field + " = ?", Collections.singleton(value), field, "?"));
         return this;
     }
 

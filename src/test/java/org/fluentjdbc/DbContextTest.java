@@ -22,6 +22,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -73,7 +75,7 @@ public class DbContextTest {
     public void setupDatabase() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             dropTableIfExists(connection, "database_table_test_table");
-            createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null, data ${BLOB}, document ${CLOB})", replacements);
+            createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null, data ${BLOB}, document ${CLOB}, created_at ${DATETIME}, updated_at ${DATETIME})", replacements);
         }
     }
     
@@ -520,6 +522,36 @@ public class DbContextTest {
     }
 
     @Test
+    public void shouldUpdateOnlyWritableFields() {
+        int id = 100002;
+        Map<String, Integer> key = new HashMap<>();
+        key.put("id", id);
+        Map<String, Object> values = new HashMap<>();
+        values.put("code", 1005);
+        values.put("name", "originalName2");
+        values.put("document", "oldDescription3");
+
+        Instant createdTime = Instant.now().minusSeconds(120).truncatedTo(ChronoUnit.SECONDS);
+        table.whereAll(key)
+                .insertOrUpdate()
+                .setField("created_at", createdTime)
+                .setField("updated_at", createdTime)
+                .setFields(values)
+                .setField("document", "newDescription")
+                .execute();
+
+        Instant updatedTime = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        table.whereAll(key)
+                .insertOrUpdate()
+                .setInsertField("created_at", updatedTime)
+                .setField("updated_at", updatedTime)
+                .setField("document", "newDescription")
+                .execute();
+        assertThat(table.whereAll(key).singleInstant("updated_at").get()).isEqualTo(updatedTime);
+        assertThat(table.whereAll(key).singleInstant("created_at").get()).isEqualTo(createdTime);
+    }
+
+    @Test
     public void shouldUpdateCalculatedFields() {
         String name = "something";
         String prefix = "oldPrefix";
@@ -541,6 +573,11 @@ public class DbContextTest {
         assertThat(table
                 .whereColumnValuesEqual("id", "2000000 + length(?)", Collections.singletonList(name))
                 .singleString("document").get()).isEqualTo("newPrefix plus something");
+    }
+
+    @Test
+    public void shouldNotUpdateInitialFields() {
+
     }
 
     @Test

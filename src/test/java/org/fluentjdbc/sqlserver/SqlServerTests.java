@@ -99,22 +99,22 @@ public class SqlServerTests {
             super(getDataSource(), REPLACEMENTS);
         }
 
-        @SneakyThrows
         @Override
         public void shouldInsertOrUpdate() {
-            try (Statement stmt = dbContext.getThreadConnection().createStatement()) {
-                stmt.executeUpdate("set identity_insert database_table_test_table on");
-            }
+            setIdentityInsertOn("database_table_test_table");
             super.shouldInsertOrUpdate();
         }
 
-        @SneakyThrows
         @Override
         public void shouldInsertWithExplicitKey() {
-            try (Statement stmt = dbContext.getThreadConnection().createStatement()) {
-                stmt.executeUpdate("set identity_insert database_table_test_table on");
-            }
+            setIdentityInsertOn("database_table_test_table");
             super.shouldInsertWithExplicitKey();
+        }
+
+        @Override
+        public void shouldUpdateOnlyWritableFields() {
+            setIdentityInsertOn("database_table_test_table");
+            super.shouldUpdateOnlyWritableFields();
         }
 
         @Override
@@ -132,6 +132,13 @@ public class SqlServerTests {
         protected String readFromReader(DbContextTableQueryBuilder query, String column) {
             // Sql server closes streams when next() is called
             return query.singleObject(row -> toString(row.getReader(column))).get();
+        }
+
+        @SneakyThrows
+        private void setIdentityInsertOn(String tableName) {
+            try (Statement stmt = dbContext.getThreadConnection().createStatement()) {
+                stmt.executeUpdate("set identity_insert " + tableName + " on");
+            }
         }
     }
 

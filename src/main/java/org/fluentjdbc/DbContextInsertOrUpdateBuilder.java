@@ -46,6 +46,13 @@ public class DbContextInsertOrUpdateBuilder implements DatabaseUpdatable<DbConte
     }
 
     /**
+     * Adds the fieldName to the SQL statement and the value to the parameter list for insert only (not update)
+     */
+    public DbContextInsertOrUpdateBuilder setInsertField(String fieldName, Object value) {
+        return build(builder.setInsertField(fieldName, value));
+    }
+
+    /**
      * Calls {@link #setField(String, Object)} for each fieldName and parameter
      */
     @Override
