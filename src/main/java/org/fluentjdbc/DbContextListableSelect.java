@@ -1,12 +1,6 @@
 package org.fluentjdbc;
 
 import javax.annotation.CheckReturnValue;
-import javax.annotation.Nonnull;
-import java.io.InputStream;
-import java.io.Reader;
-import java.time.Instant;
-import java.util.List;
-import java.util.stream.Stream;
 
 
 /**
@@ -19,7 +13,7 @@ import java.util.stream.Stream;
  * }
  * </pre>
  */
-public interface DbContextListableSelect<T extends DbContextListableSelect<T>> extends DatabaseQueryable<T> {
+public interface DbContextListableSelect<T extends DbContextListableSelect<T>> extends DatabaseQueryable<T>, DbContextSelectResult {
 
     /**
      * Adds <code>ORDER BY ...</code> clause to the <code>SELECT</code> statement
@@ -32,130 +26,6 @@ public interface DbContextListableSelect<T extends DbContextListableSelect<T>> e
      */
     @CheckReturnValue
     int getCount();
-
-    /**
-     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a stream. Example:
-     * <pre>
-     *     table.where("status", status).stream(row -&gt; row.getInstant("created_at"))
-     * </pre>
-     */
-    @CheckReturnValue
-    <OBJECT> Stream<OBJECT> stream(DatabaseResult.RowMapper<OBJECT> mapper);
-
-    /**
-     * Execute the query and map each return value over the {@link DatabaseResult.RowMapper} function to return a list. Example:
-     * <pre>
-     *     List&lt;Instant&gt; creationTimes = table.where("status", status).list(row -&gt; row.getInstant("created_at"))
-     * </pre>
-     */
-    @CheckReturnValue
-    <OBJECT> List<OBJECT> list(DatabaseResult.RowMapper<OBJECT> mapper);
-
-    /**
-     * Executes <code>SELECT fieldName FROM ...</code> on the query and returns the result as a list
-     */
-    @CheckReturnValue
-    default List<String> listStrings(String fieldName) {
-        return list(row -> row.getString(fieldName));
-    }
-
-    /**
-     * Executes <code>SELECT fieldName FROM ...</code> on the query and returns the result as a list
-     */
-    @CheckReturnValue
-    default List<Integer> listInt(String fieldName) {
-        return list(row -> row.getInt(fieldName));
-    }
-
-    /**
-     * Executes <code>SELECT fieldName FROM ...</code> on the query and returns the result as a list
-     */
-    @CheckReturnValue
-    default List<Long> listLongs(String fieldName) {
-        return list(row -> row.getLong(fieldName));
-    }
-
-    /**
-     * If the query returns no rows, returns {@link SingleRow#absent}, if exactly one row is returned, maps it and return it,
-     * if more than one is returned, throws `IllegalStateException`
-     *
-     * @param mapper Function object to map a single returned row to a object
-     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws MultipleRowsReturnedException if more than one row was matched the query
-     */
-    @Nonnull
-    @CheckReturnValue
-    <OBJECT> SingleRow<OBJECT> singleObject(DatabaseResult.RowMapper<OBJECT> mapper);
-
-    /**
-     * Returns a string from the specified column name
-     *
-     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws MultipleRowsReturnedException if more than one row was matched the query
-     */
-    @Nonnull
-    @CheckReturnValue
-    default SingleRow<String> singleString(String fieldName) {
-        return singleObject(row -> row.getString(fieldName));
-    }
-
-    /**
-     * Returns an integer from the specified column name
-     *
-     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws MultipleRowsReturnedException if more than one row was matched the query
-     */
-    @Nonnull
-    @CheckReturnValue
-    default SingleRow<Integer> singleInt(String fieldName) {
-        return singleObject(row -> row.getInt(fieldName));
-    }
-
-
-    /**
-     * Returns a long from the specified column name
-     *
-     * @return the mapped row if one row is returned, {@link SingleRow#absent} otherwise
-     * @throws MultipleRowsReturnedException if more than one row was matched the query
-     */
-    @Nonnull
-    @CheckReturnValue
-    default SingleRow<Long> singleLong(String fieldName) {
-        return singleObject(row -> row.getLong(fieldName));
-    }
-
-    /**
-     * Executes <code>SELECT fieldName FROM ...</code> on the query.
-     * If there is no rows, returns {@link SingleRow#absent}, if there is one result, returns it, if there
-     * are more than one result, throws {@link IllegalStateException}
-     */
-    @Nonnull
-    @CheckReturnValue
-    default SingleRow<Instant> singleInstant(String fieldName) {
-        return singleObject(row -> row.getInstant(fieldName));
-    }
-
-    /**
-     * Executes <code>SELECT fieldName FROM ...</code> on the query.
-     * If there is no rows, returns {@link SingleRow#absent}, if there is one result, returns the
-     * binary stream of the object. Used with BLOB (Binary Large Objects) and bytea (PostgreSQL) data types
-     */
-    @Nonnull
-    @CheckReturnValue
-    default SingleRow<InputStream> singleInputStream(String fieldName) {
-        return singleObject(row -> row.getInputStream(fieldName));
-    }
-
-    /**
-     * Executes <code>SELECT fieldName FROM ...</code> on the query.
-     * If there is no rows, returns {@link SingleRow#absent}, if there is one result, returns the
-     * character reader of the object. Used with CLOB (Character Large Objects) and text (PostgreSQL) data types
-     */
-    @Nonnull
-    @CheckReturnValue
-    default SingleRow<Reader> singleReader(String fieldName) {
-        return singleObject(row -> row.getReader(fieldName));
-    }
 
     /**
      * Executes the <code>SELECT * FROM ...</code> statement and calls back to

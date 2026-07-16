@@ -121,12 +121,12 @@ public class DbContextTest {
         insertTestRow(10003, "ABC");
 
         assertThat(dbContext
-                .statement("select max(code) as max_code from database_table_test_table", Collections.emptyList())
-                .singleObject(row -> row.getInt("max_code")).get())
+                .statement("select max(code) as max_code from database_table_test_table")
+                .singleInt("max_code").get())
                 .isEqualTo(10003);
         assertThat(dbContext
                 .statement("select max(code) as max_code from database_table_test_table where name = ?", Collections.singletonList("ZYX"))
-                .list(row -> row.getInt("max_code")))
+                .listInt("max_code"))
                 .containsOnly(10002);
     }
 

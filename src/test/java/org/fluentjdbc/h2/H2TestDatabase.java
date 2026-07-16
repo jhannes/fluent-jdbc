@@ -18,6 +18,7 @@ public class H2TestDatabase {
     static {
         REPLACEMENTS.put("INT_ARRAY", "Integer Array");
         REPLACEMENTS.put("STRING_ARRAY", "Varchar Array");
+        REPLACEMENTS.put("DATETIME", "timestamp(0)");
     }
 
     public static Connection createConnection() throws SQLException {

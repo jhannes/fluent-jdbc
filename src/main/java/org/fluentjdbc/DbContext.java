@@ -62,12 +62,22 @@ public class DbContext {
 
     /**
      * Execute an arbitrary SQL statement, e.g.
-     * <code>dbContext.select("select 1 as number from dual").singleLong("max_age")</code> or
-     * <code>dbContext.select("update persons set full_name = first_name || ' ' || last_name").executeUpdate()</code>
+     * <code>dbContext.statement("select 1 as number from dual").singleObject("num")</code> or
+     * <code>dbContext.statement("update persons set full_name = first_name || ' ' || last_name").executeUpdate()</code>
      */
     @CheckReturnValue
     public DbContextStatement statement(String statement, Collection<Object> parameters) {
         return new DbContextStatement(this, statement, parameters);
+    }
+
+    /**
+     * Execute an arbitrary SQL statement, e.g.
+     * <code>dbContext.statement("select max(code) as max_code from database_table_test_table").singleInt("max_code")</code> or
+     * <code>dbContext.statement("update persons set full_name = first_name || ' ' || last_name").executeUpdate()</code>
+     */
+    @CheckReturnValue
+    public DbContextStatement statement(String statement) {
+        return new DbContextStatement(this, statement);
     }
 
     public DatabaseStatementFactory getStatementFactory() {

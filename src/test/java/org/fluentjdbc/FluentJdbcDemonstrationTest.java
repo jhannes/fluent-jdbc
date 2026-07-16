@@ -11,6 +11,7 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.Random;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
@@ -106,7 +107,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
     @Test
     public void shouldCreateTimestamps() throws InterruptedException {
-        Instant start = Instant.now();
+        Instant start = Instant.now().truncatedTo(SECONDS);
         Thread.sleep(10);
         Long id = table
                 .newSaveBuilder("id", null)
@@ -118,10 +119,10 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
 
         SingleRow<Instant> actual1 = table.where("id", id).singleInstant(connection, "created_at");
         assertThat(actual1.get())
-            .isAfter(start).isBefore(Instant.now());
+            .isBetween(start, Instant.now().plusSeconds(1));
         SingleRow<Instant> actual = table.where("id", id).singleInstant(connection, "updated_at");
         assertThat(actual.get())
-            .isAfter(start).isBefore(Instant.now());
+            .isBetween(start, Instant.now().plusSeconds(1));
     }
 
     @Test
@@ -139,7 +140,7 @@ public class FluentJdbcDemonstrationTest extends AbstractDatabaseTest {
         table.newSaveBuilder("id", id).setField("name", "another value").execute(connection);
         SingleRow<Instant> actual1 = table.where("id", id).singleInstant(connection, "updated_at");
         assertThat(actual1.get())
-            .isAfter(updatedTime);
+            .isAfterOrEqualTo(updatedTime);
         SingleRow<Instant> actual = table.where("id", id).singleInstant(connection, "created_at");
         assertThat(actual.get())
             .isEqualTo(createdTime);

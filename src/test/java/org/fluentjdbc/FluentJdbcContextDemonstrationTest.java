@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.util.Map;
 import java.util.Random;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.fluentjdbc.AbstractDatabaseTest.createTable;
@@ -152,7 +153,7 @@ public class FluentJdbcContextDemonstrationTest {
 
     @Test
     public void shouldCreateTimestamps() throws InterruptedException {
-        Instant start = Instant.now();
+        Instant start = Instant.now().truncatedTo(SECONDS);
         Thread.sleep(10);
         Long id = table
                 .newSaveBuilder("id", null)
@@ -163,9 +164,9 @@ public class FluentJdbcContextDemonstrationTest {
         Thread.sleep(10);
 
         assertThat(table.where("id", id).singleInstant("created_at").get())
-            .isAfter(start).isBefore(Instant.now());
+            .isBetween(start, Instant.now().plusSeconds(1));
         assertThat(table.where("id", id).singleInstant("updated_at").get())
-            .isAfter(start).isBefore(Instant.now());
+            .isBetween(start, Instant.now().plusSeconds(1));
     }
 
     @Test
@@ -182,7 +183,7 @@ public class FluentJdbcContextDemonstrationTest {
 
         table.newSaveBuilder("id", id).setField("name", "another value").execute();
         assertThat(table.where("id", id).singleInstant("updated_at").get())
-                .isAfter(updatedTime);
+                .isAfterOrEqualTo(updatedTime);
         assertThat(table.where("id", id).singleObject(row -> row.getOffsetDateTime("created_at")).get())
                 .isEqualTo(OffsetDateTime.ofInstant(createdTime, ZoneId.systemDefault()));
     }
