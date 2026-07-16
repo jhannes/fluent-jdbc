@@ -46,25 +46,31 @@ public class DbContextTest {
     protected final DbContextTable table;
 
     private final Map<String, String> replacements;
-    
+    private final DatabaseStatementFactory factory = new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER);
+
     private boolean limitNotSupported = false;
-    
+
     private boolean largeObjectsNotSupported = false;
+
+    private Boolean transactionReport;
 
     public DbContextTest() {
         this(H2TestDatabase.createDataSource(), H2TestDatabase.REPLACEMENTS);
     }
 
     protected DbContextTest(DataSource dataSource, Map<String, String> replacements) {
-        this.dbContext = new DbContextRule(dataSource);
+        this.dbContext = new DbContextRule(dataSource,
+                new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER),
+                ((commit, timing) -> transactionReport = commit)
+        );
         this.dataSource = dataSource;
         this.table = dbContext.table("database_table_test_table");
         this.replacements = replacements;
     }
-    
+
     protected void limitNotSupported() {
         this.limitNotSupported = true;
-    }    
+    }
 
     protected void largeObjectsNotSupported() {
         this.largeObjectsNotSupported = true;
@@ -78,7 +84,7 @@ public class DbContextTest {
             createTable(connection, "create table database_table_test_table (id ${INTEGER_PK}, code integer not null, name varchar(50) null, data ${BLOB}, document ${CLOB}, created_at ${DATETIME}, updated_at ${DATETIME})", replacements);
         }
     }
-    
+
     private void assumeLimitSupported() {
         Assume.assumeFalse("[" + getDatabaseProductName(dbContext.getThreadConnection()) + "] does not support limit", limitNotSupported);
     }
@@ -95,7 +101,7 @@ public class DbContextTest {
         insertTestRow(2002, "D");
 
         assertThat(table
-                .whereExpressionWithParameterList("name = ? OR name = ? OR name = ?", Arrays.asList("A","B", "C"))
+                .whereExpressionWithParameterList("name = ? OR name = ? OR name = ?", Arrays.asList("A", "B", "C"))
                 .whereExpressionWithParameterList("name = ? OR code > ?", Arrays.asList("A", 2000L))
                 .unordered()
                 .listLongs("code"))
@@ -191,10 +197,13 @@ public class DbContextTest {
                 .isEqualTo(1001);
     }
 
+    Boolean rolledBack = null;
+    Boolean commited = null;
+
     @Test
     public void shouldSeparateConnectionPerDbContext() {
-        DbContext rolledBackContext = new DbContext();
-        DbContext committedContext = new DbContext();
+        DbContext rolledBackContext = new DbContext(factory, (commit, timing) -> rolledBack = commit);
+        DbContext committedContext = new DbContext(factory, (commit, timing) -> commited = commit);
         try (DbContextConnection ignored = rolledBackContext.startConnection(dataSource)) {
             DbContextTable table = rolledBackContext.table("database_table_test_table");
             try (DbTransaction dbTransaction = rolledBackContext.ensureTransaction()) {
@@ -203,7 +212,7 @@ public class DbContextTest {
 
                 try (DbContextConnection ignored2 = committedContext.startConnection(dataSource)) {
                     DbContextTable committedTable = committedContext.table("database_table_test_table");
-                    try (DbTransaction committedTransaction = rolledBackContext.ensureTransaction()) {
+                    try (DbTransaction committedTransaction = committedContext.ensureTransaction()) {
                         committedTable.insert().setField("code", 3000).execute();
                         committedTransaction.setComplete();
                     }
@@ -213,8 +222,10 @@ public class DbContextTest {
         assertThat(table.query().listLongs("code"))
                 .contains(3000L)
                 .doesNotContain(2000L);
+        assertThat(commited).isTrue();
+        assertThat(rolledBack).isFalse();
     }
-    
+
     @Test
     public void shouldNestContexts() {
         try (DbContextConnection ignored = dbContext.startConnection(dataSource)) {
@@ -227,7 +238,7 @@ public class DbContextTest {
 
         assertThat(table.query().listInt("code")).contains(1, 2, 3);
     }
-    
+
 
     private DbContext.ConnectionSupplier getConnectionWithoutAutoCommit() {
         return () -> {
@@ -268,19 +279,19 @@ public class DbContextTest {
     @Test
     public void shouldInsertWithoutKey() {
         table.insert()
-            .setField("code", 1001)
-            .setField("name", "insertTest")
-            .execute();
+                .setField("code", 1001)
+                .setField("name", "insertTest")
+                .execute();
 
         Object id = table.insert()
-            .setPrimaryKey("id", null)
-            .setField("code", 1002)
-            .setField("name", "insertTest")
-            .execute();
+                .setPrimaryKey("id", null)
+                .setField("code", 1002)
+                .setField("name", "insertTest")
+                .execute();
         assertThat(id).isNotNull();
 
         assertThat(table.where("name", "insertTest").orderBy("code").listLongs("code"))
-            .containsExactly(1001L, 1002L);
+                .containsExactly(1001L, 1002L);
     }
 
     @Test
@@ -291,6 +302,7 @@ public class DbContextTest {
         }
         assertThat(table.where("name", "commitTest").listLongs("code"))
                 .contains(1003L);
+        assertThat(transactionReport).isTrue();
     }
 
     @Test
@@ -374,8 +386,8 @@ public class DbContextTest {
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "darkness").execute();
 
         assertThat(table.whereIn("name", Arrays.asList("hello", "world")).unordered().listStrings("id"))
-            .containsOnly(id1.toString(), id2.toString())
-            .doesNotContain(id3.toString());
+                .containsOnly(id1.toString(), id2.toString())
+                .doesNotContain(id3.toString());
     }
 
     @Test
@@ -385,9 +397,9 @@ public class DbContextTest {
         Object id3 = table.insert().setPrimaryKey("id", null).setField("code", 3).setField("name", "no").execute();
 
         assertThat(table.whereOptional("name", "yes").query().unordered().listStrings("id"))
-            .contains(id1.toString(), id2.toString()).doesNotContain(id3.toString());
+                .contains(id1.toString(), id2.toString()).doesNotContain(id3.toString());
         assertThat(table.whereOptional("name", null).unordered().listStrings("id"))
-            .contains(id1.toString(), id2.toString(), id3.toString());
+                .contains(id1.toString(), id2.toString(), id3.toString());
     }
 
     @Test
@@ -448,9 +460,9 @@ public class DbContextTest {
                 .setField("name", "New name").execute();
 
         assertThat(table.where("id", id).singleString("name").get())
-            .isEqualTo("New name");
+                .isEqualTo("New name");
         assertThat(table.where("id", id).singleLong("code").get())
-            .isEqualTo(1104L);
+                .isEqualTo(1104L);
     }
 
     @Test
@@ -490,7 +502,7 @@ public class DbContextTest {
                 .executeDelete();
         assertThat(count).isEqualTo(1);
         assertThat(table.unordered().listLongs("id"))
-            .doesNotContain(id);
+                .doesNotContain(id);
         assertThat(table.query().where("id", id).singleLong("code")).isEmpty();
     }
 
@@ -590,8 +602,8 @@ public class DbContextTest {
                 .execute();
 
         assertThatThrownBy(() -> table.where("id", id).singleString("non_existing"))
-            .isInstanceOf(IllegalArgumentException.class)
-            .hasMessageContaining("Column {non_existing} is not present");
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Column {non_existing} is not present");
     }
 
     @Test

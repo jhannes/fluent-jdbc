@@ -2,6 +2,7 @@ package org.fluentjdbc.opt.junit;
 
 import org.fluentjdbc.DatabaseReporter;
 import org.fluentjdbc.DatabaseStatementFactory;
+import org.fluentjdbc.DatabaseTransactionReporter;
 import org.fluentjdbc.DbContext;
 import org.fluentjdbc.DbContextConnection;
 import org.junit.rules.TestRule;
@@ -14,11 +15,11 @@ public class DbContextRule extends DbContext implements TestRule {
     protected final DataSource dataSource;
 
     public DbContextRule(DataSource dataSource) {
-        this(dataSource, new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER));
+        this(dataSource, new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER), DatabaseTransactionReporter.LOGGING_REPORTER);
     }
 
-    public DbContextRule(DataSource dataSource, DatabaseStatementFactory factory) {
-        super(factory);
+    public DbContextRule(DataSource dataSource, DatabaseStatementFactory factory, DatabaseTransactionReporter transactionReporter) {
+        super(factory, transactionReporter);
         this.dataSource = dataSource;
     }
 

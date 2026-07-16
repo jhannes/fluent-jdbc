@@ -38,7 +38,7 @@ public class DatabaseReporterTest {
         this.dbContext = new DbContextRule(dataSource, new DatabaseStatementFactory(tableName -> operation -> {
             Timer counter = metricRegistry.timer(tableName + "/" + operation);
             return (query, duration) -> counter.update(Duration.ofMillis(duration));
-        }));
+        }), DatabaseTransactionReporter.LOGGING_REPORTER);
         this.dataSource = dataSource;
         this.table = dbContext.table("unique_table_name");
         this.replacements = replacements;

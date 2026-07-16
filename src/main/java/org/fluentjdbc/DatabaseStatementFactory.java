@@ -12,7 +12,7 @@ import java.util.Collection;
  */
 public class DatabaseStatementFactory {
 
-    private final DatabaseReporter reporter;
+    protected final DatabaseReporter reporter;
 
     public DatabaseStatementFactory(DatabaseReporter reporter) {
         this.reporter = reporter;
