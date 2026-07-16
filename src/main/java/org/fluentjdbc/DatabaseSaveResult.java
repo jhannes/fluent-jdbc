@@ -22,11 +22,11 @@ import java.util.Objects;
  * @param <T> The type of the primary key
  */
 public class DatabaseSaveResult<T> {
-    private final T idValue;
-    private final SaveStatus saveStatus;
-    private final List<String> updatedFields;
+    protected final T idValue;
+    protected final SaveStatus saveStatus;
+    protected final List<String> updatedFields;
 
-    private DatabaseSaveResult(T idValue, SaveStatus saveStatus, List<String> updatedFields) {
+    protected DatabaseSaveResult(T idValue, SaveStatus saveStatus, List<String> updatedFields) {
         this.idValue = idValue;
         this.saveStatus = saveStatus;
         this.updatedFields = updatedFields;

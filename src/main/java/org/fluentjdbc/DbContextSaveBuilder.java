@@ -26,8 +26,8 @@ import java.sql.SQLException;
  */
 public class DbContextSaveBuilder<T> {
 
-    private final DbContextTable table;
-    private final DatabaseSaveBuilder<T> saveBuilder;
+    protected final DbContextTable table;
+    protected final DatabaseSaveBuilder<T> saveBuilder;
 
     public DbContextSaveBuilder(DbContextTable table, DatabaseSaveBuilder<T> saveBuilder) {
         this.table = table;

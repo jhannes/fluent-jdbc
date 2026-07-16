@@ -22,9 +22,9 @@ import java.util.List;
  */
 public class DatabaseInsertWithPkBuilder<T> {
 
-    private final DatabaseInsertBuilder insertBuilder;
-    private final String idField;
-    private final T idValue;
+    protected final DatabaseInsertBuilder insertBuilder;
+    protected final String idField;
+    protected final T idValue;
 
     public DatabaseInsertWithPkBuilder(DatabaseInsertBuilder insertBuilder, String idField, T idValue) {
         this.insertBuilder = insertBuilder;
@@ -74,7 +74,7 @@ public class DatabaseInsertWithPkBuilder<T> {
     // TODO: This doesn't work for Android - we need to do select last_insert_rowid() explicitly (or update SQLDroid)
     @SuppressWarnings("unchecked")
     @CheckReturnValue
-    private T getGeneratedKey(PreparedStatement stmt) throws SQLException {
+    protected T getGeneratedKey(PreparedStatement stmt) throws SQLException {
         stmt.executeUpdate();
         try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
             generatedKeys.next();

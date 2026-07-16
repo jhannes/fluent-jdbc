@@ -29,8 +29,8 @@ import java.util.stream.Stream;
 @CheckReturnValue
 public class DbContextTable implements DatabaseQueryable<DbContextTableQueryBuilder> {
 
-    private final DatabaseTable table;
-    private final DbContext dbContext;
+    protected final DatabaseTable table;
+    protected final DbContext dbContext;
 
     public DbContextTable(DatabaseTable databaseTable, @Nonnull DbContext dbContext) {
         this.table = databaseTable;

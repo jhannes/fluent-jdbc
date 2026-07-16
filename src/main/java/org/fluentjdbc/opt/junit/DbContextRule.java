@@ -11,7 +11,7 @@ import org.junit.runners.model.Statement;
 import javax.sql.DataSource;
 
 public class DbContextRule extends DbContext implements TestRule {
-    private final DataSource dataSource;
+    protected final DataSource dataSource;
 
     public DbContextRule(DataSource dataSource) {
         this(dataSource, new DatabaseStatementFactory(DatabaseReporter.LOGGING_REPORTER));

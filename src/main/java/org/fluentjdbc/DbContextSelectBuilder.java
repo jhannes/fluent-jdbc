@@ -26,8 +26,8 @@ import java.util.stream.Stream;
  */
 public class DbContextSelectBuilder implements DbContextListableSelect<DbContextSelectBuilder> {
 
-    private final DbContext dbContext;
-    private final DatabaseSelectBuilder builder;
+    protected final DbContext dbContext;
+    protected final DatabaseSelectBuilder builder;
 
     public DbContextSelectBuilder(DbContext dbContext) {
         this(dbContext, new DatabaseSelectBuilder(dbContext.getStatementFactory()));

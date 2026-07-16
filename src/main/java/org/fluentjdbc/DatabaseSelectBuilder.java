@@ -27,11 +27,11 @@ import java.util.stream.Stream;
  */
 public class DatabaseSelectBuilder implements DatabaseQueryBuilder<DatabaseSelectBuilder>, DatabaseListableQueryBuilder<DatabaseSelectBuilder> {
 
-    private final DatabaseStatementFactory factory;
-    private String fromStatement;
-    private final ArrayList<String> groupByClauses = new ArrayList<>();
+    protected final DatabaseStatementFactory factory;
+    protected String fromStatement;
+    protected final ArrayList<String> groupByClauses = new ArrayList<>();
 
-    private final ArrayList<String> columns = new ArrayList<>();
+    protected final ArrayList<String> columns = new ArrayList<>();
     protected final DatabaseWhereBuilder whereBuilder;
     protected final List<String> orderByClauses = new ArrayList<>();
     protected Integer offset;

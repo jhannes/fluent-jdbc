@@ -22,8 +22,8 @@ import java.util.List;
  */
 @CheckReturnValue
 public class DbContextTableAlias {
-    private final DbContextTable table;
-    private final DatabaseTableAlias alias;
+    protected final DbContextTable table;
+    protected final DatabaseTableAlias alias;
 
     public DbContextTableAlias(DbContextTable table, String alias) {
         this.table = table;

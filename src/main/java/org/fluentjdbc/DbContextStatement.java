@@ -20,8 +20,8 @@ import java.util.stream.Stream;
  * </pre>
  */
 public class DbContextStatement implements DbContextSelectResult {
-    private final DbContext dbContext;
-    private final DatabaseStatement statement;
+    protected final DbContext dbContext;
+    protected final DatabaseStatement statement;
 
     public DbContextStatement(DbContext dbContext, String statement, Collection<Object> parameters) {
         this.dbContext = dbContext;

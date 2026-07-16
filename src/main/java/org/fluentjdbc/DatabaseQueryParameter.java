@@ -6,10 +6,10 @@ import java.util.Collection;
  * Collects parameters for insert statements, update statements and where expressions
  */
 public class DatabaseQueryParameter {
-    private final String whereExpression;
-    private final Collection<?> parameters;
-    private final String columnName;
-    private final String updateExpression;
+    protected final String whereExpression;
+    protected final Collection<?> parameters;
+    protected final String columnName;
+    protected final String updateExpression;
 
     public DatabaseQueryParameter(String whereExpression, Collection<?> parameters, String columnName, String updateExpression) {
         this.whereExpression = whereExpression;

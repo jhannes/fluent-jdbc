@@ -21,8 +21,8 @@ import java.util.Map;
  * </pre>
  */
 public class DbContextInsertOrUpdateBuilder implements DatabaseUpdatable<DbContextInsertOrUpdateBuilder> {
-    private final DbContextTable table;
-    private DatabaseInsertOrUpdateBuilder builder;
+    protected final DbContextTable table;
+    protected DatabaseInsertOrUpdateBuilder builder;
 
     public DbContextInsertOrUpdateBuilder(DbContextTable table, DatabaseInsertOrUpdateBuilder builder) {
         this.table = table;

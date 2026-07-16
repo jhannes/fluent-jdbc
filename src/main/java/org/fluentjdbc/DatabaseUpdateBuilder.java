@@ -26,9 +26,9 @@ import java.util.stream.Collectors;
 public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBuilder> {
 
     @Nonnull
-    private final DatabaseTable table;
-    private final Map<String, DatabaseQueryParameter> updateParameters = new LinkedHashMap<>();
-    private DatabaseWhereBuilder whereClause;
+    protected final DatabaseTable table;
+    protected final Map<String, DatabaseQueryParameter> updateParameters = new LinkedHashMap<>();
+    protected DatabaseWhereBuilder whereClause;
 
     public DatabaseUpdateBuilder(DatabaseTable table) {
         this.table = table;

@@ -24,8 +24,8 @@ import java.util.function.Function;
 public class DbContextBulkUpdateBuilder<T> implements
         DatabaseBulkQueryable<T, DbContextBulkUpdateBuilder<T>>, DatabaseBulkUpdatable<T, DbContextBulkUpdateBuilder<T>> {
 
-    private final DbContextTable table;
-    private final DatabaseBulkUpdateBuilder<T> builder;
+    protected final DbContextTable table;
+    protected final DatabaseBulkUpdateBuilder<T> builder;
 
     public DbContextBulkUpdateBuilder(@Nonnull DbContextTable table, DatabaseBulkUpdateBuilder<T> builder) {
         this.table = table;

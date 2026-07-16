@@ -37,12 +37,16 @@ import java.util.stream.Stream;
  */
 @CheckReturnValue
 public class DbContextJoinedSelectBuilder implements DbContextListableSelect<DbContextJoinedSelectBuilder> {
-    private final DatabaseJoinedQueryBuilder builder;
-    private final DbContextTable table;
+    protected final DbContextTable table;
+    protected final DatabaseJoinedQueryBuilder builder;
 
     public DbContextJoinedSelectBuilder(@Nonnull DbContextTable table, @Nonnull DbContextTableAlias tableAlias) {
+        this(table, new DatabaseJoinedQueryBuilder(table.getTable(), tableAlias.getTableAlias()));
+    }
+
+    public DbContextJoinedSelectBuilder(@Nonnull DbContextTable table, @Nonnull DatabaseJoinedQueryBuilder builder) {
         this.table = table;
-        builder = new DatabaseJoinedQueryBuilder(table.getTable(), tableAlias.getTableAlias());
+        this.builder = builder;
     }
 
     /**

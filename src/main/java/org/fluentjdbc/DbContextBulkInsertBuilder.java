@@ -21,8 +21,8 @@ import java.util.function.Function;
  */
 public class DbContextBulkInsertBuilder<T> implements DatabaseBulkUpdatable<T, DbContextBulkInsertBuilder<T>> {
 
-    private final DbContextTable table;
-    private final DatabaseBulkInsertBuilder<T> builder;
+    protected final DbContextTable table;
+    protected final DatabaseBulkInsertBuilder<T> builder;
 
     public DbContextBulkInsertBuilder(DbContextTable table, DatabaseBulkInsertBuilder<T> builder) {
         this.table = table;

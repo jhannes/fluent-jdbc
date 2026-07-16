@@ -29,10 +29,10 @@ import static org.fluentjdbc.DatabaseStatement.addBatch;
  */
 public class DatabaseBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, DatabaseBulkDeleteBuilder<T>> {
 
-    private final List<String> whereConditions = new ArrayList<>();
-    private final List<Function<T, ?>> whereParameters = new ArrayList<>();
-    private final DatabaseTable table;
-    private final Iterable<T> objects;
+    protected final List<String> whereConditions = new ArrayList<>();
+    protected final List<Function<T, ?>> whereParameters = new ArrayList<>();
+    protected final DatabaseTable table;
+    protected final Iterable<T> objects;
 
     public DatabaseBulkDeleteBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;

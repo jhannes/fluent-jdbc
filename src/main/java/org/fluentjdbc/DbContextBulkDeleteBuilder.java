@@ -19,8 +19,8 @@ import java.util.function.Function;
  * </pre>
  */
 public class DbContextBulkDeleteBuilder<T> implements DatabaseBulkQueryable<T, DbContextBulkDeleteBuilder<T>> {
-    private final DbContextTable table;
-    private final DatabaseBulkDeleteBuilder<T> builder;
+    protected final DbContextTable table;
+    protected final DatabaseBulkDeleteBuilder<T> builder;
 
     public DbContextBulkDeleteBuilder(DbContextTable table, DatabaseBulkDeleteBuilder<T> builder) {
         this.table = table;

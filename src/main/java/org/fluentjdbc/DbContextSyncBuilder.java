@@ -46,16 +46,16 @@ import java.util.stream.Stream;
  * </pre>
  */
 public class DbContextSyncBuilder<T>  {
-    private final DbContextTable table;
-    private final EnumMap<SaveStatus, Integer> status = new EnumMap<>(SaveStatus.class);
-    private final List<T> theirObjects;
-    private boolean isCached = false;
-    private Map<List<Object>, List<Object>> ourRows;
-    private Map<List<Object>, List<Object>> theirRows;
-    private final List<String> uniqueFields = new ArrayList<>();
-    private final List<Function<T, Object>> uniqueValueFunctions = new ArrayList<>();
-    private final List<String> updatedFields = new ArrayList<>();
-    private final List<Function<T, Object>> updatedValueFunctions = new ArrayList<>();
+    protected final DbContextTable table;
+    protected final EnumMap<SaveStatus, Integer> status = new EnumMap<>(SaveStatus.class);
+    protected final List<T> theirObjects;
+    protected boolean isCached = false;
+    protected Map<List<Object>, List<Object>> ourRows;
+    protected Map<List<Object>, List<Object>> theirRows;
+    protected final List<String> uniqueFields = new ArrayList<>();
+    protected final List<Function<T, Object>> uniqueValueFunctions = new ArrayList<>();
+    protected final List<String> updatedFields = new ArrayList<>();
+    protected final List<Function<T, Object>> updatedValueFunctions = new ArrayList<>();
 
     public DbContextSyncBuilder(DbContextTable table, List<T> theirObjects) {
         this.table = table;

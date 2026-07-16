@@ -19,12 +19,12 @@ import static org.fluentjdbc.DatabaseStatement.addBatch;
  */
 public class DatabaseBulkInsertBuilderWithPk<T> {
 
-    private final String primaryKeyColumn;
-    private final DatabaseTable table;
-    private final List<String> updateFields;
-    private final List<Function<T, ?>> updateParameters;
-    private final BiConsumer<T, Long> primaryKeyCallback;
-    private final Iterable<T> objects;
+    protected final String primaryKeyColumn;
+    protected final DatabaseTable table;
+    protected final List<String> updateFields;
+    protected final List<Function<T, ?>> updateParameters;
+    protected final BiConsumer<T, Long> primaryKeyCallback;
+    protected final Iterable<T> objects;
 
     public DatabaseBulkInsertBuilderWithPk(
             Iterable<T> objects,

@@ -31,7 +31,7 @@ import java.util.stream.StreamSupport;
 @ParametersAreNonnullByDefault
 public class DatabaseResult implements AutoCloseable {
 
-    private final static Logger logger = LoggerFactory.getLogger(DatabaseResult.class);
+    protected final static Logger logger = LoggerFactory.getLogger(DatabaseResult.class);
 
     /**
      * Used to execute statements on the whole DatabaseResult. Like
@@ -66,11 +66,11 @@ public class DatabaseResult implements AutoCloseable {
         void apply(DatabaseRow row) throws SQLException;
     }
 
-    private final PreparedStatement statement;
+    protected final PreparedStatement statement;
     protected final ResultSet resultSet;
     protected final Map<String, Integer> columnIndexes;
     protected final Map<String, Map<String, Integer>> tableColumnIndexes;
-    private final Map<DatabaseTableAlias, Integer> keys;
+    protected final Map<DatabaseTableAlias, Integer> keys;
 
     DatabaseResult(PreparedStatement statement, ResultSet resultSet, Map<String, Integer> columnIndexes, Map<String, Map<String, Integer>> aliasColumnIndexes, Map<DatabaseTableAlias, Integer> keys) {
         this.statement = statement;
@@ -211,10 +211,10 @@ public class DatabaseResult implements AutoCloseable {
     }
 
     private class Iterator<T> implements java.util.Iterator<T> {
-        private final RowMapper<T> mapper;
-        private final long startTime;
-        private final String query;
-        private boolean hasNext;
+        protected final RowMapper<T> mapper;
+        protected final long startTime;
+        protected final String query;
+        protected boolean hasNext;
 
         public Iterator(RowMapper<T> mapper, String query) throws SQLException {
             this.mapper = mapper;

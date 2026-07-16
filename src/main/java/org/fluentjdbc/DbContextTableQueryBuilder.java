@@ -25,8 +25,8 @@ import java.util.stream.Stream;
  */
 public class DbContextTableQueryBuilder implements DbContextListableSelect<DbContextTableQueryBuilder> {
 
-    private final DbContextTable dbContextTable;
-    private final DatabaseTableQueryBuilder builder;
+    protected final DbContextTable dbContextTable;
+    protected final DatabaseTableQueryBuilder builder;
 
     public DbContextTableQueryBuilder(DbContextTable dbContextTable) {
         this(dbContextTable, new DatabaseTableQueryBuilder(dbContextTable.getTable()));
@@ -47,7 +47,7 @@ public class DbContextTableQueryBuilder implements DbContextListableSelect<DbCon
 
 
     @CheckReturnValue
-    private DbContextTableQueryBuilder query(@SuppressWarnings("unused") DatabaseTableQueryBuilder builder) {
+    protected DbContextTableQueryBuilder query(@SuppressWarnings("unused") DatabaseTableQueryBuilder builder) {
         return this;
     }
 

@@ -33,11 +33,11 @@ import static org.fluentjdbc.DatabaseStatement.addBatch;
  */
 public class DatabaseBulkInsertBuilder<T> implements DatabaseBulkUpdatable<T, DatabaseBulkInsertBuilder<T>> {
 
-    private final DatabaseTable table;
-    private final Iterable<T> objects;
+    protected final DatabaseTable table;
+    protected final Iterable<T> objects;
 
-    private final List<String> updateFields = new ArrayList<>();
-    private final List<Function<T, ?>> updateParameters = new ArrayList<>();
+    protected final List<String> updateFields = new ArrayList<>();
+    protected final List<Function<T, ?>> updateParameters = new ArrayList<>();
 
     DatabaseBulkInsertBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;

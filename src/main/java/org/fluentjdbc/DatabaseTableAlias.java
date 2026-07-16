@@ -20,8 +20,8 @@ import javax.annotation.CheckReturnValue;
  */
 @CheckReturnValue
 public class DatabaseTableAlias {
-    private final DatabaseTable table;
-    private final String alias;
+    protected final DatabaseTable table;
+    protected final String alias;
 
     public DatabaseTableAlias(DatabaseTable table, String alias) {
         this.table = table;

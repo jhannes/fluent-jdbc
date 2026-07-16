@@ -26,8 +26,8 @@ import java.util.stream.Collectors;
 @ParametersAreNonnullByDefault
 public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBuilder> {
 
-    private final LinkedHashMap<String, DatabaseQueryParameter> queryParameters = new LinkedHashMap<>();
-    private final DatabaseTable table;
+    protected final DatabaseTable table;
+    protected final LinkedHashMap<String, DatabaseQueryParameter> queryParameters = new LinkedHashMap<>();
 
     public DatabaseInsertBuilder(DatabaseTable table) {
         this.table = table;

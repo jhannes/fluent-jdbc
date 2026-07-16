@@ -3,8 +3,8 @@ package org.fluentjdbc;
 import java.util.Collection;
 
 public class MultipleRowsReturnedException extends IllegalArgumentException {
-    private final String statement;
-    private final Collection<?> parameters;
+    protected final String statement;
+    protected final Collection<?> parameters;
 
     public MultipleRowsReturnedException(String statement, Collection<?> parameters) {
         super("statement " + statement + " returned multiple rows for " + parameters);

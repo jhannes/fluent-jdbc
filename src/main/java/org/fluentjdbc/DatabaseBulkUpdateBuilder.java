@@ -39,14 +39,14 @@ public class DatabaseBulkUpdateBuilder<T> implements
         DatabaseBulkUpdatable<T, DatabaseBulkUpdateBuilder<T>>
 {
 
-    private final DatabaseTable table;
-    private final Iterable<T> objects;
+    protected final DatabaseTable table;
+    protected final Iterable<T> objects;
 
-    private final List<String> whereConditions = new ArrayList<>();
-    private final List<Function<T, ?>> whereParameters = new ArrayList<>();
+    protected final List<String> whereConditions = new ArrayList<>();
+    protected final List<Function<T, ?>> whereParameters = new ArrayList<>();
 
-    private final List<String> updateFields = new ArrayList<>();
-    private final List<Function<T, ?>> updateParameters = new ArrayList<>();
+    protected final List<String> updateFields = new ArrayList<>();
+    protected final List<Function<T, ?>> updateParameters = new ArrayList<>();
 
     public DatabaseBulkUpdateBuilder(DatabaseTable table, Iterable<T> objects) {
         this.table = table;
@@ -98,7 +98,7 @@ public class DatabaseBulkUpdateBuilder<T> implements
 
     @Nonnull
     @CheckReturnValue
-    private String createUpdateStatement() {
+    protected String createUpdateStatement() {
         return "update " + table.getTableName()
                 + " set " + updateFields.stream().map(column -> column + " = ?").collect(Collectors.joining(","))
                 + (whereConditions.isEmpty() ? "" : " where " + String.join(" and ", whereConditions));

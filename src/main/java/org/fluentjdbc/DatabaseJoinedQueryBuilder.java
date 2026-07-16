@@ -47,13 +47,13 @@ public class DatabaseJoinedQueryBuilder implements
         DatabaseQueryBuilder<DatabaseJoinedQueryBuilder>,
         DatabaseListableQueryBuilder<DatabaseJoinedQueryBuilder> {
 
-    private final DatabaseTable table;
-    private final DatabaseTableAlias tableAlias;
-    private final List<JoinedTable> joinedTables = new ArrayList<>();
-    private final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
-    private final List<String> orderByClauses = new ArrayList<>();
-    private Integer offset;
-    private Integer rowCount;
+    protected final DatabaseTable table;
+    protected final DatabaseTableAlias tableAlias;
+    protected final List<JoinedTable> joinedTables = new ArrayList<>();
+    protected final DatabaseWhereBuilder whereBuilder = new DatabaseWhereBuilder();
+    protected final List<String> orderByClauses = new ArrayList<>();
+    protected Integer offset;
+    protected Integer rowCount;
 
     public DatabaseJoinedQueryBuilder(DatabaseTable table, DatabaseTableAlias tableAlias) {
         this.table = table;
@@ -337,12 +337,12 @@ public class DatabaseJoinedQueryBuilder implements
         return table.newStatement("SELECT", createSelectStatement(), whereBuilder.getParameters());
     }
 
-    private static class JoinedTable {
-        private final DatabaseTableAlias leftTable;
-        private final List<String> leftFields;
-        private final DatabaseTableAlias joinedTable;
-        private final List<String> rightFields;
-        private final String joinType;
+    protected static class JoinedTable {
+        protected final DatabaseTableAlias leftTable;
+        protected final List<String> leftFields;
+        protected final DatabaseTableAlias joinedTable;
+        protected final List<String> rightFields;
+        protected final String joinType;
 
         private JoinedTable(DatabaseColumnReference a, DatabaseColumnReference b, String joinType) {
             this(a.getTableAlias(), Collections.singletonList(a.getColumnName()), b.getTableAlias(), Collections.singletonList(b.getColumnName()), joinType);

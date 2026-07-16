@@ -43,8 +43,8 @@ public class DbContextInsertBuilder implements DatabaseUpdatable<DbContextInsert
         }
     }
 
-    private DatabaseInsertBuilder builder;
-    private final DbContextTable dbContextTable;
+    protected final DbContextTable dbContextTable;
+    protected DatabaseInsertBuilder builder;
 
     public DbContextInsertBuilder(DbContextTable dbContextTable) {
         this.dbContextTable = dbContextTable;

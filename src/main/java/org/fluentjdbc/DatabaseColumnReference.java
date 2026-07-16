@@ -8,8 +8,8 @@ import javax.annotation.CheckReturnValue;
  */
 @CheckReturnValue
 public class DatabaseColumnReference {
-    private final String columnName;
-    private final DatabaseTableAlias alias;
+    protected final String columnName;
+    protected final DatabaseTableAlias alias;
 
     DatabaseColumnReference(DatabaseTableAlias alias, String columnName) {
         this.columnName = columnName;

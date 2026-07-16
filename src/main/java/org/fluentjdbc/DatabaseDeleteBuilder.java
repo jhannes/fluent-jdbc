@@ -15,9 +15,9 @@ import java.sql.Connection;
  */
 public class DatabaseDeleteBuilder {
 
-    private final DatabaseTable table;
+    protected final DatabaseTable table;
 
-    private DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
+    protected DatabaseWhereBuilder whereClause = new DatabaseWhereBuilder();
 
     public DatabaseDeleteBuilder(DatabaseTable table) {
         this.table = table;

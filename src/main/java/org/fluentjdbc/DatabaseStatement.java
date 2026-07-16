@@ -45,10 +45,10 @@ public class DatabaseStatement {
 
 
     protected static final Logger logger = LoggerFactory.getLogger(DatabaseStatement.class);
-    private final String tableName;
-    private final String statement;
-    private final Collection<?> parameters;
-    private final DatabaseTableOperationReporter reporter;
+    protected final String tableName;
+    protected final String statement;
+    protected final Collection<?> parameters;
+    protected final DatabaseTableOperationReporter reporter;
 
     public DatabaseStatement(String tableName, String statement, Collection<?> parameters, DatabaseTableOperationReporter reporter) {
         this.tableName = tableName;
