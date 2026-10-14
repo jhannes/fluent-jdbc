@@ -3,6 +3,7 @@ package org.fluentjdbc;
 import javax.annotation.Nonnull;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -42,6 +43,8 @@ public interface SingleRow<TYPE> extends Iterable<TYPE> {
 
     <U> SingleRow<U> map(Function<? super TYPE, ? extends U> mapper);
 
+    <U> SingleRow<U> flatMap(Function<? super TYPE, Optional<? extends U>> mapper);
+
     void ifPresent(Consumer<? super TYPE> consumer);
 
     void ifPresentOrElse(Consumer<? super TYPE> consumer, Runnable emptyAction);
@@ -78,6 +81,11 @@ public interface SingleRow<TYPE> extends Iterable<TYPE> {
 
         @Override
         public <U> SingleRow<U> map(Function<? super T, ? extends U> mapper) {
+            return new Absent<>(exception);
+        }
+
+        @Override
+        public <U> SingleRow<U> flatMap(Function<? super T, Optional<? extends U>> mapper) {
             return new Absent<>(exception);
         }
 
@@ -138,6 +146,12 @@ public interface SingleRow<TYPE> extends Iterable<TYPE> {
         @Override
         public <U> SingleRow<U> map(Function<? super T, ? extends U> mapper) {
             return new Present<>(mapper.apply(result));
+        }
+
+        @Override
+        public <U> SingleRow<U> flatMap(Function<? super T, Optional<? extends U>> mapper) {
+            return mapper.apply(result).map(v -> (SingleRow<U>)new Present<U>(v))
+                    .orElseGet(() -> new Absent<>(() -> new NoSuchElementException("No value present")));
         }
 
         @Override

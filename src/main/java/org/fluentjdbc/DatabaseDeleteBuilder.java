@@ -24,8 +24,11 @@ public class DatabaseDeleteBuilder {
     }
 
     public int execute(Connection connection) {
-        return table.newStatement("DELETE", "delete from " + table.getTableName() + whereClause.whereClause(), whereClause.getParameters())
-                .executeUpdate(connection);
+        return getDatabaseStatement().executeUpdate(connection);
+    }
+
+    public DatabaseStatement getDatabaseStatement() {
+        return table.newStatement("DELETE", "delete from " + table.getTableName() + whereClause.whereClause(), whereClause.getParameters());
     }
 
     @CheckReturnValue

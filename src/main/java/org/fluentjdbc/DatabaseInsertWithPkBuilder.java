@@ -61,9 +61,7 @@ public class DatabaseInsertWithPkBuilder<T> {
     public T execute(Connection connection) {
         T idValue = this.idValue;
         if (idValue == null) {
-            return insertBuilder.getTable()
-                    .newStatement("INSERT", insertBuilder.createInsertStatement(), insertBuilder.getParameters())
-                    .execute(connection, this::getGeneratedKey, new String[] { idField });
+            return insertBuilder.getDatabaseStatement().execute(connection, this::getGeneratedKey, new String[] { idField });
         } else {
             insertBuilder.execute(connection);
             return idValue;

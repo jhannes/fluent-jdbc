@@ -88,9 +88,11 @@ public class DatabaseInsertBuilder implements DatabaseUpdatable<DatabaseInsertBu
      * to bind parameters and execute statement
      */
     public int execute(Connection connection) {
-        return table
-                .newStatement("INSERT", createInsertStatement(), getParameters())
-                .executeUpdate(connection);
+        return getDatabaseStatement().executeUpdate(connection);
+    }
+
+    public DatabaseStatement getDatabaseStatement() {
+        return table.newStatement("INSERT", createInsertStatement(), getParameters());
     }
 
     /**

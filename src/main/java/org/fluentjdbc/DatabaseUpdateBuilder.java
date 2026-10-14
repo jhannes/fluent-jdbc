@@ -80,10 +80,14 @@ public class DatabaseUpdateBuilder implements DatabaseUpdatable<DatabaseUpdateBu
         if (updateParameters.isEmpty()) {
             return 0;
         }
+        return getDatabaseStatement().executeUpdate(connection);
+    }
+
+    public DatabaseStatement getDatabaseStatement() {
         List<Object> parameters = new ArrayList<>();
         updateParameters.values().forEach(p -> parameters.addAll(p.getParameters()));
         parameters.addAll(whereClause.getParameters());
-        return table.newStatement("UPDATE", createUpdateStatement(), parameters).executeUpdate(connection);
+        return table.newStatement("UPDATE", createUpdateStatement(), parameters);
     }
 
     private String createUpdateStatement() {

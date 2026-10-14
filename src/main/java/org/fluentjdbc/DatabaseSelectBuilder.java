@@ -186,7 +186,7 @@ public class DatabaseSelectBuilder implements DatabaseQueryBuilder<DatabaseSelec
     }
 
     @Nonnull
-    protected DatabaseStatement getDatabaseStatement() {
+    public DatabaseStatement getDatabaseStatement() {
         return factory.newStatement(fromStatement, "SELECT", createSelectStatement(), whereBuilder.getParameters());
     }
 
